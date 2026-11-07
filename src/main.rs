@@ -48,6 +48,14 @@ fn try_run_init(args: &mut noargs::RawArgs) -> noargs::Result<bool> {
     std::fs::write(&readme_path, BACKLOG_README_TEMPLATE)
         .map_err(|e| noargs::Error::other(args, e))?;
     println!("Created {}", readme_path.display());
+    println!();
+    println!("Next, create an item:");
+    println!();
+    println!("  nokori new <kind> <slug>          # ready to start");
+    println!("  nokori new <kind> <slug> --draft  # not ready to start yet");
+    println!();
+    println!("Run `nokori new --help` to see the usage and `nokori explain kinds`");
+    println!("to choose a kind.");
 
     Ok(true)
 }

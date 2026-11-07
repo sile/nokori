@@ -46,7 +46,8 @@ Decided
   git-flow: doing something outside the flow by hand is the user's own
   responsibility, and does not need to be spelled out.
 - Moving an item into `done/` is local only: the tool rewrites the file and
-  moves it. It does not run git, commit, or push.
+  moves it. It does not commit, push, or otherwise change anything through
+  git.
 - A `bug` that cannot be fixed for now goes to `pending/`. One that is decided
   never to be fixed is not a bug but a documented behavior: the behavior is
   written into the public docs and the item goes to `done/`, the same way a
@@ -66,6 +67,10 @@ Decided
   because the destination is the same. `new` writes to `backlog/` by default;
   `--draft` is the exception, because an item that is worth recording but not
   yet worth starting is the unusual case.
+- Commands may read git state, but never change it: no commit, no push, no
+  network. A move checks that the file it touches is committed, the way
+  `cargo publish` refuses a dirty tree, but only for that file rather than the
+  whole repository. `nokori` assumes it runs inside a git repository.
 - A command reports what to do next when it finishes. `init` prints how to
   create the first item and does not go on to explain the kinds: the generated
   file already shows what each kind's sections expect.
@@ -174,6 +179,15 @@ The commands name the move rather than the outcome, which is why `settle` was
 not used for `done/`: sitting next to `open`, `start`, and `suspend`, a word
 that describes what was concluded would be the odd one out.
 
+### Why a move checks that the file is clean
+
+A move and a content change in one commit make the history unreadable: the
+commit that says "settle this item" also rewrites what the item said, and the
+rewrite is what a later reader wants to see on its own. `cargo publish`
+refuses a dirty tree for the same reason, and the check here is narrower only
+because an item is not the whole crate -- what matters is the file being
+moved, not the working tree around it.
+
 ### Why `explain` and not `doc`
 
 A command that moves files is a verb, and `doc` is not one: in `cargo doc` it
@@ -211,4 +225,20 @@ been started -- an `rfc` by a provisional acceptance, a `bug` by a fix in
 progress -- and nobody else should pick it up. Without the directory, an
 accepted `rfc` would look exactly like one nobody had started on, and two
 people could begin the same work.
+
+
+Open questions
+--------------
+
+### Whether an untracked file counts as dirty
+
+A move refuses to run while the file it touches has uncommitted changes, but
+an untracked file is a different case: `git status` reports it as dirty, yet
+there is no earlier content for the move to bury. `new --draft` followed by
+`open` without a commit in between would fail under the strict reading.
+
+The flow it blocks is narrow -- `new` writes to `backlog/` by default, so the
+only item that could be opened straight from untracked is one created with
+`--draft` and then promoted at once -- which is why this is left to the
+implementation rather than settled here.
 

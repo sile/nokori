@@ -24,10 +24,9 @@ nokori
       - tugino major release madeno milestone, tekina tukaiktademoii
       - sagyou wo tyuudan site atode saikai sitari, betuno hitoni hikitugitaitoki
       - suguni owaru tannki tekina sagyoudeha huyou
-    - memo: free format no memo
+    - memo: free format no memo (joutai wo motanai)
       - jissaini sagyouni hairumaeniha, hokano item ni otosikon de kara torikumu noga suisyou sareru
       - goku keibina monoha reigai
-    - TODO: hokano kubun ga hituyouka, ya ueno bunrui nado ga tekisetuka, ha kentousuru
   - nokori finish or close or settle or resolve else
     - file no idou to status henkou wo yarutameno command?
       - status ni awaseru nara 'accept' tokamo ari?
@@ -49,12 +48,18 @@ Decided
 - `nokori init` writes `backlog/README.md` too, but its content stays minimal.
 - `pending/` is part of v1. An item has one of three states: `open`,
   `postponed`, `done`.
+- v1 has three item kinds that carry a state: `rfc`, `bug`, and `plan`.
+- `memo` is a fourth kind that carries **no state**. It lives directly under
+  `backlog/` with a `memo-` filename prefix and is never moved to `pending/`
+  or `done/`; `finish` leaves it alone. A memo worth keeping beyond that is
+  promoted by hand into a proper item (`rfc`, `bug`, or `plan`), because a
+  memo records something noticed rather than work that can be concluded.
 
 
-Open questions
---------------
+Rationale
+---------
 
-### ITEM_TYPE (rfc, bug, plan, memo)
+### How `memo` differs from the other kinds
 
 The reference repositories (kk, termnix, tuinix) use only `rfc` and `bug`.
 `tuinix/backlog/README.md` states the criterion for adding a kind:
@@ -65,34 +70,35 @@ The reference repositories (kk, termnix, tuinix) use only `rfc` and `bug`.
 > `draft`/`accepted`/`rejected` and `open`/`fixed`/`not-a-bug` vocabularies,
 > because it records work rather than a decision.
 
-Reduced to two points, a kind is either (a) a decision or (b) a piece of
-work:
+That criterion separates kinds into (a) a decision and (b) a piece of work.
+`rfc`, `bug`, and `plan` all fit, and `plan` is the one added; its two-value
+`open` / `done` transition is the whole of what `finish` does for it.
 
-- (a) is what `rfc` and `bug` carry (`draft`/`accepted`/`rejected` and
-  `open`/`fixed`/`not-a-bug`).
-- (b) needs only `open` and `done`.
+`memo` is the exception: it is neither a decision nor a piece of work, but
+something noticed and written down before it is broken down. That is why it
+carries no state. Giving it `open` / `done` would mean moving it to `done/`
+when nothing was concluded, and it would then sit there with no record of
+anything having happened. A memo that turns out to matter is promoted by hand
+into an `rfc`, `bug`, or `plan`; one that does not simply stays where it is.
 
-Against that criterion:
+So `memo` lives directly under `backlog/` like an open item, told apart by its
+filename prefix. The rule that nothing but items live in `backlog/` still
+holds: a memo is an item, just one that does not move.
 
-| kind | verdict       | reason |
-| ---- | ------------- | ------ |
-| rfc  | keep          | asks "what should the API be". States: `draft` / `accepted` / `rejected` / `postponed` |
-| bug  | keep          | asks "is the contract violated". States: `open` / `fixed` / `not-a-bug` |
-| plan | **keep**      | an umbrella for work split into phases. Not a decision but a record of work, and `open` / `done` is enough |
-| memo | **postpone**  | free format. Neither a decision nor a piece of work, so no state can be defined. Whether it folds into an existing kind is a question for after some use |
+### Naming prefix for `memo`
 
-Proposal: v1 has `rfc`, `bug`, and `plan`; `memo` is left out until there is
-something to learn from.
+Every kind is carried by a filename prefix (`YYYYMMDD-<kind>-<slug>.md`), so
+`memo` needs one too: `YYYYMMDD-memo-<slug>.md`.
 
-Keeping `plan` has two effects:
+The alternative was a separate `backlog/memo/` directory. That would break the
+rule that the prefix, not the directory, carries the kind, and add a third
+directory next to `pending/` and `done/` whose meaning ("not a state") does not
+fit the other two ("a state"). The prefix keeps the tree shallow and the rule
+intact.
 
-- The `finish` section above ("move the file and change the status") reduces to
-  a two-value `open` / `done` transition.
-- The settle dispatch gains one more line and nothing else.
 
-`memo` describes itself as something written before it is broken down into
-other items. Moving it to `done/` therefore involves a judgement of some kind,
-which makes it awkward to treat as a kind that carries a state.
+Open questions
+--------------
 
 ### Scope of `finish`
 

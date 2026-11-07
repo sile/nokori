@@ -13,7 +13,7 @@ nokori
       - kaku section ni <!-- TODO: ... --> wo kaiteoite, sono section de yarubekikoto / kiwotukerubekikoto wo kaiteoku
       - riyousyaha, section no kisaiga owattara, sono TODO wo kesu (koremo TODO: ni tejun tosite kaiteoku)
   - nokori new (or create) TYPE
-    - ITEM_TYPE=rfc,bug,plan,spike,memo
+    - ITEM_TYPE=rfc,bug,plan,spike
     - rfc: sin kinou ya kyodou henkou no teian
       - jissou syousai ha hukumesuginai (soreha jissoujini kimereba iinode, jissouni tuiteha hontou ni hituyouna jouhounomiwo kisaisusuru)
       - rule
@@ -25,38 +25,48 @@ nokori
       - sagyou wo tyuudan site atode saikai sitari, betuno hitoni hikitugitaitoki
       - suguni owaru tannki tekina sagyoudeha huyou
     - spike: tugino housin wo kimeru tameno tyousa / sisaku (kekka ha done/ ni nokosu)
-    - memo: free format no memo (joutai wo motanai)
-      - jissaini sagyouni hairumaeniha, hokano item ni otosikon de kara torikumu noga suisyou sareru
-      - goku keibina monoha reigai
+    - (draft/: kind ga kimatteinai zattana memo ha koko ni oku. kind mo filename ni fukumenai)
   - nokori finish or close or settle or resolve else
     - file no idou to status henkou wo yarutameno command?
       - status ni awaseru nara 'accept' tokamo ari?
     - mada syousai ha humei (somosomo hituyouka douka, tokamo)
 - status:
-  - TODO
-  - ITEM_TYPE goto ni kotonaru status wo motu?
+  - joutai ha file no iti basho de arawasu (draft/, backlog/, ongoing/, pending/, done/).
+    file nai no Status field ha motanai
   - jissouni tyakusyu igo ha, kihontekini kaku ITEM no kizon no nakami ha syuuseisinai (tuiki ga omo)
 - dir structure:
   - backlog/
     - README.md
-    - done/ (if need)
-    - pending/ (if need)
+    - draft/ (kind ga mada kimatteinai mono)
+    - ongoing/ (tyakusyu sumi no mono)
+    - pending/ (tyuudann)
+    - done/ (kettyaku zumi)
 
 
 Decided
 -------
 
 - `nokori init` writes `backlog/README.md` too, but its content stays minimal.
-- `pending/` is part of v1. An item has one of three states: `open`,
-  `postponed`, `done`.
-- v1 has four item kinds that carry a state: `rfc`, `bug`, `plan`, and
-  `spike`.
-- `memo` is the fifth kind and carries **no state**. It lives directly under
-  `backlog/` with a `memo-` filename prefix and is never moved to `pending/`
-  or `done/`; `finish` leaves it alone. A memo worth keeping beyond that is
-  promoted by hand into a proper item (`rfc`, `bug`, `plan`, or `spike`),
-  because a memo records something noticed rather than work that can be
-  concluded.
+- An item's state is expressed by the directory it is in, never by a `Status`
+  field inside the file. The directories are `draft/`, `backlog/` itself,
+  `ongoing/`, `pending/`, and `done/`.
+- v1 has four item kinds: `rfc`, `bug`, `plan`, and `spike`. There is no
+  `memo` kind; a rough note is a file in `draft/` that has not been promoted to
+  a kind yet.
+- `draft/` holds notes that have no kind. Their filenames carry no kind either
+  (`YYYYMMDD-<slug>.md`), because the kind is chosen when the note is promoted
+  to `backlog/` and is not known before then.
+- `ongoing/` is a claim: an item is there because someone has started on it, so
+  nobody else picks it up. For an `rfc` it means *provisionally* accepted --
+  acceptance is settled only when the change merges.
+- `done/` does not fork by outcome. It holds every settled item, and for `rfc`
+  alone the outcome is written into the filename
+  (`YYYYMMDD-rfc-accepted-<slug>.md` / `YYYYMMDD-rfc-rejected-<slug>.md`).
+  `bug`, `plan`, and `spike` keep their name unchanged when they move there.
+- A `bug` that cannot be fixed for now goes to `pending/`. One that is decided
+  never to be fixed is not a bug but a documented behavior: the behavior is
+  written into the public docs and the item goes to `done/`, the same way a
+  report that turns out not to be a bug does.
 
 
 Rationale
@@ -74,9 +84,10 @@ The reference repositories (kk, termnix, tuinix) use only `rfc` and `bug`.
 > because it records work rather than a decision.
 
 That criterion separates kinds into (a) a decision and (b) a piece of work.
-`rfc` and `bug` are decisions. `plan` and `spike` are both pieces of work, so
-both carry the same two-value `open` / `done` transition, and that single state
-machine is the whole of what `finish` does for either.
+`rfc` and `bug` are decisions. `plan` and `spike` are both pieces of work.
+Every kind walks the same directories (`backlog/` -> `ongoing/` -> `done/`,
+with `pending/` and `draft/` on the side); only what the move to `done/`
+records differs, and for `rfc` that record lives in the filename.
 
 ### `plan` versus `spike`
 
@@ -92,7 +103,7 @@ choice is made fresh every time.
 
 The test is whether **doing nothing is an acceptable answer**. A `spike` exists
 to settle the next step, so "the answer is no, do not build it" closes it
-legitimately, with that finding written into `## Outcome`. When the work is
+legitimately, with that finding written in the file. When the work is
 going to happen either way, the investigation is a first phase of a `plan`,
 not a `spike`; splitting it out would leave a `spike` that cannot end in
 anything but a `plan`.
@@ -102,30 +113,47 @@ item is: the finding is what a later reader needs in order to understand why
 the next item says what it says. A spike whose result was thrown away is
 usually a spike whose result will be rediscovered.
 
-### Why `memo` carries no state
+### Why there is no `memo` kind
 
-`memo` is the exception: it is neither a decision nor a piece of work, but
-something noticed and written down before it is broken down. That is why it
-carries no state. Giving it `open` / `done` would mean moving it to `done/`
-when nothing was concluded, and it would then sit there with no record of
-anything having happened. A memo that turns out to matter is promoted by hand
-into an `rfc`, `bug`, `plan`, or `spike`; one that does not simply stays where
-it is.
+A rough note has no state to carry. Moving it to `done/` would claim something
+was concluded when nothing was, and it would then sit there as a record of
+nothing having happened.
 
-So `memo` lives directly under `backlog/` like an open item, told apart by its
-filename prefix. The rule that nothing but items live in `backlog/` still
-holds: a memo is an item, just one that does not move.
+Such a note lives in `draft/` instead. It is a file with no kind: it has not
+been broken down far enough for the kind to be known, so both the location and
+the filename say so (`YYYYMMDD-<slug>.md`). Promoting it is a move to
+`backlog/` that adds the kind it turned out to be; a note that never matters is
+deleted, and because it never reached `done/` nobody has to explain it.
 
-### Naming prefix for `memo`
+This replaces a `memo` kind. A kind that cannot move would have been the only
+exception in the state machine, and every reader of `nokori` would have to
+learn why one kind behaves differently. Folding it into `draft/` keeps one
+rule: an item is something that has a kind, and everything with a kind moves.
 
-Every kind is carried by a filename prefix (`YYYYMMDD-<kind>-<slug>.md`), so
-`memo` needs one too: `YYYYMMDD-memo-<slug>.md`.
+### Why the state is the directory, not a `Status` field
 
-The alternative was a separate `backlog/memo/` directory. That would break the
-rule that the prefix, not the directory, carries the kind, and add a third
-directory next to `pending/` and `done/` whose meaning ("not a state") does not
-fit the other two ("a state"). The prefix keeps the tree shallow and the rule
-intact.
+A field inside the file can disagree with where the file is. A file in `done/`
+with `Status: draft` leaves the reader to decide which one is true, and it
+takes a rule to say the directory wins -- a rule that has to be remembered
+whenever a file is edited by hand.
+
+Keeping the state in one place removes the question. `ls backlog/done/` and
+the filename tell the whole story. The cost is that a state change is a move,
+and that `done/` has to record the outcome somewhere; for `rfc` that record is
+a word in the filename rather than a field.
+
+### Why `ongoing/` exists
+
+An `rfc` spends time between "accepted" and "merged". During that time it can
+still be turned down: trying the implementation may show the design does not
+hold, and the item goes to `done/` as `rejected`. So `accepted` is only
+provisional until the change merges.
+
+`ongoing/` is what makes that provisional state visible. An item there has
+been started -- an `rfc` by a provisional acceptance, a `bug` by a fix in
+progress -- and nobody else should pick it up. Without the directory, an
+accepted `rfc` would look exactly like one nobody had started on, and two
+people could begin the same work.
 
 
 Open questions

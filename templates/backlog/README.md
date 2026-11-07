@@ -17,8 +17,7 @@ A new item is created with `nokori new` (command names are provisional) and
 lives directly under `backlog/` while it is open. When the work is done, the
 item is settled with `nokori finish` (provisional) and moved out of the way.
 The exact command names and item kinds are defined by `nokori` itself; run
-`nokori --help` for the current set, so that this file does not have to be
-updated every time the tool changes.
+`nokori --help` to list them.
 
 ## TODO
 

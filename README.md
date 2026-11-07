@@ -66,6 +66,13 @@ Decided
   because the destination is the same. `new` writes to `backlog/` by default;
   `--draft` is the exception, because an item that is worth recording but not
   yet worth starting is the unusual case.
+- A command reports what to do next when it finishes. `init` prints how to
+  create the first item and does not go on to explain the kinds: the generated
+  file already shows what each kind's sections expect.
+- Reference material that does not follow from a command lives under
+  `explain <topic>`. The first two topics are `kinds` (the kinds, plus how to
+  choose between them) and `flow` (the state transitions and the commands that
+  cause them).
 
 
 Rationale
@@ -166,6 +173,24 @@ in the body, where the reader will look for it.
 The commands name the move rather than the outcome, which is why `settle` was
 not used for `done/`: sitting next to `open`, `start`, and `suspend`, a word
 that describes what was concluded would be the odd one out.
+
+### Why `explain` and not `doc`
+
+A command that moves files is a verb, and `doc` is not one: in `cargo doc` it
+means "build the documentation". A reader who saw `nokori doc kinds` would
+expect documentation to be written or opened, not printed. `explain` says what
+happens, and it has the same sense as `cargo --explain`.
+
+`help` was the other candidate, following `git help <concept>`, but it would
+sit next to `--help` and leave the reader to work out which one to use.
+
+### Why `init` does not explain the kinds
+
+`init` runs once per repository, and most of what it could say is needed later
+and elsewhere: which kind to use, what a `draft/` item is for, how `suspend`
+differs from `finish`. Printing all of that would make the one output nobody
+re-reads long. So `init` stops at the next step, and the reference material is
+reached through `explain` from wherever it is needed.
 
 ### Why `open` serves two moves
 

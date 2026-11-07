@@ -3,59 +3,33 @@ nokori
 
 - backlog management cli tool
 - markdown file based
-- commands:
-  - nokori init
-    - (optional) add exclude to cargo.toml if exists
-    - create backlog/ dir and backlog/README.md
-    - README.md niha saiteigen no naiyou nomiwo kijutusuru 
-      - nokori version kousin no tokino maintenance cost wo sagerutame
-    - kawarini nokori new de tukuru template file no naiyou wo self descriptive nis teioku
-      - kaku section ni <!-- TODO: ... --> wo kaiteoite, sono section de yarubekikoto / kiwotukerubekikoto wo kaiteoku
-      - riyousyaha, section no kisaiga owattara, sono TODO wo kesu (koremo TODO: ni tejun tosite kaiteoku)
-  - nokori new (or create) TYPE
-    - ITEM_TYPE=rfc,bug,plan,spike
-    - rfc: sin kinou ya kyodou henkou no teian
-      - jissou syousai ha hukumesuginai (soreha jissoujini kimereba iinode, jissouni tuiteha hontou ni hituyouna jouhounomiwo kisaisusuru)
-      - rule
-        - dekirudake self-contained na naiyounisuru (hokano repository tokakarano youkyuudemo, dekirudake ippanntekina youkyuu ni otosikonnde kisaisuru)
-    - bug: bug syusei
-    - plan: item no taiouga omoi baaiya, hukusuu no phase ni wakete torikumu baai(kottiha umbrella teki) niha, kono item wo tukuttemo ii
-      - aruteido gutaitekina tejun ya nagarewo kisaisurutameno mono
-      - tugino major release madeno milestone, tekina tukaiktademoii
-      - sagyou wo tyuudan site atode saikai sitari, betuno hitoni hikitugitaitoki
-      - suguni owaru tannki tekina sagyoudeha huyou
-    - spike: tugino housin wo kimeru tameno tyousa / sisaku (kekka ha done/ ni nokosu)
-    - (draft/: kind ga kimatteinai zattana memo ha koko ni oku. kind mo filename ni fukumenai)
-  - nokori finish or close or settle or resolve else
-    - file no idou to status henkou wo yarutameno command?
-      - status ni awaseru nara 'accept' tokamo ari?
-    - mada syousai ha humei (somosomo hituyouka douka, tokamo)
-- status:
-  - joutai ha file no iti basho de arawasu (draft/, backlog/, ongoing/, pending/, done/).
-    file nai no Status field ha motanai
-  - jissouni tyakusyu igo ha, kihontekini kaku ITEM no kizon no nakami ha syuuseisinai (tuiki ga omo)
-- dir structure:
-  - backlog/
-    - README.md
-    - draft/ (kind ga mada kimatteinai mono)
-    - ongoing/ (tyakusyu sumi no mono)
-    - pending/ (tyuudann)
-    - done/ (kettyaku zumi)
 
 
 Decided
 -------
 
-- `nokori init` writes `backlog/README.md` too, but its content stays minimal.
+- `nokori init` writes `backlog/README.md` too, but its content stays minimal,
+  so that keeping it current as `nokori` changes costs little.
+- The templates are self-descriptive instead. `nokori new <kind>` writes an
+  item whose sections each carry a `<!-- TODO: ... -->` saying what belongs
+  there and what to keep in mind; the author deletes the comment once the
+  section says what it should. That instruction is itself a `<!-- TODO: -->`
+  in the template.
 - An item's state is expressed by the directory it is in, never by a `Status`
   field inside the file. The directories are `draft/`, `backlog/` itself,
   `ongoing/`, `pending/`, and `done/`.
 - v1 has four item kinds: `rfc`, `bug`, `plan`, and `spike`. There is no
-  `memo` kind; a rough note is a file in `draft/` that has not been promoted to
-  a kind yet.
-- `draft/` holds notes that have no kind. Their filenames carry no kind either
-  (`YYYYMMDD-<slug>.md`), because the kind is chosen when the note is promoted
-  to `backlog/` and is not known before then.
+  `memo` kind.
+- `draft/` means *not ready to be started*. It is not a place for notes of a
+  particular shape; it is one of the states, and an item can sit there with a
+  complete body if the work still cannot begin. Every file, in `draft/`
+  included, carries a kind in its filename (`YYYYMMDD-<kind>-<slug>.md`).
+- The kind in `draft/` is a guess and may be wrong. Changing it means deleting
+  the file and creating it again with the new kind; history is git's problem,
+  so `nokori` offers no rename.
+- `draft/` and `pending/` both mean "not being worked on right now", but they
+  are different states: `draft/` is work not yet accepted as worth doing or
+  ready to begin, `pending/` is work that was open and is now interrupted.
 - `ongoing/` is a claim: an item is there because someone has started on it, so
   nobody else picks it up. For an `rfc` it means *provisionally* accepted --
   acceptance is settled only when the change merges.
@@ -63,6 +37,17 @@ Decided
   alone the outcome is written into the filename
   (`YYYYMMDD-rfc-accepted-<slug>.md` / `YYYYMMDD-rfc-rejected-<slug>.md`).
   `bug`, `plan`, and `spike` keep their name unchanged when they move there.
+- An item may be deleted without trace only while it is in `draft/`. Once it
+  has been open, deleting it is not an option: it must go to `done/` first, so
+  that ending it leaves a record. The test is whether the item was ever
+  accepted as work worth doing.
+- Files in `done/` are not edited afterwards; corrections and additions go in
+  as appended notes. It is the same implicit rule as out-of-flow operations in
+  git-flow: doing something outside the flow by hand is the user's own
+  responsibility, and does not need to be spelled out.
+- Moving an item into `done/` is local only: the tool rewrites the file and
+  moves it. It does not run git, commit, or push. (The name of the command is
+  still open; `finish` below is a placeholder.)
 - A `bug` that cannot be fixed for now goes to `pending/`. One that is decided
   never to be fixed is not a bug but a documented behavior: the behavior is
   written into the public docs and the item goes to `done/`, the same way a
@@ -115,20 +100,16 @@ usually a spike whose result will be rediscovered.
 
 ### Why there is no `memo` kind
 
-A rough note has no state to carry. Moving it to `done/` would claim something
-was concluded when nothing was, and it would then sit there as a record of
-nothing having happened.
+A `memo` would have been a kind that never moves. That is the only property it
+needs, and it is a property of a state rather than of a kind: something written
+down before it is worth doing. `draft/` already is that state, so a note is an
+ordinary item that happens to be in `draft/`, and it leaves by the same door as
+any other: `open` to begin, or deletion if it never mattered.
 
-Such a note lives in `draft/` instead. It is a file with no kind: it has not
-been broken down far enough for the kind to be known, so both the location and
-the filename say so (`YYYYMMDD-<slug>.md`). Promoting it is a move to
-`backlog/` that adds the kind it turned out to be; a note that never matters is
-deleted, and because it never reached `done/` nobody has to explain it.
-
-This replaces a `memo` kind. A kind that cannot move would have been the only
-exception in the state machine, and every reader of `nokori` would have to
-learn why one kind behaves differently. Folding it into `draft/` keeps one
-rule: an item is something that has a kind, and everything with a kind moves.
+Keeping `memo` would have made it the one kind with its own state machine, and
+every reader of `nokori` would have had to learn why. Folding it into `draft/`
+keeps one rule: an item is something with a kind, and everything with a kind
+moves.
 
 ### Why the state is the directory, not a `Status` field
 
@@ -141,6 +122,23 @@ Keeping the state in one place removes the question. `ls backlog/done/` and
 the filename tell the whole story. The cost is that a state change is a move,
 and that `done/` has to record the outcome somewhere; for `rfc` that record is
 a word in the filename rather than a field.
+
+### Why only `draft/` may be deleted
+
+An item in `draft/` has not been accepted as work worth doing yet. Nobody has
+committed to it, so dropping it concludes nothing and leaves nothing to
+record. An item in `backlog/`, `ongoing/`, or `pending/` has been accepted, so
+its end is a conclusion and belongs in `done/` -- a `bug` that turns out not to
+be a bug, a `plan` that is abandoned. That single test, *was it ever open*,
+is what makes `draft/` the one state where deletion is silent.
+
+### Why `done/` is not edited
+
+A file in `done/` records what was concluded at a particular time. Rewriting it
+would make the record show what is known now instead, and the reader could no
+longer tell which parts were the original judgement. Corrections and additions
+are appended for that reason: the earlier text stays legible and the revision
+is dated by git.
 
 ### Why `ongoing/` exists
 
@@ -159,60 +157,20 @@ people could begin the same work.
 Open questions
 --------------
 
-### Scope of `finish`
+### What the state-changing commands are called
 
-Breaking down what `settle.sh` in the reference repositories does:
+A command is one destination directory, so the same command covers both
+`draft/` -> open and `pending/` -> open. The split is therefore:
 
-| step | what it does | needs `gh` | note |
-| ---- | ------------ | ---------- | ---- |
-| a | check that the working tree is clean | no | |
-| b | read the merge commit and head branch for a PR number | **yes** | `gh pr view --json mergeCommit,headRefName` |
-| c | switch to `main` and fast-forward it | no | git only |
-| d | rewrite `Status` and append `## Outcome` | no | this is the substance |
-| e | `git mv` into `done/` | no | |
-| f | commit, push, delete the merged branch | no | push needs the network |
+| command | moves to | from |
+| ------- | -------- | ---- |
+| `open` | `backlog/` | `draft/`, `pending/` |
+| `start` | `ongoing/` | `backlog/` |
+| `hold` | `pending/` | `backlog/`, `ongoing/` |
+| `finish` | `done/` | `backlog/`, `ongoing/`, `pending/` |
 
-**Only step b depends on `gh`.** Without it, the rest of a-f is plain git and
-plain file editing.
-
-That narrows the design of `finish` to three options:
-
-**A: local only (file operations)**
-
-- Rewrite `Status`, append `## Outcome`, move into `done/`.
-- No commit and no push.
-- Pros: no dependencies, easy to test, a clear boundary for `nokori`.
-- Cons: the tool cannot honour the "settle in a single commit" rule the
-  reference repositories rely on.
-
-**B: local plus git (no `gh`)**
-
-- As A, plus `git mv`, the clean-tree check, and `git commit`.
-- The PR line in `## Outcome` comes from an optional `--pr`; with no `--pr`,
-  the line is omitted rather than written empty.
-- Pros: no `gh`, yet the history-following and single-commit rules hold.
-- Cons: the PR line is missing in environments that do not pass one.
-
-**C: full `settle.sh` replacement (with `gh`)**
-
-- As B, plus `gh pr view` for the merge commit and head branch, then push and
-  branch deletion.
-- Pros: replaces the manual script outright.
-- Cons: requires `gh`, and pushes `nokori` toward shelling out to git and gh.
-
-**Recommendation: B.**
-
-Most of `settle.sh`'s complexity sits in b (the `gh` dependency) and f (push and
-branch deletion). Removing them leaves the tool with a single responsibility:
-move the file correctly and write the right body. `gh` support can be added
-later as `finish --pr N`.
-
-### What `finish` is called
-
-- Whether to settle on `finish`, `close`, `settle`, or `resolve` is still
-  undecided.
-- The reference repositories use `settle.sh` throughout.
-- `accept` was also considered, but it names the outcome of an RFC rather than
-  the operation.
-
+Every name is a placeholder, `finish` included. `settle` is what the reference
+repositories use, but it names the outcome rather than the move, and as a
+command it would sit next to three others that name the move. `close` and
+`resolve` have the same problem.
 

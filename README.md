@@ -4,6 +4,25 @@ nokori
 - backlog management cli tool
 - markdown file based
 
+What this tool is
+-----------------
+
+`nokori` cannot enforce much of what it recommends. It keeps no hidden files
+and no index: the backlog is ordinary directories and ordinary markdown files,
+which anyone can edit, move, or delete by hand, and there is hardly any check
+that could fail.
+
+What it offers is one good way to keep a backlog, written down as a flow of
+commands. The rules are recommendations and following them is the user's own
+responsibility -- the same deal as git-flow, where the flow is a convention
+and the tool only makes it convenient.
+
+The tool exists at all, rather than as a page of documentation, so that the
+flow can be walked without knowing it in advance. Every command reports what
+to do next, so `nokori --help`, then `nokori init`, then `nokori new` each lead
+on to the following step, and the whole shape is learned by running them in
+order.
+
 
 Decided
 -------

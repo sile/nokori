@@ -46,12 +46,26 @@ Decided
   git-flow: doing something outside the flow by hand is the user's own
   responsibility, and does not need to be spelled out.
 - Moving an item into `done/` is local only: the tool rewrites the file and
-  moves it. It does not run git, commit, or push. (The name of the command is
-  still open; `finish` below is a placeholder.)
+  moves it. It does not run git, commit, or push.
 - A `bug` that cannot be fixed for now goes to `pending/`. One that is decided
   never to be fixed is not a bug but a documented behavior: the behavior is
   written into the public docs and the item goes to `done/`, the same way a
   report that turns out not to be a bug does.
+- The commands are one per destination directory:
+
+  | command | moves to | from |
+  | ------- | -------- | ---- |
+  | `new <kind> <slug>` | `backlog/` | -- |
+  | `new <kind> <slug> --draft` | `draft/` | -- |
+  | `open <file>` | `backlog/` | `draft/`, `pending/` |
+  | `start <file>` | `ongoing/` | `backlog/` |
+  | `suspend <file>` | `pending/` | `backlog/`, `ongoing/` |
+  | `finish <file>` | `done/` | `backlog/`, `ongoing/`, `pending/` |
+
+  `open` covers both `draft/` -> `backlog/` and `pending/` -> `backlog/`
+  because the destination is the same. `new` writes to `backlog/` by default;
+  `--draft` is the exception, because an item that is worth recording but not
+  yet worth starting is the unusual case.
 
 
 Rationale
@@ -140,6 +154,26 @@ longer tell which parts were the original judgement. Corrections and additions
 are appended for that reason: the earlier text stays legible and the revision
 is dated by git.
 
+### Why `suspend`, and why the commands name the move
+
+`suspend` was chosen over `pause`, `defer`, `block`, and `park` for two
+reasons. It pairs with the directory it produces: a suspended item is a
+pending one. And it does not promise a duration -- `pause` suggests a short
+interruption and `defer` a postponement, but what actually keeps an item in
+`pending/` is a condition, not a length of time. The condition itself belongs
+in the body, where the reader will look for it.
+
+The commands name the move rather than the outcome, which is why `settle` was
+not used for `done/`: sitting next to `open`, `start`, and `suspend`, a word
+that describes what was concluded would be the odd one out.
+
+### Why `open` serves two moves
+
+`draft/` -> `backlog/` and `pending/` -> `backlog/` land in the same place, so
+the same command covers both. The alternative -- `open` and `resume` -- would
+name the same outcome twice, and the reader would have to learn which applies
+before running either.
+
 ### Why `ongoing/` exists
 
 An `rfc` spends time between "accepted" and "merged". During that time it can
@@ -152,25 +186,4 @@ been started -- an `rfc` by a provisional acceptance, a `bug` by a fix in
 progress -- and nobody else should pick it up. Without the directory, an
 accepted `rfc` would look exactly like one nobody had started on, and two
 people could begin the same work.
-
-
-Open questions
---------------
-
-### What the state-changing commands are called
-
-A command is one destination directory, so the same command covers both
-`draft/` -> open and `pending/` -> open. The split is therefore:
-
-| command | moves to | from |
-| ------- | -------- | ---- |
-| `open` | `backlog/` | `draft/`, `pending/` |
-| `start` | `ongoing/` | `backlog/` |
-| `hold` | `pending/` | `backlog/`, `ongoing/` |
-| `finish` | `done/` | `backlog/`, `ongoing/`, `pending/` |
-
-Every name is a placeholder, `finish` included. `settle` is what the reference
-repositories use, but it names the outcome rather than the move, and as a
-command it would sit next to three others that name the move. `close` and
-`resolve` have the same problem.
 

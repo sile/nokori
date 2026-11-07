@@ -2,6 +2,7 @@
 name = "nokori"
 version = "0.1.0"
 edition = "2024"
+description = "A markdown-file-based backlog management CLI"
 
 [dependencies]
 noargs = "0.4.3"

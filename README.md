@@ -13,7 +13,7 @@ nokori
       - kaku section ni <!-- TODO: ... --> wo kaiteoite, sono section de yarubekikoto / kiwotukerubekikoto wo kaiteoku
       - riyousyaha, section no kisaiga owattara, sono TODO wo kesu (koremo TODO: ni tejun tosite kaiteoku)
   - nokori new (or create) TYPE
-    - ITEM_TYPE=rfc,bug,plan,memo
+    - ITEM_TYPE=rfc,bug,plan,spike,memo
     - rfc: sin kinou ya kyodou henkou no teian
       - jissou syousai ha hukumesuginai (soreha jissoujini kimereba iinode, jissouni tuiteha hontou ni hituyouna jouhounomiwo kisaisusuru)
       - rule
@@ -24,6 +24,7 @@ nokori
       - tugino major release madeno milestone, tekina tukaiktademoii
       - sagyou wo tyuudan site atode saikai sitari, betuno hitoni hikitugitaitoki
       - suguni owaru tannki tekina sagyoudeha huyou
+    - spike: tugino housin wo kimeru tameno tyousa / sisaku (kekka ha done/ ni nokosu)
     - memo: free format no memo (joutai wo motanai)
       - jissaini sagyouni hairumaeniha, hokano item ni otosikon de kara torikumu noga suisyou sareru
       - goku keibina monoha reigai
@@ -48,18 +49,20 @@ Decided
 - `nokori init` writes `backlog/README.md` too, but its content stays minimal.
 - `pending/` is part of v1. An item has one of three states: `open`,
   `postponed`, `done`.
-- v1 has three item kinds that carry a state: `rfc`, `bug`, and `plan`.
-- `memo` is a fourth kind that carries **no state**. It lives directly under
+- v1 has four item kinds that carry a state: `rfc`, `bug`, `plan`, and
+  `spike`.
+- `memo` is the fifth kind and carries **no state**. It lives directly under
   `backlog/` with a `memo-` filename prefix and is never moved to `pending/`
   or `done/`; `finish` leaves it alone. A memo worth keeping beyond that is
-  promoted by hand into a proper item (`rfc`, `bug`, or `plan`), because a
-  memo records something noticed rather than work that can be concluded.
+  promoted by hand into a proper item (`rfc`, `bug`, `plan`, or `spike`),
+  because a memo records something noticed rather than work that can be
+  concluded.
 
 
 Rationale
 ---------
 
-### How `memo` differs from the other kinds
+### Decisions versus pieces of work
 
 The reference repositories (kk, termnix, tuinix) use only `rfc` and `bug`.
 `tuinix/backlog/README.md` states the criterion for adding a kind:
@@ -71,15 +74,43 @@ The reference repositories (kk, termnix, tuinix) use only `rfc` and `bug`.
 > because it records work rather than a decision.
 
 That criterion separates kinds into (a) a decision and (b) a piece of work.
-`rfc`, `bug`, and `plan` all fit, and `plan` is the one added; its two-value
-`open` / `done` transition is the whole of what `finish` does for it.
+`rfc` and `bug` are decisions. `plan` and `spike` are both pieces of work, so
+both carry the same two-value `open` / `done` transition, and that single state
+machine is the whole of what `finish` does for either.
+
+### `plan` versus `spike`
+
+Two kinds sharing one state machine need a rule that tells them apart, or the
+choice is made fresh every time.
+
+| | `plan` | `spike` |
+| --- | ------ | ------- |
+| question | how to get there | is it possible, and what happens if we try |
+| deliverable | the work, in phases | what was learned |
+| what `done` means | the work is finished | the question is answered |
+| what follows | nothing | an `rfc`, a `plan`, or nothing at all |
+
+The test is whether **doing nothing is an acceptable answer**. A `spike` exists
+to settle the next step, so "the answer is no, do not build it" closes it
+legitimately, with that finding written into `## Outcome`. When the work is
+going to happen either way, the investigation is a first phase of a `plan`,
+not a `spike`; splitting it out would leave a `spike` that cannot end in
+anything but a `plan`.
+
+A finished `spike` is worth keeping in `done/` for the same reason any other
+item is: the finding is what a later reader needs in order to understand why
+the next item says what it says. A spike whose result was thrown away is
+usually a spike whose result will be rediscovered.
+
+### Why `memo` carries no state
 
 `memo` is the exception: it is neither a decision nor a piece of work, but
 something noticed and written down before it is broken down. That is why it
 carries no state. Giving it `open` / `done` would mean moving it to `done/`
 when nothing was concluded, and it would then sit there with no record of
 anything having happened. A memo that turns out to matter is promoted by hand
-into an `rfc`, `bug`, or `plan`; one that does not simply stays where it is.
+into an `rfc`, `bug`, `plan`, or `spike`; one that does not simply stays where
+it is.
 
 So `memo` lives directly under `backlog/` like an open item, told apart by its
 filename prefix. The rule that nothing but items live in `backlog/` still

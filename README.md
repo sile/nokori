@@ -1,18 +1,18 @@
-bkl
+nokori
 ===
 
 - backlog management cli tool
 - markdown file based
 - commands:
-  - bkl init
+  - nokori init
     - (optional) add exclude to cargo.toml if exists
     - create backlog/ dir and backlog/README.md
     - README.md niha saiteigen no naiyou nomiwo kijutusuru 
-      - bkl version kousin no tokino maintenance cost wo sagerutame
-    - kawarini nkl new de tukuru template file no naiyou wo self descriptive nis teioku
+      - nokori version kousin no tokino maintenance cost wo sagerutame
+    - kawarini nokori new de tukuru template file no naiyou wo self descriptive nis teioku
       - kaku section ni <!-- TODO: ... --> wo kaiteoite, sono section de yarubekikoto / kiwotukerubekikoto wo kaiteoku
       - riyousyaha, section no kisaiga owattara, sono TODO wo kesu (koremo TODO: ni tejun tosite kaiteoku)
-  - bkl new (or create) TYPE
+  - nokori new (or create) TYPE
     - ITEM_TYPE=rfc,bug,plan,memo
     - rfc: sin kinou ya kyodou henkou no teian
       - jissou syousai ha hukumesuginai (soreha jissoujini kimereba iinode, jissouni tuiteha hontou ni hituyouna jouhounomiwo kisaisusuru)
@@ -28,7 +28,7 @@ bkl
       - jissaini sagyouni hairumaeniha, hokano item ni otosikon de kara torikumu noga suisyou sareru
       - goku keibina monoha reigai
     - TODO: hokano kubun ga hituyouka, ya ueno bunrui nado ga tekisetuka, ha kentousuru
-  - bkl finish or close or settle or resolve else
+  - nokori finish or close or settle or resolve else
     - file no idou to status henkou wo yarutameno command?
       - status ni awaseru nara 'accept' tokamo ari?
     - mada syousai ha humei (somosomo hituyouka douka, tokamo)
@@ -46,7 +46,7 @@ bkl
 Decided
 -------
 
-- `bkl init` writes `backlog/README.md` too, but its content stays minimal.
+- `nokori init` writes `backlog/README.md` too, but its content stays minimal.
 - `pending/` is part of v1. An item has one of three states: `open`,
   `postponed`, `done`.
 
@@ -116,7 +116,7 @@ That narrows the design of `finish` to three options:
 
 - Rewrite `Status`, append `## Outcome`, move into `done/`.
 - No commit and no push.
-- Pros: no dependencies, easy to test, a clear boundary for `bkl`.
+- Pros: no dependencies, easy to test, a clear boundary for `nokori`.
 - Cons: the tool cannot honour the "settle in a single commit" rule the
   reference repositories rely on.
 
@@ -133,7 +133,7 @@ That narrows the design of `finish` to three options:
 - As B, plus `gh pr view` for the merge commit and head branch, then push and
   branch deletion.
 - Pros: replaces the manual script outright.
-- Cons: requires `gh`, and pushes `bkl` toward shelling out to git and gh.
+- Cons: requires `gh`, and pushes `nokori` toward shelling out to git and gh.
 
 **Recommendation: B.**
 

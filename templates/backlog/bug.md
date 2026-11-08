@@ -75,8 +75,11 @@ The sections above are written before the item moves: by the time `nokori
 open`, `nokori start`, `nokori suspend`, or `nokori finish` moves this file,
 they are written, their comments are gone, and the change is committed.
 
-Until `nokori finish`, those sections may be rewritten as the understanding
-changes: that is what an open item is for. What they may not become is a
+Those sections may be rewritten until the work starts: in `backlog/`, and in
+`pending/` as well, since an item that waited a long time is exactly one whose
+premises go out of date. Once the item is in `ongoing/`, it is a claim that
+the work is under way, so leave the sections alone and move it back with
+`nokori open` if they turn out to be wrong. What they may not become is a
 description of work already done. A move needs the change committed, so
 whatever they say at that point is what the moving commit records.
 

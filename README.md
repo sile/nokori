@@ -118,6 +118,12 @@ Decided
   `explain <topic>`. The first two topics are `kinds` (the kinds, plus how to
   choose between them) and `flow` (the state transitions and the commands that
   cause them).
+- `explain` also covers the cases a reader arrives with, and the commonest of
+  those is a file in a state the command does not take. Running `start` on a
+  file in `draft/`, `open` on one already in `backlog/`, or `finish` on one in
+  `done/` is an ordinary mistake, and the message a command prints for it says
+  only that the move is not allowed; the explanation of what the states mean
+  and which command does apply belongs in a topic of its own.
 
 
 Rationale
@@ -237,6 +243,20 @@ happens, and it has the same sense as `cargo --explain`.
 
 `help` was the other candidate, following `git help <concept>`, but it would
 sit next to `--help` and leave the reader to work out which one to use.
+
+### Why a disallowed move is explained in `explain`, not in the error
+
+A command that refuses a file can only say what it will not do: the file is
+not in a state this move takes. What the reader needs next is a rule about the
+states themselves -- which command takes this file, and why the state it is in
+does not accept this one -- and that answer is the same paragraph whatever the
+command that refused it. Printing it from each command would write the same
+text several times and make the refusal long; leaving it in the error alone
+would send the reader to `--help` for a fact that is not about usage.
+
+Putting it in `explain` keeps the error to one sentence and gives the longer
+answer a home. It is also where the reader already goes for material that does
+not follow from a command, so nothing new has to be learned to find it.
 
 ### Why `init` does not explain the kinds
 

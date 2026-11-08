@@ -1,6 +1,7 @@
 #![forbid(unsafe_code)]
 
 const BACKLOG_README_TEMPLATE: &str = include_str!("../templates/backlog/README.md");
+const BACKLOG_README_PATH: &str = "backlog/README.md";
 
 fn main() -> noargs::Result<()> {
     let mut args = noargs::raw_args();
@@ -24,7 +25,7 @@ fn main() -> noargs::Result<()> {
 
 fn try_run_init(args: &mut noargs::RawArgs) -> noargs::Result<bool> {
     if !noargs::cmd("init")
-        .doc("Create the backlog/ directory and its README.md")
+        .doc("Set up a backlog in this repository")
         .take(args)
         .is_present()
     {
@@ -35,19 +36,9 @@ fn try_run_init(args: &mut noargs::RawArgs) -> noargs::Result<bool> {
         return Ok(true);
     }
 
-    let backlog_dir = std::path::Path::new("backlog");
-    let readme_path = backlog_dir.join("README.md");
-    if readme_path.exists() {
-        return Err(noargs::Error::other(
-            args,
-            format!("{} already exists", readme_path.display()),
-        ));
-    }
+    init_backlog()?;
 
-    std::fs::create_dir_all(backlog_dir).map_err(|e| noargs::Error::other(args, e))?;
-    std::fs::write(&readme_path, BACKLOG_README_TEMPLATE)
-        .map_err(|e| noargs::Error::other(args, e))?;
-    println!("Created {}", readme_path.display());
+    println!("Created {BACKLOG_README_PATH}");
     println!();
     println!("Next, create an item:");
     println!();
@@ -58,4 +49,27 @@ fn try_run_init(args: &mut noargs::RawArgs) -> noargs::Result<bool> {
     println!("to choose a kind.");
 
     Ok(true)
+}
+
+fn init_backlog() -> Result<(), String> {
+    let readme_path = std::path::Path::new(BACKLOG_README_PATH);
+    if readme_path.exists() {
+        return Err(format!(
+            r"`{BACKLOG_README_PATH}` already exists, so `backlog/` is already set up in
+this repository. There is nothing left for `init` to do; you can start
+creating items now (see `nokori new --help`).
+
+If this `backlog/` belongs to something else, rename it and run `nokori init`
+again, or run `nokori` from another directory to use a different one."
+        ));
+    }
+
+    let backlog_dir = readme_path
+        .parent()
+        .expect("BACKLOG_README_PATH should have a parent directory");
+    std::fs::create_dir_all(backlog_dir)
+        .map_err(|e| format!("failed to create `{}`: {e}", backlog_dir.display()))?;
+    std::fs::write(readme_path, BACKLOG_README_TEMPLATE)
+        .map_err(|e| format!("failed to write `{}`: {e}", readme_path.display()))?;
+    Ok(())
 }

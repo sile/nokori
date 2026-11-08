@@ -6,11 +6,14 @@ the README, a commit message, or a pull request. -->
 
 ## Summary
 
-<!-- TODO: one paragraph. What is broken, and the smallest input that shows
-it. Keep it short: a bug is a decision that today's behavior breaks its own
-documented contract, not a proposal for a different one. Write the report so
-it stands on its own -- someone who reads only this file should be able to
-judge it. Delete this comment once the paragraph is here. -->
+<!-- TODO: one paragraph, here before the item is moved at all: by the time
+`nokori start`, `nokori suspend`, or `nokori finish` moves this file, the
+paragraph is written, this comment is gone, and the change is committed. What
+is broken, and the smallest input that shows it. Keep it short: a bug is a
+decision that today's behavior breaks its own documented contract, not a
+proposal for a different one. Write the report so it stands on its own --
+someone who reads only this file should be able to judge it. Delete this
+comment once the paragraph is here. -->
 
 ## Reproduction
 
@@ -51,8 +54,9 @@ says what it should, or the whole section if there is nothing to add. -->
 
 ## Outcome
 
-<!-- TODO: written when `nokori finish` settles the bug, and empty until
-then. Say what actually happened and name the change that fixed it; link the
-commit or pull request when there is one. When the fix differs from what the
-sections above expected, say so here rather than editing them: they record
-what was thought while the bug was open. -->
+<!-- TODO: the one section written later, when `nokori finish` moves this
+file; leave it empty, comment and all, until then. Say what actually happened
+and name the change that fixed it; link the commit or pull request when there
+is one. When the fix differs from what the sections above expected, say so
+here rather than editing them: they record what was thought while the bug was
+open. -->

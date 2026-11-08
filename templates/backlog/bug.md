@@ -3,9 +3,7 @@
 ## Summary
 
 <!-- TODO: one paragraph saying what is broken and the smallest input that
-shows it, written before anything moves this file: by the time `nokori start`,
-`nokori suspend`, or `nokori finish` moves it, the paragraph is written, this
-comment is gone, and the change is committed.
+shows it.
 
 A bug is a report that today's behavior breaks its own documented contract,
 not a proposal for a different one.
@@ -72,6 +70,10 @@ section if there is nothing to add. -->
 
 <!-- TODO: the one section written later, when `nokori finish` moves this
 file. Leave it empty until then, comment and all.
+
+The sections above are written before the item moves: by the time `nokori
+open`, `nokori start`, `nokori suspend`, or `nokori finish` moves this file,
+they are written, their comments are gone, and the change is committed.
 
 Say what actually happened, and name the change that fixed it; link the
 commit or pull request when there is one.

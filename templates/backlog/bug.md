@@ -1,9 +1,5 @@
 # Bug: <!-- TODO: one line naming what is broken -->
 
-<!-- An item may point at the code, but the code must never point back at an
-item: cite a source path from here, but never mention `backlog/` in the code,
-the README, a commit message, or a pull request. -->
-
 ## Summary
 
 <!-- TODO: one paragraph, here before the item is moved at all: by the time
@@ -12,8 +8,10 @@ paragraph is written, this comment is gone, and the change is committed. What
 is broken, and the smallest input that shows it. Keep it short: a bug is a
 decision that today's behavior breaks its own documented contract, not a
 proposal for a different one. Write the report so it stands on its own --
-someone who reads only this file should be able to judge it. Delete this
-comment once the paragraph is here. -->
+someone who reads only this file should be able to judge it. The rule is
+one-way: cite a source path from here, but never mention `backlog/` in the
+code, the README, a commit message, or a pull request. Delete this comment
+once the paragraph is here. -->
 
 ## Reproduction
 

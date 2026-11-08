@@ -1,5 +1,9 @@
 # Bug: <!-- TODO: one line naming what is broken -->
 
+<!-- An item may point at the code, but the code must never point back at an
+item: cite a source path from here, but never mention `backlog/` in the code,
+the README, a commit message, or a pull request. -->
+
 ## Summary
 
 <!-- TODO: one paragraph. What is broken, and the smallest input that shows
@@ -48,10 +52,7 @@ says what it should, or the whole section if there is nothing to add. -->
 ## Outcome
 
 <!-- TODO: written when `nokori finish` settles the bug, and empty until
-then. Say what actually happened and name the change that fixed it. When the
-fix differs from what the sections above expected, say so here rather than
-editing them: they record what was thought while the bug was open. -->
-
-<!-- An item may point at the code, but the code must never point back at an
-item: cite a source path from here, but never mention `backlog/` in the code,
-the README, a commit message, or a pull request. -->
+then. Say what actually happened and name the change that fixed it; link the
+commit or pull request when there is one. When the fix differs from what the
+sections above expected, say so here rather than editing them: they record
+what was thought while the bug was open. -->

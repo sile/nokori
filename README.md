@@ -51,6 +51,10 @@ Decided
   above `## Outcome` still say what was thought while the item was open,
   including what it got wrong. A fix that differs from what they predicted is
   described in `## Outcome`, not by rewriting them.
+- There is no section for a later addition. A template offering one would read
+  as advice to amend a settled item, and `nokori` recommends no such flow: a
+  file in `done/` is left as it was written. Appending to it by hand is the
+  user's own business, the same as any operation outside the flow.
 - An item's state is expressed by the directory it is in, never by a `Status`
   field inside the file. The directories are `draft/`, `backlog/` itself,
   `ongoing/`, `pending/`, and `done/`.

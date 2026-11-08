@@ -67,10 +67,11 @@ Decided
   worked on right now or not. There is no directory for "started" and none for
   "not ready to start": an item that is waiting on something says so in its
   body, where a reader looks for the reason anyway.
-- `done/` does not fork by outcome. It holds every settled item, and for `rfc`
-  alone the outcome is written into the filename
-  (`YYYYMMDD-rfc-accepted-<slug>.md` / `YYYYMMDD-rfc-rejected-<slug>.md`).
-  `bug`, `plan`, and `spike` keep their name unchanged when they move there.
+- `done/` does not fork by outcome: it holds every settled item, and no kind
+  writes its outcome into the filename. A file keeps the name it was created
+  with, so the outcome is read from the body, never from the path. An `rfc`
+  that was accepted can be overturned by a later one, and the earlier file is
+  not renamed to follow.
 - An item is ended by moving it to `done/`, never by deleting it, so that
   ending it leaves a record. Deleting a file by hand is the user's own
   business, the same as any operation outside the flow.
@@ -131,8 +132,9 @@ The reference repositories (kk, termnix, tuinix) use only `rfc` and `bug`.
 That criterion separates kinds into (a) a decision and (b) a piece of work.
 `rfc` and `bug` are decisions. `plan` and `spike` are both pieces of work.
 Every kind walks the same directories (`backlog/` -> `done/`); only what the
-move to `done/` records differs, and for `rfc` that record lives in the
-filename.
+move to `done/` records differs. That record is in the body for every kind: a
+filename has to stay stable, while the outcome it would carry can change under
+it.
 
 ### `plan` versus `spike`
 
@@ -176,8 +178,8 @@ whenever a file is edited by hand.
 
 Keeping the state in one place removes the question. `ls backlog/` and `ls
 backlog/done/` tell the whole story. The cost is that a state change is a
-move, and that `done/` has to record the outcome somewhere; for `rfc` that
-record is a word in the filename rather than a field.
+move, and that `done/` has to record the outcome in the body rather than in
+the path.
 
 ### Why there are only two states
 
@@ -261,13 +263,19 @@ a file. Printing all of that would make the one output nobody
 re-reads long. So `init` stops at the next step, and the reference material is
 reached through `explain` from wherever it is needed.
 
-### Why an `rfc` outcome is written when it merges
+### Why the outcome stays out of the filename
 
-An `rfc` spends time between "accepted" and "merged", and during that time it
-can still be turned down: trying the implementation may show the design does
-not hold. So the filename gets its `accepted` or `rejected` word when the item
-moves to `done/`, not when somebody agrees to it. Until then the item sits in
-`backlog/` like any other, and whoever is implementing it says so in the body.
+An outcome is not final just because an item reached `done/`. An `rfc` that was
+accepted can be overturned by a later one, and a `bug` closed as `not-a-bug`
+can turn out to be the user's own mistake. A filename that carried the outcome
+would have to be renamed each time, and a rename breaks every reference to it
+at once; an `rfc` accepted early and implemented later would also have to spend
+time under a name that guesses its own future.
+
+So the outcome is written once, in the body, and left as it was: the later item
+says that it supersedes the earlier one. This is the same rule that keeps the
+kind in the filename but out of the body -- a name is for finding a file, and
+what a file means is for reading it.
 
 
 Open questions

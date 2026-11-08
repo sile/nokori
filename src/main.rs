@@ -42,9 +42,10 @@ fn try_run_init(args: &mut noargs::RawArgs) -> noargs::Result<bool> {
     println!();
     println!("Next, create an item:");
     println!();
-    println!("  nokori new <kind> <slug>");
+    println!("  nokori create <kind> <slug>");
     println!();
-    println!("Run `nokori new --help` to see the usage and `nokori explain kinds`");
+    println!("Run `nokori create --help` to see the usage and");
+    println!("`nokori explain kinds`");
     println!("to choose a kind.");
 
     Ok(true)
@@ -56,7 +57,7 @@ fn init_backlog() -> Result<(), String> {
         return Err(format!(
             r"`{BACKLOG_README_PATH}` already exists, so `backlog/` is already set up in
 this repository. There is nothing left for `init` to do; you can start
-creating items now (see `nokori new --help`).
+creating items now (see `nokori create --help`).
 
 If this `backlog/` belongs to something else, rename it and run `nokori init`
 again, or run `nokori` from another directory to use a different one."

@@ -68,16 +68,16 @@ section if there is nothing to add. -->
 
 ## Outcome
 
-<!-- TODO: the one section written later, when `nokori finish` moves this
+<!-- TODO: the one section written later, when `nokori close` moves this
 file. Leave it empty until then, comment and all.
 
 The sections above are written before the item moves: by the time `nokori
-finish` moves this file, they are written, their comments are gone, and the
+close` moves this file, they are written, their comments are gone, and the
 change is committed.
 
 Those sections may be rewritten as long as the item is open, as often as the
 understanding changes. What they may not become is a description of work
-already done. `nokori finish` needs the change committed, so whatever they say
+already done. `nokori close` needs the change committed, so whatever they say
 at that point is what the moving commit records.
 
 Say what actually happened, and name the change that fixed it; link the

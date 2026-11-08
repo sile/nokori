@@ -83,6 +83,7 @@ open, and rewriting them erases the very difference that is worth knowing.
 Once this section is written and committed, treat the file as closed: do not
 edit any part of it again, and append nothing later. If something turns up
 later -- most of all, if this turns out not to have been a bug -- leave the
-file as it is and open a new item (an RFC or another bug) to act on it.
+file as it is and open a new item (an RFC or another bug) that cites this one
+and acts on it.
 
 Delete this comment when you write the section. -->

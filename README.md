@@ -56,31 +56,24 @@ Decided
   file in `done/` is left as it was written. Appending to it by hand is the
   user's own business, the same as any operation outside the flow.
 - An item's state is expressed by the directory it is in, never by a `Status`
-  field inside the file. The directories are `draft/`, `backlog/` itself,
-  `ongoing/`, `pending/`, and `done/`.
+  field inside the file. There are two: `backlog/` itself, and `done/`.
 - v1 has four item kinds: `rfc`, `bug`, `plan`, and `spike`. There is no
   `memo` kind.
-- `draft/` means *not ready to be started*. It is not a place for notes of a
-  particular shape; it is one of the states, and an item can sit there with a
-  complete body if the work still cannot begin. Every file, in `draft/`
-  included, carries a kind in its filename (`YYYYMMDD-<kind>-<slug>.md`).
-- The kind in `draft/` is a guess and may be wrong. Changing it means deleting
-  the file and creating it again with the new kind; history is git's problem,
-  so `nokori` offers no rename.
-- `draft/` and `pending/` both mean "not being worked on right now", but they
-  are different states: `draft/` is work not yet accepted as worth doing or
-  ready to begin, `pending/` is work that was open and is now interrupted.
-- `ongoing/` is a claim: an item is there because someone has started on it, so
-  nobody else picks it up. For an `rfc` it means *provisionally* accepted --
-  acceptance is settled only when the change merges.
+- Every file carries a kind in its filename (`YYYYMMDD-<kind>-<slug>.md`). The
+  kind is part of the name rather than a state, so it stays put while the item
+  is open; changing it means deleting the file and creating it again with the
+  new kind. History is git's problem, so `nokori` offers no rename.
+- `backlog/` holds every item that is not settled yet, whether it is being
+  worked on right now or not. There is no directory for "started" and none for
+  "not ready to start": an item that is waiting on something says so in its
+  body, where a reader looks for the reason anyway.
 - `done/` does not fork by outcome. It holds every settled item, and for `rfc`
   alone the outcome is written into the filename
   (`YYYYMMDD-rfc-accepted-<slug>.md` / `YYYYMMDD-rfc-rejected-<slug>.md`).
   `bug`, `plan`, and `spike` keep their name unchanged when they move there.
-- An item may be deleted without trace only while it is in `draft/`. Once it
-  has been open, deleting it is not an option: it must go to `done/` first, so
-  that ending it leaves a record. The test is whether the item was ever
-  accepted as work worth doing.
+- An item is ended by moving it to `done/`, never by deleting it, so that
+  ending it leaves a record. Deleting a file by hand is the user's own
+  business, the same as any operation outside the flow.
 - Files in `done/` are not edited afterwards; corrections and additions go in
   as appended notes. It is the same implicit rule as out-of-flow operations in
   git-flow: doing something outside the flow by hand is the user's own
@@ -88,25 +81,21 @@ Decided
 - Moving an item into `done/` is local only: the tool rewrites the file and
   moves it. It does not commit, push, or otherwise change anything through
   git.
-- A `bug` that cannot be fixed for now goes to `pending/`. One that is decided
-  never to be fixed is not a bug but a documented behavior: the behavior is
-  written into the public docs and the item goes to `done/`, the same way a
-  report that turns out not to be a bug does.
+- A `bug` that cannot be fixed for now stays in `backlog/`, with the reason it
+  is stuck written in its body. One that is decided never to be fixed is not a
+  bug but a documented behavior: the behavior is written into the public docs
+  and the item goes to `done/`, the same way a report that turns out not to be
+  a bug does.
 - The commands are one per destination directory:
 
   | command | moves to | from |
   | ------- | -------- | ---- |
   | `new <kind> <slug>` | `backlog/` | -- |
-  | `new <kind> <slug> --draft` | `draft/` | -- |
-  | `open <file>` | `backlog/` | `draft/`, `pending/` |
-  | `start <file>` | `ongoing/` | `backlog/` |
-  | `suspend <file>` | `pending/` | `backlog/`, `ongoing/` |
-  | `finish <file>` | `done/` | `backlog/`, `ongoing/`, `pending/` |
+  | `finish <file>` | `done/` | `backlog/` |
 
-  `open` covers both `draft/` -> `backlog/` and `pending/` -> `backlog/`
-  because the destination is the same. `new` writes to `backlog/` by default;
-  `--draft` is the exception, because an item that is worth recording but not
-  yet worth starting is the unusual case.
+  Two states leave little room for the table to grow, and that is the point:
+  every state costs the reader a word to learn, and gives two files in
+  different states a way to say the same thing.
 - Commands may read git state, but never change it: no commit, no push, no
   network. A move checks that the file it touches is committed, the way
   `cargo publish` refuses a dirty tree, but only for that file rather than the
@@ -116,14 +105,13 @@ Decided
   file already shows what each kind's sections expect.
 - Reference material that does not follow from a command lives under
   `explain <topic>`. The first two topics are `kinds` (the kinds, plus how to
-  choose between them) and `flow` (the state transitions and the commands that
-  cause them).
+  choose between them) and `flow` (how an item is opened and settled).
 - `explain` also covers the cases a reader arrives with, and the commonest of
-  those is a file in a state the command does not take. Running `start` on a
-  file in `draft/`, `open` on one already in `backlog/`, or `finish` on one in
-  `done/` is an ordinary mistake, and the message a command prints for it says
-  only that the move is not allowed; the explanation of what the states mean
-  and which command does apply belongs in a topic of its own.
+  those is a file in a state the command does not take. Running `finish` on a
+  file already in `done/` is an ordinary mistake, and the message a command
+  prints for it says only that the move is not allowed; the explanation of
+  what the states mean, and what to do with the file instead, belongs in a
+  topic of its own.
 
 
 Rationale
@@ -137,14 +125,14 @@ The reference repositories (kk, termnix, tuinix) use only `rfc` and `bug`.
 > When such items start to accumulate -- and the tell is having to write an
 > RFC whose Summary already says what will be done -- add a third kind then.
 > It would carry a two-value state (`open` / `done`) instead of the
-> `draft`/`accepted`/`rejected` and `open`/`fixed`/`not-a-bug` vocabularies,
-> because it records work rather than a decision.
+> `accepted`/`rejected` and `fixed`/`not-a-bug` vocabularies, because it
+> records work rather than a decision.
 
 That criterion separates kinds into (a) a decision and (b) a piece of work.
 `rfc` and `bug` are decisions. `plan` and `spike` are both pieces of work.
-Every kind walks the same directories (`backlog/` -> `ongoing/` -> `done/`,
-with `pending/` and `draft/` on the side); only what the move to `done/`
-records differs, and for `rfc` that record lives in the filename.
+Every kind walks the same directories (`backlog/` -> `done/`); only what the
+move to `done/` records differs, and for `rfc` that record lives in the
+filename.
 
 ### `plan` versus `spike`
 
@@ -173,36 +161,45 @@ usually a spike whose result will be rediscovered.
 ### Why there is no `memo` kind
 
 A `memo` would have been a kind that never moves. That is the only property it
-needs, and it is a property of a state rather than of a kind: something written
-down before it is worth doing. `draft/` already is that state, so a note is an
-ordinary item that happens to be in `draft/`, and it leaves by the same door as
-any other: `open` to begin, or deletion if it never mattered.
-
-Keeping `memo` would have made it the one kind with its own state machine, and
-every reader of `nokori` would have had to learn why. Folding it into `draft/`
-keeps one rule: an item is something with a kind, and everything with a kind
-moves.
+needs, and it is not a property of a kind: an item written down before it is
+worth doing is an ordinary item that happens to be idle. Keeping `memo` would
+have made it the one kind with its own rules, and every reader of `nokori`
+would have had to learn why. One rule is worth more: an item is something with
+a kind, and everything is settled the same way.
 
 ### Why the state is the directory, not a `Status` field
 
 A field inside the file can disagree with where the file is. A file in `done/`
-with `Status: draft` leaves the reader to decide which one is true, and it
+with `Status: open` leaves the reader to decide which one is true, and it
 takes a rule to say the directory wins -- a rule that has to be remembered
 whenever a file is edited by hand.
 
-Keeping the state in one place removes the question. `ls backlog/done/` and
-the filename tell the whole story. The cost is that a state change is a move,
-and that `done/` has to record the outcome somewhere; for `rfc` that record is
-a word in the filename rather than a field.
+Keeping the state in one place removes the question. `ls backlog/` and `ls
+backlog/done/` tell the whole story. The cost is that a state change is a
+move, and that `done/` has to record the outcome somewhere; for `rfc` that
+record is a word in the filename rather than a field.
 
-### Why only `draft/` may be deleted
+### Why there are only two states
 
-An item in `draft/` has not been accepted as work worth doing yet. Nobody has
-committed to it, so dropping it concludes nothing and leaves nothing to
-record. An item in `backlog/`, `ongoing/`, or `pending/` has been accepted, so
-its end is a conclusion and belongs in `done/` -- a `bug` that turns out not to
-be a bug, a `plan` that is abandoned. That single test, *was it ever open*,
-is what makes `draft/` the one state where deletion is silent.
+The obvious additions are a place for work that has been started and one for
+work that is waiting. Both name something real, and both lose more than they
+give.
+
+A "started" directory cannot keep anybody from starting the same item twice:
+`nokori` has no index and no lock, so the move is a claim, not a guarantee.
+What it does do is give an item a third place to sit, and every extra place is
+another way for two files to say the same thing.
+
+A "waiting" directory is worse, because it is where items go to be forgotten.
+An item that is stuck is precisely the one that has to stay in view, and the
+place to say why it is stuck is its own body. With the directory in place, an
+item nobody intends to do any more collects there instead of ending in
+`done/`, and the record of deciding not to do it never appears.
+
+So an item is open or settled, and `backlog/` means what it says: everything
+not settled, whether or not anybody is working on it. If a state later turns
+out to earn its place, adding one is easy; removing one costs the user a
+rename of every file in it, which is why the smaller set goes first.
 
 ### Why `done/` is not edited
 
@@ -212,18 +209,16 @@ longer tell which parts were the original judgement. Corrections and additions
 are appended for that reason: the earlier text stays legible and the revision
 is dated by git.
 
-### Why `suspend`, and why the commands name the move
+### Why `finish` and not `settle`
 
-`suspend` was chosen over `pause`, `defer`, `block`, and `park` for two
-reasons. It pairs with the directory it produces: a suspended item is a
-pending one. And it does not promise a duration -- `pause` suggests a short
-interruption and `defer` a postponement, but what actually keeps an item in
-`pending/` is a condition, not a length of time. The condition itself belongs
-in the body, where the reader will look for it.
+The first design had four moves and named them all by what they did to the
+file, which is why `settle` lost to `finish` then: next to `open`, `start`,
+and `suspend`, a word describing the conclusion was the odd one out. With
+those gone, `settle` would say more accurately what happens.
 
-The commands name the move rather than the outcome, which is why `settle` was
-not used for `done/`: sitting next to `open`, `start`, and `suspend`, a word
-that describes what was concluded would be the odd one out.
+It stays `finish` because the reader starts from a piece of work and asks to
+be done with it. `settle` also settles a question, and a `bug` that turns out
+not to be a bug is settled without any work being finished.
 
 ### Why a move checks that the file is clean
 
@@ -261,30 +256,18 @@ not follow from a command, so nothing new has to be learned to find it.
 ### Why `init` does not explain the kinds
 
 `init` runs once per repository, and most of what it could say is needed later
-and elsewhere: which kind to use, what a `draft/` item is for, how `suspend`
-differs from `finish`. Printing all of that would make the one output nobody
+and elsewhere: which kind to use, what `backlog/` holds, what `finish` does to
+a file. Printing all of that would make the one output nobody
 re-reads long. So `init` stops at the next step, and the reference material is
 reached through `explain` from wherever it is needed.
 
-### Why `open` serves two moves
+### Why an `rfc` outcome is written when it merges
 
-`draft/` -> `backlog/` and `pending/` -> `backlog/` land in the same place, so
-the same command covers both. The alternative -- `open` and `resume` -- would
-name the same outcome twice, and the reader would have to learn which applies
-before running either.
-
-### Why `ongoing/` exists
-
-An `rfc` spends time between "accepted" and "merged". During that time it can
-still be turned down: trying the implementation may show the design does not
-hold, and the item goes to `done/` as `rejected`. So `accepted` is only
-provisional until the change merges.
-
-`ongoing/` is what makes that provisional state visible. An item there has
-been started -- an `rfc` by a provisional acceptance, a `bug` by a fix in
-progress -- and nobody else should pick it up. Without the directory, an
-accepted `rfc` would look exactly like one nobody had started on, and two
-people could begin the same work.
+An `rfc` spends time between "accepted" and "merged", and during that time it
+can still be turned down: trying the implementation may show the design does
+not hold. So the filename gets its `accepted` or `rejected` word when the item
+moves to `done/`, not when somebody agrees to it. Until then the item sits in
+`backlog/` like any other, and whoever is implementing it says so in the body.
 
 
 Open questions
@@ -294,11 +277,9 @@ Open questions
 
 A move refuses to run while the file it touches has uncommitted changes, but
 an untracked file is a different case: `git status` reports it as dirty, yet
-there is no earlier content for the move to bury. `new --draft` followed by
-`open` without a commit in between would fail under the strict reading.
+there is no earlier content for the move to bury.
 
-The flow it blocks is narrow -- `new` writes to `backlog/` by default, so the
-only item that could be opened straight from untracked is one created with
-`--draft` and then promoted at once -- which is why this is left to the
-implementation rather than settled here.
+The flow it blocks is narrow -- `new` writes an untracked file, so `finish`
+run before that file's first commit would fail under the strict reading --
+which is why this is left to the implementation rather than settled here.
 

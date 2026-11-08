@@ -42,8 +42,7 @@ fn try_run_init(args: &mut noargs::RawArgs) -> noargs::Result<bool> {
     println!();
     println!("Next, create an item:");
     println!();
-    println!("  nokori new <kind> <slug>          # ready to start");
-    println!("  nokori new <kind> <slug> --draft  # not ready to start yet");
+    println!("  nokori new <kind> <slug>");
     println!();
     println!("Run `nokori new --help` to see the usage and `nokori explain kinds`");
     println!("to choose a kind.");

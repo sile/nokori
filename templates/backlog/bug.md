@@ -72,16 +72,13 @@ section if there is nothing to add. -->
 file. Leave it empty until then, comment and all.
 
 The sections above are written before the item moves: by the time `nokori
-open`, `nokori start`, `nokori suspend`, or `nokori finish` moves this file,
-they are written, their comments are gone, and the change is committed.
+finish` moves this file, they are written, their comments are gone, and the
+change is committed.
 
-Those sections may be rewritten until the work starts: in `backlog/`, and in
-`pending/` as well, since an item that waited a long time is exactly one whose
-premises go out of date. Once the item is in `ongoing/`, it is a claim that
-the work is under way, so leave the sections alone and move it back with
-`nokori open` if they turn out to be wrong. What they may not become is a
-description of work already done. A move needs the change committed, so
-whatever they say at that point is what the moving commit records.
+Those sections may be rewritten as long as the item is open, as often as the
+understanding changes. What they may not become is a description of work
+already done. `nokori finish` needs the change committed, so whatever they say
+at that point is what the moving commit records.
 
 Say what actually happened, and name the change that fixed it; link the
 commit or pull request when there is one.

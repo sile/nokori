@@ -18,8 +18,3 @@ lives directly under `backlog/` while it is open. When the work is done, the
 item is settled with `nokori finish` (provisional) and moved out of the way.
 The exact command names and item kinds are defined by `nokori` itself; run
 `nokori --help` to list them.
-
-## TODO
-
-- Add `exclude = ["backlog/"]` to this repository's `Cargo.toml` so that the
-  directory is left out of the published crate.

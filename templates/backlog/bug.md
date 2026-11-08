@@ -2,15 +2,18 @@
 
 ## Summary
 
-<!-- TODO: one paragraph. Say it before the item moves: `nokori start`,
-`nokori suspend`, and `nokori finish` all expect the paragraph to be written,
-this comment gone, and the change committed.
+<!-- TODO: one paragraph saying what is broken and the smallest input that
+shows it, written before anything moves this file: by the time `nokori start`,
+`nokori suspend`, or `nokori finish` moves it, the paragraph is written, this
+comment is gone, and the change is committed.
 
-A bug is a decision that today's behavior breaks its own documented contract,
-not a proposal for a different one. Give the smallest input that shows it.
+A bug is a report that today's behavior breaks its own documented contract,
+not a proposal for a different one.
 
-An item may point at the code, but the code never points back: never mention
-`backlog/` in the code, in a commit message, or in a pull request.
+The item may point at the source code, but the source code never points back:
+never mention `backlog/` in the source code, in a commit message, or in a pull
+request. A bug report is something you read and act on here, and it stops
+working as one if the code it describes has to be read for it to make sense.
 
 Delete this comment once the paragraph is here. -->
 
@@ -18,13 +21,14 @@ Delete this comment once the paragraph is here. -->
 
 <!-- TODO: the smallest exact input and the exact calls that show it.
 
-The report is self-contained when a reader can act on it without opening
-anything else. Pull in what it needs from the calling code; leave out what it
-does not.
+Include the context this needs and leave out the context it does not: the
+report is self-contained when a reader can reproduce it without opening
+anything else. Being complete is not the same as being exhaustive -- a
+snippet that pulls in the whole calling module copies code nobody asked to
+read, and it goes stale as soon as that code changes.
 
 Prefer a concrete value -- a command, a key sequence, a specific file -- over
-a description. The exact calls matter more than the context: the fix can read
-the implementation, but nobody can reproduce what was never written down.
+a description.
 
 Delete this comment once the section is here. -->
 
@@ -32,8 +36,9 @@ Delete this comment once the section is here. -->
 
 <!-- TODO: what actually happens, and the invariant it breaks.
 
-Quote the test or branch rather than paraphrasing it. A quote stays true when
-the code changes; a paraphrase quietly drifts away from it.
+Quote the test, branch, or assertion that the observed behavior contradicts
+rather than paraphrasing it: the quote points at where to look, and the
+text around it says what the contrast is.
 
 Knowing where it goes wrong is a help to the fix, not a requirement: say
 where if you know, and leave the rest to the fix.
@@ -44,8 +49,8 @@ Delete this comment once the section is here. -->
 
 <!-- TODO: what the documented contract says should happen instead.
 
-Cite the rustdoc, invariant, or type that the observed behavior breaks. The
-citation is what makes this a bug report rather than a preference.
+Cite the rustdoc, invariant, or type that promises it. The citation is what
+makes this a bug report rather than a preference.
 
 Delete this comment once the section is here. -->
 
@@ -57,8 +62,8 @@ Write it in the present tense: this is a claim about the work ahead, not a
 report of what was done.
 
 Worth saying here: related cases with the same cause, why the simpler-looking
-fix is wrong, where the fix belongs, and whether the ambiguity is big enough
-to need an RFC instead.
+fix is wrong, where the fix belongs, and whether the question is big enough to
+need an RFC instead.
 
 Delete this comment once the section says what it should, or the whole
 section if there is nothing to add. -->
@@ -70,6 +75,11 @@ file. Leave it empty until then, comment and all.
 
 Say what actually happened, and name the change that fixed it; link the
 commit or pull request when there is one.
+
+Once this section is written and committed, treat the file as settled: do not
+edit any part of it again, and append nothing later. History is git's
+business, and a report that keeps changing after it is closed can no longer be
+read as what was true when it was closed.
 
 When the fix differs from what the sections above expected, say so here rather
 than editing them: those sections record what was thought while the bug was

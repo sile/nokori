@@ -22,12 +22,6 @@ what the report needs from the calling code, and leave out what it does not:
 the report is self-contained when a reader can act on it without opening
 anything else. Delete this comment once it is here. -->
 
-```text
-<exact input>
-<exact call(s)>
-<observed output>
-```
-
 ## Observed behavior
 
 <!-- TODO: what actually happens. Name the invariant that is broken, and

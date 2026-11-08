@@ -34,6 +34,23 @@ Decided
   there and what to keep in mind; the author deletes the comment once the
   section says what it should. That instruction is itself a `<!-- TODO: -->`
   in the template.
+- An item stands on its own. Its sections carry whatever a reader needs to
+  judge it, and the sections that are always there are the ones every kind
+  must answer: for a `bug`, the reproduction, the observed behavior, and the
+  expected behavior. The rule that an item may cite the code but the code
+  never cites an item is written into the template, because a reader of an
+  item may never open `backlog/README.md`, and because that file stays fixed
+  after `init` and is kept minimal. Advice that does not fit an item goes in
+  `nokori explain <topic>`, not in the README.
+- A `bug` item keeps an `## Outcome` section from the start, empty until
+  `nokori finish` writes it. A file that is complete on its own is worth more
+  than one that matches the settled files in a reference repository, so the
+  section is in the template rather than appended at the end.
+- `## Outcome` is the only section that stays empty while the item is open.
+  Until `finish` the item is a report of a problem; after it, the sections
+  above `## Outcome` still say what was thought while the item was open,
+  including what it got wrong. A fix that differs from what they predicted is
+  described in `## Outcome`, not by rewriting them.
 - An item's state is expressed by the directory it is in, never by a `Status`
   field inside the file. The directories are `draft/`, `backlog/` itself,
   `ongoing/`, `pending/`, and `done/`.

@@ -76,13 +76,13 @@ file. Leave it empty until then, comment and all.
 Say what actually happened, and name the change that fixed it; link the
 commit or pull request when there is one.
 
-Once this section is written and committed, treat the file as settled: do not
-edit any part of it again, and append nothing later. History is git's
-business, and a report that keeps changing after it is closed can no longer be
-read as what was true when it was closed.
-
 When the fix differs from what the sections above expected, say so here rather
 than editing them: those sections record what was thought while the bug was
 open, and rewriting them erases the very difference that is worth knowing.
+
+Once this section is written and committed, treat the file as settled: do not
+edit any part of it again, and append nothing later. A report that keeps
+changing after it is closed can no longer be read as what was true when it
+was closed.
 
 Delete this comment when you write the section. -->

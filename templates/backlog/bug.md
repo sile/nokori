@@ -75,6 +75,11 @@ The sections above are written before the item moves: by the time `nokori
 open`, `nokori start`, `nokori suspend`, or `nokori finish` moves this file,
 they are written, their comments are gone, and the change is committed.
 
+Until `nokori finish`, those sections may be rewritten as the understanding
+changes: that is what an open item is for. What they may not become is a
+description of work already done. A move needs the change committed, so
+whatever they say at that point is what the moving commit records.
+
 Say what actually happened, and name the change that fixed it; link the
 commit or pull request when there is one.
 

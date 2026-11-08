@@ -52,9 +52,8 @@ Decided
   including what it got wrong. A fix that differs from what they predicted is
   described in `## Outcome`, not by rewriting them.
 - There is no section for a later addition. A template offering one would read
-  as advice to amend a settled item, and `nokori` recommends no such flow: a
-  file in `done/` is left as it was written. Appending to it by hand is the
-  user's own business, the same as any operation outside the flow.
+  as advice to amend a settled item, and an item that needed amending later is
+  better written as a new item.
 - An item's state is expressed by the directory it is in, never by a `Status`
   field inside the file. There are two: `backlog/` itself, and `done/`.
 - v1 has four item kinds: `rfc`, `bug`, `plan`, and `spike`. There is no
@@ -72,13 +71,11 @@ Decided
   with, so the outcome is read from the body, never from the path. An `rfc`
   that was accepted can be overturned by a later one, and the earlier file is
   not renamed to follow.
-- An item is ended by moving it to `done/`, never by deleting it, so that
-  ending it leaves a record. Deleting a file by hand is the user's own
-  business, the same as any operation outside the flow.
-- Files in `done/` are not edited afterwards; corrections and additions go in
-  as appended notes. It is the same implicit rule as out-of-flow operations in
-  git-flow: doing something outside the flow by hand is the user's own
-  responsibility, and does not need to be spelled out.
+- An item is ended by moving it to `done/`, never by deleting it. That is the
+  whole of what `done/` is for: the file stays where an ordinary file search
+  finds it. Every other meaning given to the move -- a record, an archive, an
+  audit trail -- is one the tool cannot keep, and a tool that claims more than
+  it does invites the user to reach for `rm` instead.
 - Moving an item into `done/` is local only: the tool rewrites the file and
   moves it. It does not commit, push, or otherwise change anything through
   git.
@@ -155,10 +152,8 @@ going to happen either way, the investigation is a first phase of a `plan`,
 not a `spike`; splitting it out would leave a `spike` that cannot end in
 anything but a `plan`.
 
-A finished `spike` is worth keeping in `done/` for the same reason any other
-item is: the finding is what a later reader needs in order to understand why
-the next item says what it says. A spike whose result was thrown away is
-usually a spike whose result will be rediscovered.
+A finished `spike` goes to `done/` for the same reason any other item does:
+what it found is what a later item refers back to.
 
 ### Why there is no `memo` kind
 
@@ -178,8 +173,8 @@ whenever a file is edited by hand.
 
 Keeping the state in one place removes the question. `ls backlog/` and `ls
 backlog/done/` tell the whole story. The cost is that a state change is a
-move, and that `done/` has to record the outcome in the body rather than in
-the path.
+move, which is also the good part: it is the same single step whether the item
+ended well or not, and it leaves the file where a search can find it.
 
 ### Why there are only two states
 
@@ -195,21 +190,22 @@ another way for two files to say the same thing.
 A "waiting" directory is worse, because it is where items go to be forgotten.
 An item that is stuck is precisely the one that has to stay in view, and the
 place to say why it is stuck is its own body. With the directory in place, an
-item nobody intends to do any more collects there instead of ending in
-`done/`, and the record of deciding not to do it never appears.
+item nobody intends to do any more collects there instead of being moved to
+`done/`.
 
 So an item is open or settled, and `backlog/` means what it says: everything
 not settled, whether or not anybody is working on it. If a state later turns
 out to earn its place, adding one is easy; removing one costs the user a
 rename of every file in it, which is why the smaller set goes first.
 
-### Why `done/` is not edited
+### Why `done/` is only a move
 
-A file in `done/` records what was concluded at a particular time. Rewriting it
-would make the record show what is known now instead, and the reader could no
-longer tell which parts were the original judgement. Corrections and additions
-are appended for that reason: the earlier text stays legible and the revision
-is dated by git.
+Moving a file to `done/` is meant to do one thing: put it where an ordinary
+file search will still find it. It is not an archive of decisions and not an
+audit trail, and saying that it is would promise what no directory can keep --
+the next item is free to say the opposite. When the move is worth only that
+much, there is nothing to fall short of, and nothing that makes deleting the
+file look like the cleaner option.
 
 ### Why `finish` and not `settle`
 
@@ -272,10 +268,9 @@ would have to be renamed each time, and a rename breaks every reference to it
 at once; an `rfc` accepted early and implemented later would also have to spend
 time under a name that guesses its own future.
 
-So the outcome is written once, in the body, and left as it was: the later item
-says that it supersedes the earlier one. This is the same rule that keeps the
-kind in the filename but out of the body -- a name is for finding a file, and
-what a file means is for reading it.
+So the outcome stays in the body, where it was written, and a later item says
+that it supersedes the earlier one. A name is for finding a file, and what a
+file means is for reading it.
 
 
 Open questions

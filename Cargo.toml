@@ -3,6 +3,7 @@ name = "nokori"
 version = "0.1.0"
 edition = "2024"
 description = "A markdown-file-based backlog management CLI"
+include = ["src/**/*.rs", "templates/**/*.md", "tests/**/*.rs", "Cargo.toml", "README.md"]
 
 [dependencies]
 noargs = "0.4.3"

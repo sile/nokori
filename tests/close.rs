@@ -74,8 +74,7 @@ fn close_moves_a_finished_item() {
 
 #[test]
 fn close_refuses_an_item_with_a_todo() {
-    let body =
-        "# Bug: x\n\n## Summary\n\n<!-- TODO: say what is broken. -->\n\n## Outcome\n\nFixed.\n";
+    let body = "# Bug: x\n\n## Summary\n\n<!-- NOKORI_TODO: say what is broken. -->\n\n## Outcome\n\nFixed.\n";
     let (dir, item) = repo_with_item("todo", body);
 
     let output = nokori(&dir, &["close", &item]);
@@ -84,6 +83,19 @@ fn close_refuses_an_item_with_a_todo() {
 
     let stderr = String::from_utf8_lossy(&output.stderr);
     assert!(stderr.contains("## Summary"), "{stderr}");
+
+    std::fs::remove_dir_all(&dir).expect("failed to clean up");
+}
+
+#[test]
+fn close_ignores_a_todo_written_in_the_body() {
+    // The marker is `NOKORI_TODO:` so that a report may name a `TODO` in the
+    // code without the item reading as unfinished.
+    let body = "# Bug: x\n\n## Summary\n\nAn old `TODO:` was left in `src/lib.rs`,\nand nothing reads it as unfinished work.\n\n## Outcome\n\nFixed in abc1234.\n";
+    let (dir, item) = repo_with_item("body-todo", body);
+
+    let output = nokori(&dir, &["close", &item]);
+    assert!(output.status.success(), "{output:?}");
 
     std::fs::remove_dir_all(&dir).expect("failed to clean up");
 }

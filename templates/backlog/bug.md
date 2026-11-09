@@ -1,9 +1,9 @@
-# Bug: <!-- TODO: one line naming what is broken -->
+# Bug: <!-- NOKORI_TODO: one line naming what is broken -->
 
 ## Summary
 
-<!-- TODO: one paragraph saying what is broken and the smallest input that
-shows it.
+<!-- NOKORI_TODO: one paragraph saying what is broken and the smallest
+input that shows it.
 
 A bug is a report that today's behavior breaks its own documented contract,
 not a proposal for a different one.
@@ -17,7 +17,8 @@ Delete this comment once the paragraph is here. -->
 
 ## Reproduction
 
-<!-- TODO: the smallest exact input and the exact calls that show it.
+<!-- NOKORI_TODO: the smallest exact input and the exact calls that show
+it.
 
 Include the context this needs and leave out the context it does not: the
 report is self-contained when a reader can reproduce it without opening
@@ -32,7 +33,7 @@ Delete this comment once the section is here. -->
 
 ## Observed behavior
 
-<!-- TODO: what actually happens, and the invariant it breaks.
+<!-- NOKORI_TODO: what actually happens, and the invariant it breaks.
 
 Quote the test, branch, or assertion that the observed behavior contradicts
 rather than paraphrasing it: the quote points at where to look, and the
@@ -45,7 +46,8 @@ Delete this comment once the section is here. -->
 
 ## Expected behavior
 
-<!-- TODO: what the documented contract says should happen instead.
+<!-- NOKORI_TODO: what the documented contract says should happen
+instead.
 
 Cite the rustdoc, invariant, or type that promises it. The citation is what
 makes this a bug report rather than a preference.
@@ -54,7 +56,8 @@ Delete this comment once the section is here. -->
 
 ## Notes
 
-<!-- TODO: what helps the fix, without turning this into a design document.
+<!-- NOKORI_TODO: what helps the fix, without turning this into a design
+document.
 
 Write it in the present tense: this is a claim about the work ahead, not a
 report of what was done.
@@ -68,8 +71,8 @@ section if there is nothing to add. -->
 
 ## Outcome
 
-<!-- TODO: the one section written later, when `nokori close` moves this
-file. Leave it empty until then, comment and all.
+<!-- NOKORI_TODO: the one section written later, when `nokori close` moves
+this file. Leave it empty until then, comment and all.
 
 The sections above are written before the item moves: by the time `nokori
 close` moves this file, they are written, their comments are gone, and the

@@ -5,9 +5,12 @@ const BACKLOG_README_PATH: &str = "backlog/README.md";
 const BACKLOG_DIR: &str = "backlog";
 const CLOSED_DIR: &str = "closed";
 
-/// The section `close` writes into, and the marker a template leaves in it.
+/// The section `close` writes into, and the marker a template leaves in its
+/// sections. The marker is a whole word of its own rather than a `TODO` a
+/// comment happens to start with, so that an item may write about a `TODO` in
+/// the code it reports on without `close` reading that as unfinished work.
 const OUTCOME_SECTION: &str = "## Outcome";
-const TODO_MARKER: &str = "TODO:";
+const TODO_MARKER: &str = "NOKORI_TODO:";
 
 /// The kinds `create` accepts, each with the template written into the file.
 const KINDS: &[(&str, &str)] = &[("bug", include_str!("../templates/backlog/bug.md"))];
@@ -88,9 +91,9 @@ fn try_run_create(args: &mut noargs::RawArgs) -> noargs::Result<bool> {
 
     println!("Created {}", path.display());
     println!();
-    println!("Next, replace the `TODO` comments in the file with what they ask");
-    println!("for, and commit it. Every comment has to be gone before the file");
-    println!("moves, so delete each one as its section is written.");
+    println!("Next, replace the `{TODO_MARKER}` comments in the file with what");
+    println!("they ask for, and commit it. Every comment has to be gone before");
+    println!("the file moves, so delete each one as its section is written.");
     println!();
     println!("Close the item with `nokori close <file>` once it is settled.");
 
@@ -236,7 +239,7 @@ fn check_filled_in(file: &str, content: &str) -> Result<(), String> {
     if let Some(todo) = content.find(TODO_MARKER) {
         let line = content[..todo].lines().count();
         let message = format!(
-            r"`{file}` still has a `TODO` comment (line {line}), so it is not
+            r"`{file}` still has a `{TODO_MARKER}` comment (line {line}), so it is not
 finished. Each comment says what its section needs; write that, delete the
 comment, and commit the file. If a section has nothing to say, delete its
 comment along with the heading."
@@ -247,7 +250,7 @@ comment along with the heading."
             .find(|line| line.starts_with("## "))
         {
             Some(heading) => Err(format!(
-                "{message}\n\nThe `TODO` is in `{heading}`, so that section is not written yet."
+                "{message}\n\nThe comment is in `{heading}`, so that section is not written yet."
             )),
             None => Err(message),
         };

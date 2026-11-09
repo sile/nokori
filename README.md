@@ -30,10 +30,15 @@ Decided
 - `nokori init` writes `backlog/README.md` too, but its content stays minimal,
   so that keeping it current as `nokori` changes costs little.
 - The templates are self-descriptive instead. `nokori create <kind>` writes an
-  item whose sections each carry a `<!-- TODO: ... -->` saying what belongs
-  there and what to keep in mind; the author deletes the comment once the
-  section says what it should. That instruction is itself a `<!-- TODO: -->`
-  in the template.
+  item whose sections each carry a `<!-- NOKORI_TODO: ... -->` saying what
+  belongs there and what to keep in mind; the author deletes the comment once
+  the section says what it should. That instruction is itself a
+  `<!-- NOKORI_TODO: -->` in the template.
+- The marker is the word `NOKORI_TODO:` rather than a plain `TODO:`, so that
+  `close` can find the comments a template left without matching a `TODO` the
+  author wrote about the code. What `close` checks is not "the word TODO is
+  gone" but "every comment written by `create` is gone", and only a marker
+  the templates own can tell the two apart.
 - An item stands on its own. Its sections carry whatever a reader needs to
   judge it, and the sections that are always there are the ones every kind
   must answer: for a `bug`, the reproduction, the observed behavior, and the

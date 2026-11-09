@@ -59,6 +59,10 @@ fn create_writes_the_bug_template() {
         .expect("failed to read created item");
     assert!(content.starts_with("# Bug:"), "{content}");
     assert!(content.contains("## Reproduction"), "{content}");
+    // Every placeholder has to be one `close` can find, and no plain `TODO:`
+    // may be left behind to trip it later.
+    assert!(content.contains("NOKORI_TODO:"), "{content}");
+    assert!(!content.contains("<!-- TODO:"), "{content}");
 
     std::fs::remove_dir_all(&dir).expect("failed to clean up");
 }

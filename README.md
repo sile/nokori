@@ -79,9 +79,19 @@ Decided
   as appended notes. It is the same implicit rule as out-of-flow operations in
   git-flow: doing something outside the flow by hand is the user's own
   responsibility, and does not need to be spelled out.
-- Moving an item into `closed/` is local only: the tool rewrites the file and
-  moves it. It does not commit, push, or otherwise change anything through
-  git.
+- Moving an item into `closed/` is local only: the tool moves the file and
+  touches nothing else. It does not commit, push, or otherwise change anything
+  through git.
+- `close` refuses an item that still has a `TODO` comment, or whose `##
+  Outcome` is missing or empty, and the error names the section that is not
+  written yet. The templates already say what each section needs, so the check
+  only adds the one thing the file cannot say about itself: that a comment
+  left behind would be read in `closed/` as part of the record.
+- `closed/` is not created by `init`. It appears when the first item is moved
+  into it, so a repository that never closed anything has no directory whose
+  contents nothing has produced yet. `create` treats a missing `backlog/` as
+  "run `init` first"; the two directories are otherwise set up the first time
+  one is needed.
 - A `bug` that cannot be fixed for now stays in `backlog/`, with the reason it
   is stuck written in its body. One that is decided never to be fixed is not a
   bug but a documented behavior: the behavior is written into the public docs
@@ -239,6 +249,12 @@ refuses a dirty tree for the same reason, and the check here is narrower only
 because an item is not the whole crate -- what matters is the file being
 moved, not the working tree around it.
 
+The check reads `git status --porcelain -- <file>` for that one path, and an
+untracked file counts as dirty: `create` followed by `close` before the first
+commit is refused, which is the flow described above working as intended. What
+the check needs is not "the file is clean" but "there is a commit holding what
+this file says", and an untracked file has none.
+
 ### Why `explain` and not `doc`
 
 A command that moves files is a verb, and `doc` is not one: in `cargo doc` it
@@ -285,18 +301,3 @@ So the outcome is written once, in the body, and left as it was: the later item
 says that it supersedes the earlier one. This is the same rule that keeps the
 kind in the filename but out of the body -- a name is for finding a file, and
 what a file means is for reading it.
-
-
-Open questions
---------------
-
-### Whether an untracked file counts as dirty
-
-A move refuses to run while the file it touches has uncommitted changes, but
-an untracked file is a different case: `git status` reports it as dirty, yet
-there is no earlier content for the move to bury.
-
-The flow it blocks is narrow -- `create` writes an untracked file, so `close`
-run before that file's first commit would fail under the strict reading --
-which is why this is left to the implementation rather than settled here.
-

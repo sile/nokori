@@ -62,8 +62,8 @@ Decided
   user's own business, the same as any operation outside the flow.
 - An item's state is expressed by the directory it is in, never by a `Status`
   field inside the file. There are two: `backlog/` itself, and `closed/`.
-- v1 has four item kinds: `rfc`, `bug`, `plan`, and `spike`. There is no
-  `memo` kind.
+- v1 has three item kinds: `rfc`, `bug`, and `plan`. There is no `memo`
+  kind.
 - Every file carries a kind in its filename (`YYYYMMDD-<kind>-<slug>.md`). The
   kind is part of the name rather than a state, so it stays put while the item
   is open; changing it means deleting the file and creating it again with the
@@ -145,35 +145,31 @@ The reference repositories (kk, termnix, tuinix) use only `rfc` and `bug`.
 > records work rather than a decision.
 
 That criterion separates kinds into (a) a decision and (b) a piece of work.
-`rfc` and `bug` are decisions. `plan` and `spike` are both pieces of work.
-Every kind walks the same directories (`backlog/` -> `closed/`); only what the
-move to `closed/` records differs. That record is in the body for every kind:
-a filename has to stay stable, while the outcome it would carry can change
+`rfc` and `bug` are decisions, and `plan` is the piece of work. Every kind
+walks the same directories (`backlog/` -> `closed/`); only what the move to
+`closed/` records differs. That record is in the body for every kind: a
+filename has to stay stable, while the outcome it would carry can change
 under it.
 
-### `plan` versus `spike`
+### Why there is no `spike` kind
 
-Two kinds sharing one state machine need a rule that tells them apart, or the
-choice is made fresh every time.
+A `spike` is a question asked by trying something: is this possible, and what
+happens if we do. Separating it from `plan` needs a rule that says which of
+the two an item is, because both are pieces of work sharing one state machine,
+and the rule has to be applied afresh every time.
 
-| | `plan` | `spike` |
-| --- | ------ | ------- |
-| question | how to get there | is it possible, and what happens if we try |
-| deliverable | the work, in phases | what was learned |
-| what closing means | the work is finished | the question is answered |
-| what follows | nothing | an `rfc`, a `plan`, or nothing at all |
+The rule that was tried -- is doing nothing an acceptable answer? -- is not
+reliable enough to lean on. A `plan` whose first phase is an experiment can
+legitimately end in "do not build it", and a `spike` that finds a path forward
+simply becomes the start of one. The author has to guess which kind the work
+will turn out to be before doing the work that would tell them.
 
-The test is whether **doing nothing is an acceptable answer**. A `spike` exists
-to settle the next step, so "the answer is no, do not build it" closes it
-legitimately, with that finding written in the file. When the work is
-going to happen either way, the investigation is a first phase of a `plan`,
-not a `spike`; splitting it out would leave a `spike` that cannot end in
-anything but a `plan`.
-
-A closed `spike` is worth keeping in `closed/` for the same reason any other
-item is: the finding is what a later reader needs in order to understand why
-the next item says what it says. A spike whose result was thrown away is
-usually a spike whose result will be rediscovered.
+So there is one kind for work, and the shape of the work is a matter for its
+body: a plan whose first phase is an investigation says so, and the `##
+Outcome` records what was learned whether the phases ran or the answer was no.
+Kinds should be few enough that choosing one is not itself a judgement call;
+the criterion quoted above says as much, since it adds a kind only when items
+of that kind accumulate on their own.
 
 ### Why there is no `memo` kind
 

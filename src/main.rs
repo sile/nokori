@@ -16,6 +16,7 @@ const TODO_MARKER: &str = "NOKORI_TODO:";
 const KINDS: &[(&str, &str)] = &[
     ("rfc", include_str!("../templates/backlog/rfc.md")),
     ("bug", include_str!("../templates/backlog/bug.md")),
+    ("plan", include_str!("../templates/backlog/plan.md")),
 ];
 
 fn main() -> noargs::Result<()> {

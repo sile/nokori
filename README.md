@@ -70,8 +70,31 @@ Decided
   user's own business, the same as any operation outside the flow.
 - An item's state is expressed by the directory it is in, never by a `Status`
   field inside the file. There are two: `backlog/` itself, and `closed/`.
-- v1 has three item kinds: `rfc`, `bug`, and `plan`, of which `rfc` and
-  `bug` exist so far. There is no `memo` kind.
+- v1 has three item kinds: `rfc`, `bug`, and `plan`. There is no `memo`
+  kind.
+- A `plan` is a plan, not a report: it is written when the question of whether
+to do the work is already settled, and what it adds is the order and the
+progress. Its sections are `Goal`, `Items`, `Steps`, `Notes`, and `Outcome`.
+  - `Goal` says what is true when the plan is finished, in a form that can be
+    checked. Implementation details too small for an RFC go here, so that an
+    RFC can stay a proposal about shape.
+  - `Items` is optional and lists the other items the work is carried out
+    through, one slug per line. Work that spans several items is the reason
+    `plan` exists; a plan that touches no other item deletes the section.
+  - `Steps` is the plan itself: checkboxes in order, each saying what is done
+    and what is true when it is. Ticking a box as the step finishes is the
+    whole of resuming from here, so there is no separate section for where
+    the work stopped.
+  - `Notes` is optional, for what the steps assume, where they may get stuck,
+    and which step to cut if the plan turns out to be too big.
+- Items are referred to by slug only, never by path. An item moves to
+  `closed/` when it settles, and a path would stop pointing at the file the
+  moment it did.
+- `close` does not refuse a `plan` with unchecked steps. A box left unchecked
+  in a closed plan means the step was decided against, not forgotten, and the
+  decision is recorded in `## Outcome`. A plan that is to be picked up later
+  is not closed at all: it stays in `backlog/`, where the unchecked boxes are
+  the record of where it stopped.
 - Every file carries a kind in its filename (`YYYYMMDD-<kind>-<slug>.md`). The
   kind is part of the name rather than a state, so it stays put while the item
   is open; changing it means deleting the file and creating it again with the
@@ -109,7 +132,8 @@ Decided
   is stuck written in its body. One that is decided never to be fixed is not a
   bug but a documented behavior: the behavior is written into the public docs
   and the item goes to `closed/`, the same way a report that turns out not to
-  be a bug does.
+  be a bug does. A `plan` that stops partway is treated the same way: the
+  unchecked steps say where it stopped, so `close` needs no rule of its own.
 - The commands are one per destination directory:
 
   | command | state after | directory | from |

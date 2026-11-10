@@ -2,8 +2,22 @@
 name = "nokori"
 version = "0.1.0"
 edition = "2024"
+rust-version = "1.88"
+license = "MIT"
 description = "A markdown-file-based backlog management CLI"
-include = ["Cargo.toml", "README.md", "src/**/*.rs", "templates/**/*.md"]
+homepage = "https://github.com/sile/nokori"
+repository = "https://github.com/sile/nokori"
+readme = "README.md"
+keywords = ["backlog", "issue-tracker", "task-management", "markdown"]
+categories = ["command-line-utilities", "development-tools"]
+include = [
+    "Cargo.toml",
+    "LICENSE",
+    "README.md",
+    "src/**/*.rs",
+    "templates/**/*.md",
+    "tests/**/*.rs",
+]
 
 [dependencies]
 noargs = "0.4.3"

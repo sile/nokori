@@ -1,8 +1,22 @@
 nokori
 ===
 
-- backlog management cli tool
-- markdown file based
+[![Crates.io](https://img.shields.io/crates/v/nokori.svg)](https://crates.io/crates/nokori)
+[![Actions Status](https://github.com/sile/nokori/workflows/CI/badge.svg)](https://github.com/sile/nokori/actions)
+![License](https://img.shields.io/crates/l/nokori)
+
+A backlog management CLI tool, with the backlog kept as markdown files.
+
+nokori is Japanese for "what is left" (残り).
+
+Installation
+------------
+
+```console
+$ cargo install nokori
+
+$ nokori --help
+```
 
 What this tool is
 -----------------

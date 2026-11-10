@@ -153,13 +153,22 @@ progress. Its sections are `Goal`, `Items`, `Steps`, `Notes`, and `Outcome`.
   file already shows what each kind's sections expect.
 - Reference material that does not follow from a command lives under
   `explain <topic>`. The first two topics are `kinds` (the kinds, plus how to
-  choose between them) and `flow` (how an item is opened and closed).
+  choose between them) and `flow` (how an item is opened and closed). The text
+  is embedded from `templates/explain/<topic>.md`, so it is written as prose
+  in a file rather than as `println!` calls in the command. The same include
+  also puts it in the published crate, which is what lets `explain` work with
+  no backlog and no network: the text is not a file read at runtime.
 - `explain` also covers the cases a reader arrives with, and the commonest of
   those is a file in a state the command does not take. Running `close` on a
   file already in `closed/` is an ordinary mistake, and the message a command
   prints for it says only that the move is not allowed; the explanation of
   what the states mean, and what to do with the file instead, belongs in a
-  topic of its own.
+  topic of its own. That is `flow`, which ends with the two mistakes a `close`
+  error only names: a file already in `closed/`, and a bare file name where a
+  path was meant.
+- An unknown topic lists the topics and then says what a topic is not: the
+  reader who typed one has probably mistaken `explain` for usage help, so the
+  error points at `nokori --help` and `nokori <command> --help` instead.
 
 
 Rationale

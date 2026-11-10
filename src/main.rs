@@ -19,6 +19,14 @@ const KINDS: &[(&str, &str)] = &[
     ("plan", include_str!("../templates/backlog/plan.md")),
 ];
 
+/// The topics `explain` prints, each with the text. They carry the material a
+/// command cannot: the rules about the states and the kinds, which read the
+/// same whatever command the reader arrived from.
+const TOPICS: &[(&str, &str)] = &[
+    ("kinds", include_str!("../templates/explain/kinds.md")),
+    ("flow", include_str!("../templates/explain/flow.md")),
+];
+
 fn main() -> noargs::Result<()> {
     let mut args = noargs::raw_args();
     args.metadata_mut().app_name = env!("CARGO_PKG_NAME");
@@ -30,7 +38,10 @@ fn main() -> noargs::Result<()> {
     }
     noargs::HELP_FLAG.take_help(&mut args);
 
-    let _ = try_run_init(&mut args)? || try_run_create(&mut args)? || try_run_close(&mut args)?;
+    let _ = try_run_init(&mut args)?
+        || try_run_create(&mut args)?
+        || try_run_close(&mut args)?
+        || try_run_explain(&mut args)?;
 
     if let Some(help) = args.finish()? {
         print!("{help}");
@@ -129,6 +140,43 @@ fn try_run_close(args: &mut noargs::RawArgs) -> noargs::Result<bool> {
     println!();
     println!("Commit the move, and leave the file as it is from then on:");
     println!("`closed/` is a record, so later work cites it rather than editing it.");
+
+    Ok(true)
+}
+
+fn try_run_explain(args: &mut noargs::RawArgs) -> noargs::Result<bool> {
+    if !noargs::cmd("explain")
+        .doc("Print the rules behind the commands (`kinds`, `flow`)")
+        .take(args)
+        .is_present()
+    {
+        return Ok(false);
+    }
+
+    let topic: String = noargs::arg("<TOPIC>")
+        .doc("Topic to explain (`kinds` or `flow`)")
+        .example("kinds")
+        .take(args)
+        .then(|a| a.value().parse())?;
+
+    if args.metadata().help_mode {
+        return Ok(true);
+    }
+
+    let Some((_, text)) = TOPICS.iter().find(|(t, _)| *t == topic) else {
+        let known: Vec<&str> = TOPICS.iter().map(|(t, _)| *t).collect();
+        return Err(format!(
+            r"`{topic}` is not a topic. The topics are: {}.
+
+A topic is the material behind the commands, not the usage of one: run
+`nokori --help` for the commands, and `nokori <command> --help` for one of
+them.",
+            known.join(", ")
+        )
+        .into());
+    };
+
+    print!("{text}");
 
     Ok(true)
 }

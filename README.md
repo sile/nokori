@@ -5,6 +5,8 @@ nokori
 [![Actions Status](https://github.com/sile/nokori/workflows/CI/badge.svg)](https://github.com/sile/nokori/actions)
 ![License](https://img.shields.io/crates/l/nokori)
 
+**WIP**
+
 A backlog management CLI tool, with the backlog kept as markdown files.
 
 nokori is Japanese for "what is left" (残り).

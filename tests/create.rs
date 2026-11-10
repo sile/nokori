@@ -85,9 +85,43 @@ fn create_refuses_an_unknown_kind() {
     let dir = temp_dir("kind");
     assert!(nokori(&dir, &["init"]).status.success());
 
-    let output = nokori(&dir, &["create", "rfc", "x"]);
+    let output = nokori(&dir, &["create", "plan", "x"]);
     assert!(!output.status.success(), "create should have failed");
     assert!(items(&dir).is_empty());
+    // The error has to say which kinds there are, since the reader guessed
+    // wrong and `create` has no other way to tell them.
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(stderr.contains("rfc, bug"), "{stderr}");
+
+    std::fs::remove_dir_all(&dir).expect("failed to clean up");
+}
+
+#[test]
+fn create_writes_the_rfc_template() {
+    let dir = temp_dir("rfc");
+    assert!(nokori(&dir, &["init"]).status.success());
+
+    let output = nokori(&dir, &["create", "rfc", "cache-the-parse"]);
+    assert!(output.status.success(), "{output:?}");
+
+    let expected = format!("{}-rfc-cache-the-parse.md", today());
+    assert_eq!(items(&dir), vec![expected.clone()]);
+
+    let content = std::fs::read_to_string(dir.join("backlog").join(&expected))
+        .expect("failed to read created item");
+    assert!(content.starts_with("# RFC:"), "{content}");
+    // The sections `close` relies on, plus the ones that make an RFC an RFC.
+    for section in [
+        "## Motivation",
+        "## Design",
+        "## Alternatives",
+        "## Open questions",
+        "## Outcome",
+    ] {
+        assert!(content.contains(section), "{section} in {content}");
+    }
+    assert!(content.contains("NOKORI_TODO:"), "{content}");
+    assert!(!content.contains("<!-- TODO:"), "{content}");
 
     std::fs::remove_dir_all(&dir).expect("failed to clean up");
 }

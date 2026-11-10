@@ -51,6 +51,14 @@ Decided
   `nokori close` writes it. A file that is complete on its own is worth more
   than one that matches the closed files in a reference repository, so the
   section is in the template rather than appended at the end.
+- An `rfc` has the sections a proposal is argued with: `Summary`,
+  `Motivation`, `Design`, `Alternatives`, and `Open questions`, then
+  `Outcome`. The first two are the same split a `bug` makes -- what is
+  proposed, and why today is not good enough -- and `Alternatives` is the
+  section that makes the reader trust the design was chosen rather than
+  settled on. `Open questions` says "None" rather than being deleted when
+  there is nothing left to decide, because a missing section reads as one
+  nobody finished.
 - `## Outcome` is the only section that stays empty while the item is open.
   Until `close` the item is a report of a problem; after it, the sections
   above `## Outcome` still say what was thought while the item was open,
@@ -62,8 +70,8 @@ Decided
   user's own business, the same as any operation outside the flow.
 - An item's state is expressed by the directory it is in, never by a `Status`
   field inside the file. There are two: `backlog/` itself, and `closed/`.
-- v1 has three item kinds: `rfc`, `bug`, and `plan`. There is no `memo`
-  kind.
+- v1 has three item kinds: `rfc`, `bug`, and `plan`, of which `rfc` and
+  `bug` exist so far. There is no `memo` kind.
 - Every file carries a kind in its filename (`YYYYMMDD-<kind>-<slug>.md`). The
   kind is part of the name rather than a state, so it stays put while the item
   is open; changing it means deleting the file and creating it again with the

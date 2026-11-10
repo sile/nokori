@@ -13,7 +13,10 @@ const OUTCOME_SECTION: &str = "## Outcome";
 const TODO_MARKER: &str = "NOKORI_TODO:";
 
 /// The kinds `create` accepts, each with the template written into the file.
-const KINDS: &[(&str, &str)] = &[("bug", include_str!("../templates/backlog/bug.md"))];
+const KINDS: &[(&str, &str)] = &[
+    ("rfc", include_str!("../templates/backlog/rfc.md")),
+    ("bug", include_str!("../templates/backlog/bug.md")),
+];
 
 fn main() -> noargs::Result<()> {
     let mut args = noargs::raw_args();

@@ -63,8 +63,9 @@ Write it in the present tense: this is a claim about the work ahead, not a
 report of what was done.
 
 Worth saying here: related cases with the same cause, why the simpler-looking
-fix is wrong, where the fix belongs, and whether the question is big enough to
-need an RFC instead.
+fix is wrong, where the fix belongs, and -- if the fix turns out to mean
+changing the documented contract rather than restoring it -- that it is no
+longer a bug but an `rfc` (`nokori create rfc <slug>`).
 
 Delete this comment once the section says what it should, or the whole
 section if there is nothing to add. -->

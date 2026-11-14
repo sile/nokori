@@ -182,7 +182,10 @@ fn close_refuses_a_link_into_backlog() {
 }
 
 #[test]
-fn close_accepts_a_link_to_a_closed_item() {
+fn close_rewrites_a_link_to_a_closed_item() {
+    // Written in `backlog/`, the target `closed/x.md` names the closed item;
+    // moved into `closed/`, the same text would name `closed/closed/x.md`. The
+    // move respells it, which is the one write a closed file gets.
     let body = "# Bug: x\n\n## Summary\n\nAnswers\n[bug-done-thing](closed/20250101-bug-done-thing.md).\n\n## Outcome\n\nFixed in abc1234.\n";
     let (dir, item) = repo_with_item("link-closed", body);
     std::fs::create_dir_all(dir.join("closed")).expect("failed to create closed/");
@@ -196,6 +199,82 @@ fn close_accepts_a_link_to_a_closed_item() {
 
     let output = nokori(&dir, &["close", &item]);
     assert!(output.status.success(), "{output:?}");
+    assert!(!dir.join(&item).exists(), "the item was left in backlog/");
+
+    let closed = dir.join("closed").join(item.trim_start_matches("backlog/"));
+    let written = std::fs::read_to_string(&closed).expect("failed to read closed item");
+    assert!(
+        written.contains("[bug-done-thing](20250101-bug-done-thing.md)"),
+        "{written}"
+    );
+    // The target is all that changed: the rest of the file is byte for byte
+    // what it was, so the diff of the moving commit shows the link and nothing
+    // else.
+    assert_eq!(written, body.replace("closed/20250101", "20250101"));
+
+    // The writer does not see the file change, so the rewrite is reported.
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    assert!(
+        stdout.contains("`closed/20250101-bug-done-thing.md` -> `20250101-bug-done-thing.md`"),
+        "{stdout}"
+    );
+    assert!(stdout.contains("line 6"), "{stdout}");
+
+    std::fs::remove_dir_all(&dir).expect("failed to clean up");
+}
+
+#[test]
+fn close_rewrites_a_link_however_it_was_spelled() {
+    // `../closed/x.md` names the same file from `closed/` as `closed/x.md` names
+    // from `backlog/`, but it is not how a file in `closed/` names its
+    // neighbour, so it is respelled as well.
+    let body = "# Bug: x\n\n## Summary\n\nAnswers\n[bug-done-thing](../closed/20250101-bug-done-thing.md).\n\n## Outcome\n\nFixed in abc1234.\n";
+    let (dir, item) = repo_with_item("link-parent", body);
+    std::fs::create_dir_all(dir.join("closed")).expect("failed to create closed/");
+    std::fs::write(
+        dir.join("closed/20250101-bug-done-thing.md"),
+        "# Bug: done-thing\n\n## Outcome\n\nFixed.\n",
+    )
+    .expect("failed to write closed item");
+    git(&dir, &["add", "."]);
+    git(&dir, &["commit", "--quiet", "-m", "close another item"]);
+
+    let output = nokori(&dir, &["close", &item]);
+    assert!(output.status.success(), "{output:?}");
+
+    let closed = dir.join("closed").join(item.trim_start_matches("backlog/"));
+    let written = std::fs::read_to_string(&closed).expect("failed to read closed item");
+    assert!(
+        written.contains("[bug-done-thing](20250101-bug-done-thing.md)"),
+        "{written}"
+    );
+
+    std::fs::remove_dir_all(&dir).expect("failed to clean up");
+}
+
+#[test]
+fn close_does_not_rewrite_what_is_already_in_closed() {
+    // A closed item is not edited, so a link that was wrong when it landed is
+    // read as the record of what that `close` produced.
+    let dir = temp_dir("no-sweep");
+    std::fs::create_dir_all(dir.join("backlog")).expect("failed to create backlog/");
+    std::fs::create_dir_all(dir.join("closed")).expect("failed to create closed/");
+    std::fs::write(dir.join("backlog/README.md"), "# Backlog\n").expect("failed to write");
+    let broken =
+        "# Bug: old\n\n## Outcome\n\nSee\n[bug-nowhere](closed/closed/20250101-bug-nowhere.md).\n";
+    std::fs::write(dir.join("closed/20240101-bug-old.md"), broken)
+        .expect("failed to write closed item");
+    let body = "# Bug: x\n\n## Summary\n\nDone.\n\n## Outcome\n\nFixed.\n";
+    std::fs::write(dir.join("backlog/20250101-bug-new.md"), body).expect("failed to write item");
+    git(&dir, &["add", "."]);
+    git(&dir, &["commit", "--quiet", "-m", "setup"]);
+
+    let output = nokori(&dir, &["close", "backlog/20250101-bug-new.md"]);
+    assert!(output.status.success(), "{output:?}");
+
+    let untouched = std::fs::read_to_string(dir.join("closed/20240101-bug-old.md"))
+        .expect("failed to read closed item");
+    assert_eq!(untouched, broken, "a closed item was rewritten");
 
     std::fs::remove_dir_all(&dir).expect("failed to clean up");
 }

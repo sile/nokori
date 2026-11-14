@@ -36,8 +36,11 @@ to work around:
 The link check is the subject of `nokori explain references`, which says
 which links it looks at and which it leaves alone.
 
-`close` moves the file and touches nothing else. Committing the move is the
-user's step, and is the last one: a file in `closed/` is not edited afterwards.
+`close` moves the file and writes the link targets that the move would
+otherwise break, printing each one it changed. Nothing else is touched:
+committing the move is the user's step, and it is the last one, because a file
+in `closed/` is not edited afterwards. A link that was already wrong when the
+file reached `closed/` stays as it is, for the same reason.
 
 An item is closed when it is settled, not when the work is finished. A `bug`
 that turns out not to be a bug, an `rfc` that is turned down, and a `plan`

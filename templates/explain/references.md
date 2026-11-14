@@ -20,10 +20,26 @@ moves. This table is the whole rule:
 | `closed/` | `closed/` | `20261114-plan-split-the-lexer.md` |
 | `closed/` | `backlog/` | not allowed; see below |
 
+A target that begins with `backlog/` or `closed/` is read from the root of
+the repository; any other target is read from the directory of the item that
+holds the link. That is why the first and third rows are a bare filename --
+those items are neighbours -- and why the second row, which reaches out of
+its own directory, spells the path from the root.
+
 Write the path that is correct now. An item may cite an item that is still
 open, and when that one closes the link breaks; it is repaired in the open
 item that holds it, because `close` refuses a link that does not resolve.
-A broken link therefore never reaches `closed/`.
+
+`close` also repairs the links in the file it moves. A file in `backlog/`
+that points at `closed/x.md` is right where it stands, but moved into
+`closed/` the same text would point at `closed/closed/x.md`; `close` writes
+`x.md` in its place and prints what it changed. So the table above is what a
+link reads in the file, before the move as well as after, and the writer
+never has to spell a target for a place the file is not in yet.
+
+A broken link therefore does not reach `closed/` by a move. What is already
+there stays: a closed item is not edited, so a link that was broken when it
+landed is read as the record of what that `close` produced.
 
 
 What the text says
@@ -48,7 +64,10 @@ What close checks
 `close` looks at one thing: a link in the file that points at an item,
 meaning a `.md` file in `backlog/` or `closed/`. It refuses the move when
 that link points into `backlog/` (see below) or at a file that does not
-exist.
+exist. A link that does resolve, but means a different file from `closed/`
+than from `backlog/`, is rewritten rather than refused: the check and the
+rewrite read the same links from the same place, so a file that `close`
+accepts is a file whose links work once it is there.
 
 Nothing else is checked. A link to a URL, to a file in this repository that
 is not an item, or in some other notation altogether is left alone, broken

@@ -81,9 +81,9 @@ Decided
   including what it got wrong. A fix that differs from what they predicted is
   described in `## Outcome`, not by rewriting them.
 - There is no section for a later addition. A template offering one would read
-  as advice to amend a closed item, and `nokori` recommends no such flow: a
-  file in `closed/` is left as it was written. Appending to it by hand is the
-  user's own business, the same as any operation outside the flow.
+  as advice to amend a closed item, and `nokori` recommends no such flow: the
+  later finding is its own item, citing the closed one, and the closed file is
+  left as it was written.
 - An item's state is expressed by the directory it is in, never by a `Status`
   field inside the file. There are two: `backlog/` itself, and `closed/`.
 - v1 has three item kinds: `rfc`, `bug`, and `plan`. There is no `memo`
@@ -107,14 +107,24 @@ progress. Its sections are `Goal`, `Steps`, `Notes`, and `Outcome`.
     reads as structure and says nothing about how they relate, and the order
     the relations are made of is already the subject of `Steps`.
 - An item refers to another item with a markdown link: the text is the kind
-  and slug, the target is the path to the file written as it is now. The link
-  is what makes the reference checkable, which a name in backticks is not.
-- `close` checks the links that point at an item, and nothing else. It refuses
+  and slug, the target is the path to the file as seen from the file holding
+  the link. The link is what makes the reference checkable, which a name in
+  backticks is not. The writer spells it for where the file is now, and
+  `close` respells the ones the move would change, so no target is ever
+  written for a directory the file is not in yet.
+- `close` reads the links that point at an item, and nothing else. It refuses
   the move when such a link points into `backlog/`, or at a file that is not
-  there. A link to a URL, to a file of the repository that is not an item, or
-  in some other notation is left alone, broken or not: keeping it right is the
-  writer's business. The rule, and the path each case needs, is in `nokori
-  explain references`.
+  there. A link that resolves from `closed/` but was spelled for `backlog/` is
+  rewritten instead, and every rewrite is printed: the move is what changes
+  what the target means, so the repair belongs to the move. A link to a URL,
+  to a file of the repository that is not an item, or in some other notation
+  is left alone, broken or not: keeping it right is the writer's business. The
+  rule, and the path each case needs, is in `nokori explain references`.
+- `close` rewrites nothing but the targets whose meaning the move would change,
+  and it never visits `closed/`. A link that was already broken when the file
+  landed stays as it is, and a later finding goes in a new item. The same rule
+  covers everything written down: the record says what was concluded and is
+  not corrected to say what is known now.
 - A closed item never cites an open one, in any section. A closed file is not
   edited again, so a link it holds is permanent and has to point at something
   permanent: an open item can still be renamed, and its outcome is not known.
@@ -141,10 +151,12 @@ progress. Its sections are `Goal`, `Steps`, `Notes`, and `Outcome`.
 - An item is closed by moving it to `closed/`, never by deleting it, so that
   closing it leaves a record. Deleting a file by hand is the user's own
   business, the same as any operation outside the flow.
-- Files in `closed/` are not edited afterwards; corrections and additions go in
-  as appended notes. It is the same implicit rule as out-of-flow operations in
-  git-flow: doing something outside the flow by hand is the user's own
-  responsibility, and does not need to be spelled out.
+- Nothing written is rewritten to follow a later state. A closed item is not
+  edited, a name once given is not renamed, and the directories that hold items
+  do not move. What changes is stated by a new item that cites the old one, and
+  the old file keeps saying what it said. The one exception is a threat to
+  security or privacy, where the cost of leaving the text alone is paid by
+  somebody other than the reader.
 - Moving an item into `closed/` is local only: the tool moves the file and
   touches nothing else. It does not commit, push, or otherwise change anything
   through git.
@@ -288,13 +300,35 @@ not closed, whether or not anybody is working on it. If a state later turns
 out to earn its place, adding one is easy; removing one costs the user a
 rename of every file in it, which is why the smaller set goes first.
 
-### Why `closed/` is not edited
+### Why the past is not rewritten
 
-A file in `closed/` records what was concluded at a particular time. Rewriting
-it would make the record show what is known now instead, and the reader could
-no longer tell which parts were the original judgement. Corrections and
-additions are appended for that reason: the earlier text stays legible and the
-revision is dated by git.
+A backlog is not a document that is kept current. It is a series of items, each
+written at a time and each stating what was true then, and its state is what
+the directories say now. The two are allowed to disagree, and the disagreement
+is the information: a closed item that a later one overturns is how the change
+of mind is recorded, and it is worth more than a single item saying what is
+believed today.
+
+So a later state is written as a new item that cites the old one, never back
+into the old file. An `rfc` is superseded by a new `rfc`; a `bug` whose cause
+turned out elsewhere is closed as it is and followed by a new one; a name that
+turns out to be wrong is kept, and the item that renames it says so. Whatever
+was written stays legible, and git dates the revision rather than the text
+doing it.
+
+What this buys is that nothing has to be kept in step. A file whose target is
+fixed changes meaning when the file moves, and repairing every such link means
+reading every closed item each time anything moves; a name that follows the
+item it names does the same to every reference. The cost grows with the size
+of the record, which is the one thing a backlog only ever increases. Leaving
+the past alone costs nothing as the record grows, because nothing new looks at
+it.
+
+The exception is a threat to security or privacy: a secret in a closed item, or
+a name that endangers somebody. There the cost of leaving the text alone is
+paid by a reader who did not write it, and no rule about bookkeeping outweighs
+that. It is the only reason to rewrite what was written, and it is worth
+saying out loud so that a reader can tell the exception from the rule.
 
 ### Why `close` and not `finish`
 

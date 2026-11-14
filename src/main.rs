@@ -139,9 +139,15 @@ fn try_run_close(args: &mut noargs::RawArgs) -> noargs::Result<bool> {
         return Ok(true);
     }
 
-    let path = close_item(&file)?;
+    let closing = close_item(&file)?;
 
-    println!("Closed {}", path.display());
+    println!("Closed {}", closing.path.display());
+    for rewrite in &closing.rewrites {
+        println!(
+            "  line {}: `{}` -> `{}` (the target the move would have broken)",
+            rewrite.line, rewrite.from, rewrite.to
+        );
+    }
     println!();
     println!("Commit the move, and leave the file as it is from then on:");
     println!("`closed/` is a record, so later work cites it rather than editing it.");
@@ -225,7 +231,7 @@ today. Pick another slug, or edit the existing file.",
     Ok(path)
 }
 
-fn close_item(file: &str) -> Result<std::path::PathBuf, String> {
+fn close_item(file: &str) -> Result<Closing, String> {
     let src = std::path::Path::new(file);
     let name = src.file_name().map(|name| name.to_owned());
     if !src.is_file() {
@@ -270,7 +276,10 @@ for it.{hint}"
     let content =
         std::fs::read_to_string(src).map_err(|e| format!("failed to read `{file}`: {e}"))?;
     check_filled_in(file, &content)?;
-    check_links(file, src, &content)?;
+    // Read before the move, from where the file is going: a target that means
+    // one file in `backlog/` and another in `closed/` is the move's doing, and
+    // the move is the one moment a closed file may be written.
+    let (rewritten, rewrites) = rewrite_links(file, src, &content)?;
     check_committed(file)?;
 
     let name = name.expect("a path under backlog/ is a file");
@@ -286,9 +295,15 @@ again.",
 
     std::fs::create_dir_all(CLOSED_DIR)
         .map_err(|e| format!("failed to create `{CLOSED_DIR}`: {e}"))?;
+    if !rewrites.is_empty() {
+        std::fs::write(src, &rewritten).map_err(|e| format!("failed to write `{file}`: {e}"))?;
+    }
     std::fs::rename(src, &dst)
         .map_err(|e| format!("failed to move `{file}` to `{}`: {e}", dst.display()))?;
-    Ok(dst)
+    Ok(Closing {
+        path: dst,
+        rewrites,
+    })
 }
 
 /// Checks that the item is ready to be closed: no `TODO` left anywhere, and the
@@ -340,83 +355,198 @@ there. Say what actually happened and name the change that settled the item
     Ok(())
 }
 
-/// Checks the links that point at an item, in a file about to move into
-/// `closed/`. A link to an item is a `.md` file under `backlog/` or `closed/`;
-/// any other link is left alone, since the rule here is about items.
+/// A link found in a file: the target as it is written, the line it is on, and
+/// the byte range the target occupies, so that the target alone can be
+/// replaced without copying the rest of the file by hand.
+struct Link {
+    target: String,
+    line: usize,
+    start: usize,
+    end: usize,
+}
+
+/// A link whose target had to change because the file moved.
+struct Rewrite {
+    line: usize,
+    from: String,
+    to: String,
+}
+
+/// Reads the links that point at an item, in a file about to move into
+/// `closed/`, and returns the content with the targets the move would break
+/// written again. A link to an item is a `.md` file under `backlog/` or
+/// `closed/`; any other link is left alone, since the rule here is about items.
 ///
-/// Two things are refused: a link into `backlog/`, because the citing file is
-/// about to be closed and a closed item must not cite an open one, and a link
-/// that does not resolve, because a closed file is not edited again and a
-/// broken link in it could never be fixed.
-fn check_links(file: &str, src: &std::path::Path, content: &str) -> Result<(), String> {
-    let from = src.parent().unwrap_or_else(|| std::path::Path::new("."));
-    for (target, line) in links(content) {
-        let path = target_path(from, &target);
-        if !is_item_path(&path) {
+/// The links are read from `closed/`, where the file is going, not from
+/// `backlog/`, where it is. That is where they will be read, and the move is
+/// what changes what a target means: `closed/x.md`, written in `backlog/`,
+/// names the same file that `x.md` names once both are in `closed/`. The
+/// target is replaced and the rest of the file is copied untouched, so a
+/// rewritten file differs from the old one in those bytes alone.
+///
+/// Two things are refused rather than rewritten: a link into `backlog/`,
+/// because a closed item must not cite an open one, and a link that does not
+/// resolve, because a closed file is not edited again and a broken link in it
+/// could never be fixed.
+///
+/// Each target is read from where the file is now, which is what the writer
+/// meant by it, and written again as that file's path seen from `closed/`,
+/// which is where it will be read. The two are the same text only when the
+/// file is already in `closed/`, so the rule is one line: name the file, from
+/// the directory the link will be read in.
+fn rewrite_links(
+    file: &str,
+    src: &std::path::Path,
+    content: &str,
+) -> Result<(String, Vec<Rewrite>), String> {
+    let here = src.parent().unwrap_or_else(|| std::path::Path::new("."));
+    let mut rewritten = String::with_capacity(content.len());
+    let mut rewrites = Vec::new();
+    let mut copied = 0;
+
+    for link in links(content) {
+        // The file the link names, read from where the link is written.
+        let now = target_path(here, &link.target);
+        if !is_item_path(&now) {
             continue;
         }
 
-        if path.starts_with(BACKLOG_DIR) && path.is_file() {
+        // The item it names is still open, which is what the rule about open
+        // items is about: it may be renamed or turned down, and a closed file
+        // cannot follow it.
+        if now.starts_with(BACKLOG_DIR) && now.is_file() {
             return Err(format!(
-                r"`{file}` links `{target}` (line {line}), which is an item in
+                r"`{file}` links `{}` (line {}), which is an item in
 `{BACKLOG_DIR}/`. A closed item never cites an open one: the item it names
 can still be renamed or turned down, and this file will not be edited again
 to follow it.
 
 Wait until that item is closed and point the link at `{CLOSED_DIR}/`, or take
 the link out and say what the item proposes in your own words. The rule is in
-`nokori explain references`."
+`nokori explain references`.",
+                link.target, link.line
             ));
         }
 
-        if !path.is_file() {
+        if !now.is_file() {
             return Err(format!(
-                r"`{file}` links `{target}` (line {line}), which is not a file. A close
+                r"`{file}` links `{}` (line {}), which is not a file. A close
 refuses a link that does not resolve, because a closed item is not edited
 again and the link could never be repaired there.
 
 If the item it named was closed, point the link at its file in `{CLOSED_DIR}/`.
 If it was renamed, point it at the new name. If it was never written, say what
-it was going to do instead. The paths are in `nokori explain references`."
+it was going to do instead. The paths are in `nokori explain references`.",
+                link.target, link.line
             ));
         }
+
+        // The target is written the way the new place spells it: the file's
+        // path seen from `closed/`, which names its neighbours by bare
+        // filename. Any anchor is kept, since it names a heading inside the
+        // file and does not move with it.
+        let (_, anchor) = match link.target.split_once('#') {
+            Some((path, anchor)) => (path, format!("#{anchor}")),
+            None => (link.target.as_str(), String::new()),
+        };
+        let fixed = format!(
+            "{}{anchor}",
+            now.strip_prefix(CLOSED_DIR)
+                .unwrap_or(&now)
+                .to_string_lossy()
+        );
+        if link.target == fixed {
+            continue;
+        }
+        rewritten.push_str(&content[copied..link.start]);
+        rewritten.push_str(&fixed);
+        copied = link.end;
+        rewrites.push(Rewrite {
+            line: link.line,
+            from: link.target,
+            to: fixed,
+        });
     }
 
-    Ok(())
+    if rewrites.is_empty() {
+        return Ok((content.to_owned(), rewrites));
+    }
+    rewritten.push_str(&content[copied..]);
+    Ok((rewritten, rewrites))
 }
 
-/// Collects the targets of the markdown links in `content`, with the line each
-/// is on. Only inline links (`[text](target)`) with a target that is a plain
-/// path are read, since that is the form a reference is written in; a
-/// reference inside a code fence is read too, which is accepted, because a
-/// fence showing a link is a rare thing to write and a check that skipped
-/// fences would be more code than the mistake costs.
-fn links(content: &str) -> Vec<(String, usize)> {
+/// What `close` did: the file it moved, and the targets it had to respell on
+/// the way. The rewrites are reported rather than kept to the file, so that
+/// whoever reads the diff sees why the file changed and not only that it
+/// moved.
+struct Closing {
+    path: std::path::PathBuf,
+    rewrites: Vec<Rewrite>,
+}
+
+/// Collects the links in `content`. Only inline links (`[text](target)`) with a
+/// target that is a plain path are read, since that is the form a reference is
+/// written in; a reference inside a code fence is read too, which is accepted,
+/// because a fence showing a link is a rare thing to write and a check that
+/// skipped fences would be more code than the mistake costs.
+fn links(content: &str) -> Vec<Link> {
     let mut found = Vec::new();
-    for (index, line) in content.lines().enumerate() {
+    // Walked by byte offset rather than with `lines()`, since a target is
+    // replaced by its offset in `content` and `lines()` does not say where a
+    // line began once a `\r` was dropped.
+    let mut line_start = 0;
+    for (index, line) in content.split('\n').enumerate() {
         let mut rest = line;
         while let Some(open) = rest.find("](") {
             let after = &rest[open + 2..];
             let Some(close) = after.find(')') else {
                 break;
             };
-            let target = after[..close].trim();
+            let field = &after[..close];
+            let target = field.trim();
             if !target.is_empty() && !target.contains(['(', ' ', '\\']) {
-                found.push((target.to_owned(), index + 1));
+                let start = line_start
+                    + (line.len() - rest.len())
+                    + open
+                    + 2
+                    + (field.len() - field.trim_start().len());
+                found.push(Link {
+                    target: target.to_owned(),
+                    line: index + 1,
+                    start,
+                    end: start + target.len(),
+                });
             }
             rest = &after[close + 1..];
         }
+        line_start += line.len() + 1;
     }
     found
 }
 
-/// Reads a link target as a path from `from`, dropping an anchor and folding
-/// `.` and `..` away, so that the depth of the result says where the file is
-/// rather than how the link was spelled.
+/// Reads a link target as a path from the repository root, dropping an anchor
+/// and folding `.` and `..` away, so that the depth of the result says where
+/// the file is rather than how the link was spelled. A target in `backlog/` or
+/// in `closed/` names a file of the repository whichever item holds the link,
+/// Reads a link target as a path from the repository root, dropping an anchor
+/// and folding `.` and `..` away, so that the depth of the result says where
+/// the file is rather than how the link was spelled.
+///
+/// A target that names `backlog/` or `closed/` outright is read from the root,
+/// and everything else from `from`, the directory the link is written in. That
+/// is the whole of the table in `nokori explain references`: a file in
+/// `backlog/` reaching a file in `closed/` writes `closed/x.md`, not
+/// `../closed/x.md`, while a file reaching its own neighbour writes `x.md`.
 fn target_path(from: &std::path::Path, target: &str) -> std::path::PathBuf {
     let target = target.split('#').next().unwrap_or(target);
+    let from_root = target.starts_with(BACKLOG_DIR) || target.starts_with(CLOSED_DIR);
+    let full = if from_root {
+        std::path::PathBuf::from(target)
+    } else {
+        from.join(target)
+    };
     let mut path = std::path::PathBuf::new();
-    for component in from.join(target).components() {
+    for component in full.components() {
         match component {
             std::path::Component::CurDir => {}
             std::path::Component::ParentDir => {
@@ -428,10 +558,13 @@ fn target_path(from: &std::path::Path, target: &str) -> std::path::PathBuf {
     path
 }
 
+/// Says whether `path` names an item: a `.md` file directly in `backlog/` or in
+/// `closed/`, read from the repository root, which is what `target_path`
+/// returns whatever directory the link was resolved from.
 fn is_item_path(path: &std::path::Path) -> bool {
-    let under_backlog = path.starts_with(BACKLOG_DIR) || path.starts_with(CLOSED_DIR);
+    let under = path.starts_with(BACKLOG_DIR) || path.starts_with(CLOSED_DIR);
     let depth = path.components().count();
-    under_backlog && depth == 2 && path.extension().is_some_and(|ext| ext == "md")
+    under && depth == 2 && path.extension().is_some_and(|ext| ext == "md")
 }
 
 /// Checks that the file being moved has no changes git has not seen yet.

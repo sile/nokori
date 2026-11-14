@@ -35,7 +35,7 @@ fn explain_prints_the_kinds() {
         .lines()
         .filter(|line| !line.starts_with(' '))
         .collect();
-    for kind in ["rfc", "bug", "plan"] {
+    for kind in ["rfc", "bug", "plan", "feedback"] {
         assert!(headings.contains(&kind), "{kind} in {stdout}");
     }
 

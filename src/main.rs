@@ -17,6 +17,7 @@ const KINDS: &[(&str, &str)] = &[
     ("rfc", include_str!("../templates/backlog/rfc.md")),
     ("bug", include_str!("../templates/backlog/bug.md")),
     ("plan", include_str!("../templates/backlog/plan.md")),
+    ("feedback", include_str!("../templates/backlog/feedback.md")),
 ];
 
 /// The topics `explain` prints, each with the text. They carry the material a

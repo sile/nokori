@@ -120,6 +120,17 @@ fn create_writes_the_plan_template() {
 }
 
 #[test]
+fn create_writes_the_feedback_template() {
+    create_and_read(
+        "feedback",
+        "feedback",
+        "faster-listing",
+        "# Feedback:",
+        &["## What I want"],
+    );
+}
+
+#[test]
 fn create_refuses_an_existing_file() {
     let dir = temp_dir("exists");
     assert!(nokori(&dir, &["init"]).status.success());
@@ -143,7 +154,7 @@ fn create_refuses_an_unknown_kind() {
     // The error has to say which kinds there are, since the reader guessed
     // wrong and `create` has no other way to tell them.
     let stderr = String::from_utf8_lossy(&output.stderr);
-    assert!(stderr.contains("rfc, bug, plan"), "{stderr}");
+    assert!(stderr.contains("rfc, bug, plan, feedback"), "{stderr}");
 
     std::fs::remove_dir_all(&dir).expect("failed to clean up");
 }

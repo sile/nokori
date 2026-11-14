@@ -13,7 +13,7 @@ why the file changed and not only that it moved.
 
 A link is written from where the file is, so the same text means a different
 file once the file moves. In `backlog/`,
-[rfc-never-cite-an-open-item-from-a-closed-one](closed/20261114-rfc-never-cite-an-open-item-from-a-closed-one.md)
+[rfc-never-cite-an-open-item-from-a-closed-one](20261114-rfc-never-cite-an-open-item-from-a-closed-one.md)
 is the right target; in `closed/`, that text reads `closed/closed/20261114-rfc-never-cite-an-open-item-from-a-closed-one.md`,
 which is nothing. The writer cannot be asked to get this right, because the
 right answer changes at a moment the writer does not choose.
@@ -23,7 +23,7 @@ before moving; so a file whose links are checked from `backlog/` passes and is
 then broken by the move `close` itself makes. That is not a hypothetical. The
 three RFCs that introduced links were closed this way, and the first of them
 to be read afterwards was pointing at a file that does not exist:
-[rfc-how-items-refer-to-each-other](closed/20261114-rfc-how-items-refer-to-each-other.md)
+[rfc-how-items-refer-to-each-other](20261114-rfc-how-items-refer-to-each-other.md)
 still reads `closed/20261114-rfc-never-cite-an-open-item-from-a-closed-one.md`
 from inside `closed/`. The section on references says that a broken link never
 reaches `closed/`, and `close`, which is what makes that true, put it there.
@@ -43,7 +43,7 @@ relative to `closed/`, and the line is left otherwise as it was.
 
 The rule for a new target is one line: the path of the file the link named,
 seen from `closed/`, with the `closed/` it starts with dropped. A link to
-[rfc-how-items-refer-to-each-other](closed/20261114-rfc-how-items-refer-to-each-other.md) becomes `20261114-rfc-how-items-refer-to-each-other.md`,
+[rfc-how-items-refer-to-each-other](20261114-rfc-how-items-refer-to-each-other.md) becomes `20261114-rfc-how-items-refer-to-each-other.md`,
 because both files then sit in the same directory. A link to
 `../closed/20261114-rfc-how-items-refer-to-each-other.md`
 becomes the same thing: how the link was spelled does not decide what it

@@ -43,8 +43,9 @@ relative to `closed/`, and the line is left otherwise as it was.
 
 The rule for a new target is one line: the path of the file the link named,
 seen from `closed/`, with the `closed/` it starts with dropped. A link to
-[bug-x](closed/20261114-bug-x.md) becomes `20261114-bug-x.md`, because both
-files then sit in the same directory. A link to `../closed/20261114-bug-x.md`
+[rfc-how-items-refer-to-each-other](closed/20261114-rfc-how-items-refer-to-each-other.md) becomes `20261114-rfc-how-items-refer-to-each-other.md`,
+because both files then sit in the same directory. A link to
+`../closed/20261114-rfc-how-items-refer-to-each-other.md`
 becomes the same thing: how the link was spelled does not decide what it
 becomes, only what it names. The text of the link is not touched, so it keeps
 the kind and slug it was written with.

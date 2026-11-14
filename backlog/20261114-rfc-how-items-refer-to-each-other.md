@@ -4,7 +4,7 @@
 
 An item refers to another item with a markdown link whose text is the other
 item's kind and slug and whose target is the path to its file:
-[rfc-never-cite-an-open-item-from-a-closed-one](20261114-rfc-never-cite-an-open-item-from-a-closed-one.md).
+[rfc-never-cite-an-open-item-from-a-closed-one](closed/20261114-rfc-never-cite-an-open-item-from-a-closed-one.md).
 
 A link is what makes the rule in that RFC
 checkable. That
@@ -47,7 +47,7 @@ only be checked by reading has to be written so that a human can judge it at
 about which direction a reference may point can be enforced rather than
 remembered. That is why the link is not just a convenience here -- it is what
 makes the neighbouring
-[rfc-never-cite-an-open-item-from-a-closed-one](20261114-rfc-never-cite-an-open-item-from-a-closed-one.md)
+[rfc-never-cite-an-open-item-from-a-closed-one](closed/20261114-rfc-never-cite-an-open-item-from-a-closed-one.md)
 enforceable.
 
 ## Design
@@ -55,7 +55,7 @@ enforceable.
 A reference is a markdown link:
 
 ```markdown
-[rfc-cache-the-parse](20261114-rfc-cache-the-parse.md)
+[feedback-rename-plan-items-section](closed/20261114-feedback-rename-plan-items-section.md)
 ```
 
 The text is the item's kind and slug, without the date. The target is the path
@@ -68,7 +68,7 @@ on where the two items are:
 | `backlog/` | `closed/` | `closed/20261114-plan-split-the-lexer.md` |
 | `closed/` | `closed/` | `20261114-plan-split-the-lexer.md` |
 | `closed/` | `backlog/` | forbidden; see
-  [rfc-never-cite-an-open-item-from-a-closed-one](20261114-rfc-never-cite-an-open-item-from-a-closed-one.md) |
+  [rfc-never-cite-an-open-item-from-a-closed-one](closed/20261114-rfc-never-cite-an-open-item-from-a-closed-one.md) |
 
 Write the path that is correct now. When an item named by an open one closes,
 the link breaks, and it is repaired in the open item that holds it -- which
@@ -129,7 +129,7 @@ belongs to.
 **Write the file name without linking it.** The name alone is enough for a
 reader with the repository, it never goes stale, and no item ever has to be
 edited because another one moved. It also makes the rule in
-[rfc-never-cite-an-open-item-from-a-closed-one](20261114-rfc-never-cite-an-open-item-from-a-closed-one.md)
+[rfc-never-cite-an-open-item-from-a-closed-one](closed/20261114-rfc-never-cite-an-open-item-from-a-closed-one.md)
 a matter of judgement: `close` sees a backticked string and cannot tell
 whether it names
 an item in `backlog/`, because the string carries no location. The rule would

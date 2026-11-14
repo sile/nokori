@@ -441,11 +441,16 @@ it was going to do instead. The paths are in `nokori explain references`.",
 /// link with a scheme, or one that names only an anchor in the same file. The
 /// two are skipped by `check_links`, since neither is a file that the move
 /// could change the meaning of.
+///
+/// A scheme is read as the colon before any `/` (`https:`, `mailto:`), so that
+/// a scheme is recognized by its form rather than by a list of the ones found
+/// so far. A colon further along is part of a file name and is not a scheme.
 fn is_external(target: &str) -> bool {
-    target.starts_with('#')
-        || target.is_empty()
-        || target.contains("://")
-        || target.starts_with("mailto:")
+    if target.starts_with('#') || target.is_empty() {
+        return true;
+    }
+    let head = target.split('/').next().unwrap_or_default();
+    head.contains(':')
 }
 
 /// What `close` did: the file it moved. Nothing else changed, so there is

@@ -7,7 +7,8 @@ name and whose target is the path to that file from the referring file's own
 place: `[20261114-rfc-how-items-refer-to-each-other.md](20261114-rfc-how-items-refer-to-each-other.md)`.
 
 A link is what makes the rule in
-`20261114-rfc-never-cite-an-open-item-from-a-closed-one.md` checkable. That
+[rfc-never-cite-an-open-item-from-a-closed-one](20261114-rfc-never-cite-an-open-item-from-a-closed-one.md)
+checkable. That
 rule forbids a closed item from citing an open one, and with a name alone
 `close` could only guess at what a name meant; with a link, `close` can see
 where it points and refuse the file until it is fixed.
@@ -44,19 +45,20 @@ only be checked by reading has to be written so that a human can judge it at
 about which direction a reference may point can be enforced rather than
 remembered. That is why the link is not just a convenience here -- it is what
 makes the neighbouring
-`20261114-rfc-never-cite-an-open-item-from-a-closed-one.md` enforceable.
+[rfc-never-cite-an-open-item-from-a-closed-one](20261114-rfc-never-cite-an-open-item-from-a-closed-one.md)
+enforceable.
 
 ## Design
 
 A reference is a markdown link:
 
 ```markdown
-[20261114-rfc-how-items-refer-to-each-other.md](20261114-rfc-how-items-refer-to-each-other.md)
+[rfc-how-items-refer-to-each-other](20261114-rfc-how-items-refer-to-each-other.md)
 ```
 
-The text is the item's file name, date and kind included. The target is the
-path to that file from the directory of the file holding the link, which
-depends on where the two items are:
+The text is the item's kind and slug, without the date. The target is the path
+to that file from the directory of the file holding the link, which depends
+on where the two items are:
 
 | referring item | target item | target |
 | --- | --- | --- |
@@ -64,7 +66,7 @@ depends on where the two items are:
 | `backlog/` | `closed/` | `closed/20261114-plan-split-the-lexer.md` |
 | `closed/` | `closed/` | `20261114-plan-split-the-lexer.md` |
 | `closed/` | `backlog/` | forbidden; see
-  `20261114-rfc-never-cite-an-open-item-from-a-closed-one.md` |
+  [rfc-never-cite-an-open-item-from-a-closed-one](20261114-rfc-never-cite-an-open-item-from-a-closed-one.md) |
 
 Write the path that is correct now. When an item named by an open one closes,
 the link breaks, and it is repaired in the open item that holds it -- which
@@ -75,8 +77,19 @@ No URL and no `[[...]]`. A URL points outside the repository and needs a
 network to follow; `[[...]]` is not markdown, so nothing renders it and no
 tool can check it.
 
-The text is a whole file name. `split-the-lexer` is not a reference; it is a
-fragment the reader has to resolve.
+The date is left out of the text because it carries nothing a reader needs:
+when an item was created is not why it is being referred to, and both the
+target and `ls` give it. The kind stays, because it is what tells a reader
+whether the thing referred to is a proposal, a piece of work, or a report --
+which is most of what the sentence around the link is saying.
+
+A text of the slug alone would read even better, and is what a link makes
+possible: the target is unique, so nothing is lost while the link is a link.
+It is the link coming apart that loses it -- a paste into a plain-text
+channel, a `git grep` output, a quotation in a review -- and what is lost is
+the kind, not the identity. Two items with the same kind and slug on
+different days would collide as text; that is accepted, since the text is
+only a label and the target is the reference.
 
 `close` checks links and refuses the move when one of them points at a file
 that does not exist. A link to an item that is not created yet is therefore
@@ -92,8 +105,9 @@ reads as structure.
 **Write the file name without linking it.** The name alone is enough for a
 reader with the repository, it never goes stale, and no item ever has to be
 edited because another one moved. It also makes the rule in
-`20261114-rfc-never-cite-an-open-item-from-a-closed-one.md` a matter of
-judgement: `close` sees a backticked string and cannot tell whether it names
+[rfc-never-cite-an-open-item-from-a-closed-one](20261114-rfc-never-cite-an-open-item-from-a-closed-one.md)
+a matter of judgement: `close` sees a backticked string and cannot tell
+whether it names
 an item in `backlog/`, because the string carries no location. The rule would
 then be one a writer has to remember at the moment they stop rereading the
 file, which is the worst moment to rely on memory.

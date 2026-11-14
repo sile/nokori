@@ -15,9 +15,9 @@ The `Items` section holds one line per item, and what a writer puts on the
 line is the slug:
 
 ```
-rfc-cache-the-parse
-plan-split-the-lexer
-bug-lexer-drops-eof
+[rfc-cache-the-parse](20261114-rfc-cache-the-parse.md)
+[plan-split-the-lexer](20261115-plan-split-the-lexer.md)
+[bug-lexer-drops-eof](20261116-bug-lexer-drops-eof.md)
 ```
 
 Three items are named and no relation is stated. Does the plan wait for the
@@ -48,10 +48,12 @@ place, two rules about sentences that already have somewhere to go:
 **A relation that belongs to one step goes in that step.**
 
 ```markdown
-- [ ] Wait for `20261114-rfc-how-items-refer-to-each-other.md` to be accepted,
-      then apply the same file name rule to the templates.
+- [ ] Wait for
+      [rfc-how-items-refer-to-each-other](20261114-rfc-how-items-refer-to-each-other.md)
+      to be accepted, then apply the same rule to the templates.
 - [ ] Split the lexer out of `parse.rs`, in parallel with
-      `plan-cache-the-parse`; neither has to wait for the other.
+      [plan-cache-the-parse](20261114-plan-cache-the-parse.md); neither has to
+      wait for the other.
 ```
 
 **A relation that is true of the plan as a whole goes in the Goal.**
@@ -59,8 +61,9 @@ place, two rules about sentences that already have somewhere to go:
 ```markdown
 ## Goal
 
-Carry out `20261114-rfc-how-items-refer-to-each-other.md`: every reference in
-`templates/` is written as a file name, not a path.
+Carry out
+[rfc-how-items-refer-to-each-other](20261114-rfc-how-items-refer-to-each-other.md):
+every reference in `templates/` is a link to the file.
 ```
 
 Both carry the relation in the writer's words, with no vocabulary to pick
@@ -71,9 +74,9 @@ The comment under `Steps` gains one sentence saying that an item another step
 waits on is named there, so that the rule is where a writer will be when
 writing one. The `Sections:` line in `explain kinds` loses `Items`.
 
-Items are named by file name, as decided in
-`20261114-rfc-how-items-refer-to-each-other.md`; the two RFCs land together,
-and that one is the one that decides the spelling.
+References are links, as decided in
+[rfc-how-items-refer-to-each-other](20261114-rfc-how-items-refer-to-each-other.md);
+that one decides the spelling, and this one only decides where they go.
 
 ## Alternatives
 

@@ -42,17 +42,27 @@ One rule, in the comment under `Outcome` in all four templates:
 
 > Name the change that carried this out, or the item that did if the work
 > happened somewhere else -- but only if that item is already closed. Never
-> cite an item that is still open.
+> cite an item that is still open, not even as background.
 
-The rule applies to references that carry information about the outcome: the
-one line in `Outcome` that says where the work went. It is not a rule about
-prose. A closed item may still say "this is what
-`20261114-rfc-how-items-refer-to-each-other.md` proposed" as background, as
-long as the sentence does not stand as the answer to "what happened".
+The rule applies to every item reference in `Outcome`, with no exception for
+one that is only being explained. An exception reads as a smaller rule and is
+a larger one: "background" and "the answer" are not two kinds of sentence but
+two readings of the same one, so every writer would be deciding which of the
+two their sentence is, at the moment they are writing the last thing the file
+will ever say. And a reader of the closed file sees a name in `Outcome` and
+has no way to tell which reading the writer intended.
 
-When the work is not finished, there is nothing to cite: the item stays in
-`backlog/` with its outcome unwritten, and the reference is written by
-whoever closes the item that finished the work.
+Nothing is lost by having no exception. The two cases that look like they
+need one do not:
+
+- **A closed item answering a proposal that is still open.** The item is not
+  settled yet, so it is not closed: it stays in `backlog/` with its outcome
+  unwritten, and the reference is written by whoever closes the item that
+  finished the work, pointing back at this one.
+- **A closed item explaining what an open item proposes.** Say what the
+  proposal is, without the name. `An RFC was floated to split the lexer` says
+  everything the reader needs and holds nothing that can go stale. If the
+  name is what matters to the reader, the item is not closed.
 
 Where the rule appears is the place a writer will be when breaking it. The
 `Outcome` comment is read at `close` time, which is the moment the file
@@ -81,17 +91,17 @@ written.
 
 ## Open questions
 
-Should `close` refuse a closed-to-open reference when it can see one, now
-that the rule exists? `close` would have to tell an item reference from any
-other backticked string, which is a guess about the naming convention rather
-than something the file format guarantees -- and the rule is about the
-sentence's meaning, which `close` cannot read. A wrong refusal at `close`
-time costs more than a wrong reference.
+Should `close` refuse a reference to an open item in `Outcome` when it can
+see one? The rule no longer has an exception, so the check has something
+narrow to look for: a backticked `YYYYMMDD-<kind>-<slug>.md` inside
+`Outcome`, answered by `backlog/` and `closed/`. What is left undecided is
+whether that pattern is a guarantee or a guess -- a writer may name an item
+some other way, and `close` would pass it.
 
-Does the same rule belong on the `Motivation` and `Notes` sections, where a
-closed item might describe what an open item proposes? Left out of the design
-above; background prose still names items, and the line between "background"
-and "the answer" is what a reader has to judge anyway.
+Does the rule belong on `Motivation` and `Notes` too, where an item that is
+still open can name anything? Those sections are editable for as long as the
+file sits in `backlog/`, so a reference that goes stale there can still be
+fixed; the reason for the rule does not reach them.
 
 ## Outcome
 

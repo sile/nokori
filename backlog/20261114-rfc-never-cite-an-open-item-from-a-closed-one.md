@@ -14,11 +14,10 @@ reference into `backlog/` is a reference to something that can still be
 renamed or deleted.
 
 The rule is checkable, which is most of why it is worth writing down. A
-reference is a markdown link (see
-[rfc-how-items-refer-to-each-other](20261114-rfc-how-items-refer-to-each-other.md)),
-so `close` can see that a file in `closed/` points into `backlog/` and refuse
-the move. The rule is not left to a writer to remember at the moment the file
-stops being theirs.
+reference is a markdown link (an RFC written alongside this one decides
+that), so `close` can see that a file in `closed/` points into `backlog/` and
+refuse the move. The rule is not left to a writer to remember at the moment
+the file stops being theirs.
 
 ## Motivation
 

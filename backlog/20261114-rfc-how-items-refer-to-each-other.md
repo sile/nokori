@@ -1,16 +1,22 @@
-# RFC: refer to an item by the name of its file
+# RFC: refer to an item by a link to its file
 
 ## Summary
 
-An item refers to another item by the name of its file, without the
-directory: `20261114-rfc-how-items-refer-to-each-other.md`. Today the only
-reference that is anywhere written down is the plan template's `Items`
-section, which asks for the slug alone, and a slug names an item only if you
-already know which date it was created on and which kind it is.
+An item refers to another item with a markdown link whose text is the file
+name and whose target is the path to that file from the referring file's own
+place: `[20261114-rfc-how-items-refer-to-each-other.md](20261114-rfc-how-items-refer-to-each-other.md)`.
 
-This settles the written form. It does not move the files: the reason a path
-is not written down is that `close` moves the file, and the answer to that is
-to write the name that survives the move, not to keep the file in place.
+A link is what makes the rule in
+`20261114-rfc-never-cite-an-open-item-from-a-closed-one.md` checkable. That
+rule forbids a closed item from citing an open one, and with a name alone
+`close` could only guess at what a name meant; with a link, `close` can see
+where it points and refuse the file until it is fixed.
+
+The cost is that a link carries the path of the file it points at, and
+`close` moves files, so a link written while both items are open breaks when
+one of them closes. That cost is paid before the item moves: `close` refuses
+a file holding a link that does not resolve, so a broken link cannot reach
+`closed/`. It is fixed in the open item that holds it, not left behind.
 
 ## Motivation
 
@@ -27,35 +33,70 @@ reader with no repository to search: a pasted quotation, a commit message
 reviewed out of context, or a discussion where one person says "see
 split-the-lexer" and the others have to be told which file that is.
 
-The file name settles both. It is unique within the repository, it survives
-`close`, and it is what `ls` and tab completion offer, so a reader who has it
-can open the file without a search.
+The file name in the link's text settles both. It is unique within the
+repository and it is what `ls` and tab completion offer, so a reader who has
+it can open the file without a search, and a reader who has the whole file
+in front of them can follow the link instead.
+
+A link is also checkable, which a name in backticks is not. A rule that can
+only be checked by reading has to be written so that a human can judge it at
+`close` time; a link has a target that a program can resolve, so the rule
+about which direction a reference may point can be enforced rather than
+remembered. That is why the link is not just a convenience here -- it is what
+makes the neighbouring
+`20261114-rfc-never-cite-an-open-item-from-a-closed-one.md` enforceable.
 
 ## Design
 
-An item's name is its file name without the directory:
-`20261114-plan-split-the-lexer.md`. A reference to an item is that name.
+A reference is a markdown link:
 
-- Write the whole name, date and kind included. `split-the-lexer` is not a
-  reference; it is a fragment the reader has to resolve.
-- Write the name, not the path. `backlog/20261114-plan-split-the-lexer.md`
-  and `closed/20261114-plan-split-the-lexer.md` stop pointing at the file
-the moment `close` moves it; the name alone points at it in both states.
-- Do not link it. No markdown link, no URL, no `[[...]]`. The name is enough
-  for a reader to find the file, and a link would have to be rewritten by
-  hand in every item that points at a file that moved.
+```markdown
+[20261114-rfc-how-items-refer-to-each-other.md](20261114-rfc-how-items-refer-to-each-other.md)
+```
 
-`close` does not check references. A reference that names a file that does
-not exist is not an error, because the file may be about to be created by
-another item that is still open; a check belongs in a lint command that
-reports what it finds, not in the command that moves a file.
+The text is the item's file name, date and kind included. The target is the
+path to that file from the directory of the file holding the link, which
+depends on where the two items are:
 
-The plan template's `Items` section says "by slug" today, and it changes to
-say "by file name" with the same words. The RFC and bug templates gain no
-section for references: a reference goes where it belongs in prose, and a
-section would invite a list of links that reads as structure.
+| referring item | target item | target |
+| --- | --- | --- |
+| `backlog/` | `backlog/` | `20261114-plan-split-the-lexer.md` |
+| `backlog/` | `closed/` | `closed/20261114-plan-split-the-lexer.md` |
+| `closed/` | `closed/` | `20261114-plan-split-the-lexer.md` |
+| `closed/` | `backlog/` | forbidden; see
+  `20261114-rfc-never-cite-an-open-item-from-a-closed-one.md` |
+
+Write the path that is correct now. When an item named by an open one closes,
+the link breaks, and it is repaired in the open item that holds it -- which
+happens before that item itself closes, because `close` refuses a link that
+does not resolve.
+
+No URL and no `[[...]]`. A URL points outside the repository and needs a
+network to follow; `[[...]]` is not markdown, so nothing renders it and no
+tool can check it.
+
+The text is a whole file name. `split-the-lexer` is not a reference; it is a
+fragment the reader has to resolve.
+
+`close` checks links and refuses the move when one of them points at a file
+that does not exist. A link to an item that is not created yet is therefore
+not writable before the item exists: write what would settle the item, and
+let the item that settles it link back.
+
+The RFC and bug templates gain no section for references: a reference goes
+where it belongs in prose, and a section would invite a list of links that
+reads as structure.
 
 ## Alternatives
+
+**Write the file name without linking it.** The name alone is enough for a
+reader with the repository, it never goes stale, and no item ever has to be
+edited because another one moved. It also makes the rule in
+`20261114-rfc-never-cite-an-open-item-from-a-closed-one.md` a matter of
+judgement: `close` sees a backticked string and cannot tell whether it names
+an item in `backlog/`, because the string carries no location. The rule would
+then be one a writer has to remember at the moment they stop rereading the
+file, which is the worst moment to rely on memory.
 
 **Keep referring by slug.** This is what the plan template asks for now, and
 it is shorter to write. It leaves the ambiguity above in place, and it leaves
@@ -74,23 +115,28 @@ truth. The state being where the file is, is what makes `nokori` small: the
 state is visible in `ls` without a symlink to follow, and `close` is one
 `rename`.
 
-**Add a `rename` command so a changed slug does not break references.** A
-slug that changes after the file was written is a real cost, and `rename`
-would make it one command instead of `git mv` plus an edit of the title.
-But under the design here a changed slug changes the file name, and the
-name is what references are written with, so the references break either
-way. `rename` would make the edit of the one file easier and would not make
-the references any safer, which is what the request was about.
+**Add a `rename` command so a changed slug does not break links.** A slug
+that changes after the file was written is a real cost, and `rename` would
+make it one command instead of `git mv` plus an edit of the title and of
+every link that points at the file. It is the one alternative that gets
+stronger under links rather than weaker: with a name alone, `rename` could
+not fix the references at all, because it could not tell a reference from any
+other string.
+
+The reason not to do it is size, not disagreement. A slug is fixed at
+`create` time and later items link to the name they can see, so a rename
+means editing the links in other open items, which `close` already forces
+somebody to do when they break. A command that did it in one step would save
+that editing on the day somebody renames something -- and `git mv` plus a
+hand edit is what it replaces, which is a rare operation being made shorter.
 
 ## Open questions
 
-Does the table in `backlog/README.md`, or anything else `init` writes, need
-to say how to name an item? A reader meets the rule in `explain flow`
-today; if `init` says it too, there are two places to keep in step.
-
-Is the rule about links worth stating? A reader who writes a markdown link
-has not broken anything yet, and the rule says what to do instead. The
-alternative is to leave it out and let the first broken link teach it.
+None. Two questions were open when this was written and both are answered
+above: `backlog/README.md` says nothing about references, because a rule in
+two places is a rule that falls out of step and `README.md` is not the file a
+writer has open; and the rule about links is stated, in the templates, where
+the writer is.
 
 ## Outcome
 

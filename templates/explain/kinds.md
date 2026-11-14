@@ -43,24 +43,26 @@ Sections: Goal, Items (optional), Steps, Notes (optional).
 feedback
 ========
 
-A complaint kept from where it was made: someone met something in the program
-that got in their way, and this file holds what they wanted instead and why.
+What someone using the program thinks, kept from where they met it: something
+that got in the way, something that worked well, a doubt, a question. The
+file holds the reason as the person has it, because the reason is the part a
+reader in the repository cannot reconstruct.
 
-The difference from `bug` is not that nothing is wrong. A `bug` says the
-program did something other than what it says it does, and the report is
-checked by reproducing it. Feedback says the program did what it does, and
-what it does is worse than what the person needed. Nothing is reproduced and
-nothing is fixed, so the response is to change what the program does, or to
-decline and say why.
+Write one when the thought should stay in the words of the person who has it.
+A request that a maintainer would have filed as a `bug` or an `rfc` in their
+own voice is still feedback when the reason for it is the part worth keeping
+-- what got in the way, from the side it got in the way of. It is not a rule
+about who opens the file: a maintainer may open one on behalf of a user, and a
+user may open a `bug` or an `rfc`.
 
-Write one when the complaint should stay in the words of the person who has
-it. A request that a maintainer would have filed as a `bug` or an `rfc` in
-their own voice is still feedback when the reason for it is the part worth
-keeping -- what got in the way, from the side it got in the way of. It is
-not a rule about who opens the file: a maintainer may open one on behalf of a
-user, and a user may open a `bug` or an `rfc`.
+The difference from `bug` is not that nothing is wrong -- `bug` is for one
+kind of thought, and feedback is open to the rest. A `bug` says the program
+did something other than what it says it does, and the report is checked by
+reproducing it. Feedback says what the program does, and what the person
+thought of it. Nothing is reproduced, so the response is to change what the
+program does, or to decline and say why.
 
-Sections: What I want.
+Sections: Feedback.
 
 
 Choosing between the kinds

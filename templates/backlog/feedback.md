@@ -1,15 +1,22 @@
-# Feedback: <!-- NOKORI_TODO: one line naming what the feedback asks for -->
+# Feedback: <!-- NOKORI_TODO: one line naming what this is about -->
 
-## What I want
+## Feedback
 
-<!-- NOKORI_TODO: what is getting in the way, and what you want instead.
+<!-- NOKORI_TODO: what you think, as you would say it.
 
-Write from where the problem was met: this is the file where the complaint is
-kept in the words of the person who has it, and nothing is gained by putting it
-into a shape someone else would have chosen. Say why it got in the way -- the
-reason is the part a reader cannot reconstruct from the request, and the reason
-given here is often what decides whether the request is taken up, reshaped, or
-declined.
+This is not only for complaints. Something that worked well, something you
+are unsure about, a question you would like answered -- all of it belongs
+here. A complaint costs the most to write down, and a record that only holds
+complaints says the tool is worse than it is.
+
+Write it from where you met it, in your own words: nothing is gained by putting
+it into a shape someone else would have chosen. Say how you got there -- the
+part a reader cannot reconstruct from the request is what usually decides
+whether it is taken up, reshaped, or declined.
+
+There is no length this section wants: one sentence is a finished section, and
+several thoughts in one file are fine too, one paragraph each, rather than
+filing three items.
 
 This is not a bug report. A bug says the program did something other than what
 it says it does, and the report is checked by reproducing it. Feedback says the

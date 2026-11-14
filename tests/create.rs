@@ -126,7 +126,7 @@ fn create_writes_the_feedback_template() {
         "feedback",
         "faster-listing",
         "# Feedback:",
-        &["## What I want"],
+        &["## Feedback"],
     );
 }
 

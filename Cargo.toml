@@ -1,14 +1,13 @@
 [package]
 name = "nokori"
-version = "0.1.0"
+version = "0.0.1"
 edition = "2024"
-rust-version = "1.88"
 license = "MIT"
 description = "A markdown-file-based backlog management CLI"
 homepage = "https://github.com/sile/nokori"
 repository = "https://github.com/sile/nokori"
 readme = "README.md"
-keywords = ["backlog", "issue-tracker", "task-management", "markdown"]
+keywords = ["backlog", "task-management"]
 categories = ["command-line-utilities", "development-tools"]
 include = [
     "Cargo.toml",

@@ -6,10 +6,12 @@ An item that is closed may cite another item that is closed, but never one
 that is still open. The allowed directions are closed-to-closed,
 open-to-closed, and open-to-open; closed-to-open is the one to avoid.
 
-What this buys is that a closed item's references never rot. A closed file
-is not edited again, so a reference it holds is permanent, and a reference
-into `backlog/` is a reference to something that can still be renamed or
-deleted.
+This holds for the whole file, not only for `Outcome`: a closed item is not
+edited anywhere, so a reference in `Motivation` rots as surely as one in the
+outcome. What this buys is that a closed item's references never rot. A
+closed file is not edited again, so a reference it holds is permanent, and a
+reference into `backlog/` is a reference to something that can still be
+renamed or deleted.
 
 ## Motivation
 
@@ -28,7 +30,10 @@ is there, it looks like a reference, and it points at nothing.
 Naming an open item is also a claim about what that item will become. A
 proposal can be rejected, reshaped, or renamed after somebody reads it; a
 closed item that says "answered by `rfc-split-the-lexer`" has committed to an
-outcome it cannot see, in a file it will not revisit.
+outcome it cannot see, in a file it will not revisit. The same is true of a
+name mentioned in passing while explaining where the idea came from, which is
+why the rule is about the file and not about the one section where an answer
+is expected.
 
 The other three directions do not have this problem, which is why the rule
 is a direction and not a ban on citing items altogether. Open-to-closed cites
@@ -44,23 +49,29 @@ One rule, in the comment under `Outcome` in all four templates:
 > happened somewhere else -- but only if that item is already closed. Never
 > cite an item that is still open, not even as background.
 
-The rule applies to every item reference in `Outcome`, with no exception for
-one that is only being explained. An exception reads as a smaller rule and is
-a larger one: "background" and "the answer" are not two kinds of sentence but
-two readings of the same one, so every writer would be deciding which of the
-two their sentence is, at the moment they are writing the last thing the file
-will ever say. And a reader of the closed file sees a name in `Outcome` and
-has no way to tell which reading the writer intended.
+The rule is about the file, not about `Outcome` alone: every section of a
+closed item is frozen, so every section can hold a reference that goes stale.
+`Outcome` is where the rule is written because it is the section written
+last, but it is not the only section that outlives the writer's chance to fix
+it.
+
+The rule has no exception for a reference that is only being explained. An
+exception reads as a smaller rule and is a larger one: "background" and "the
+answer" are not two kinds of sentence but two readings of the same one, so
+every writer would be deciding which of the two their sentence is, at the
+moment they are writing the last thing the file will ever say. And a reader
+of the closed file sees a name and has no way to tell which reading the
+writer intended.
 
 Nothing is lost by having no exception. The two cases that look like they
 need one do not:
 
-- **A closed item answering a proposal that is still open.** The item is not
+- **An item answering a proposal that is still open.** The item is not
   settled yet, so it is not closed: it stays in `backlog/` with its outcome
   unwritten, and the reference is written by whoever closes the item that
   finished the work, pointing back at this one.
-- **A closed item explaining what an open item proposes.** Say what the
-  proposal is, without the name. `An RFC was floated to split the lexer` says
+- **An item explaining what an open item proposes.** Say what the proposal
+  is, without the name. `An RFC was floated to split the lexer` says
   everything the reader needs and holds nothing that can go stale. If the
   name is what matters to the reader, the item is not closed.
 
@@ -91,17 +102,19 @@ written.
 
 ## Open questions
 
-Should `close` refuse a reference to an open item in `Outcome` when it can
-see one? The rule no longer has an exception, so the check has something
-narrow to look for: a backticked `YYYYMMDD-<kind>-<slug>.md` inside
-`Outcome`, answered by `backlog/` and `closed/`. What is left undecided is
-whether that pattern is a guarantee or a guess -- a writer may name an item
-some other way, and `close` would pass it.
+Should `close` refuse a reference to an open item when it can see one? The
+rule now covers the whole file and has no exception, so the check has
+something narrow to look for: a backticked `YYYYMMDD-<kind>-<slug>.md`
+anywhere in the file, answered by `backlog/` and `closed/`. What is left
+undecided is whether that pattern is a guarantee or a guess -- a writer may
+name an item some other way, and `close` would pass it.
 
-Does the rule belong on `Motivation` and `Notes` too, where an item that is
-still open can name anything? Those sections are editable for as long as the
-file sits in `backlog/`, so a reference that goes stale there can still be
-fixed; the reason for the rule does not reach them.
+What about an item that is proposed and named before the work that answers
+it is even created? That is the shape the rule forbids, and the answer is to
+leave the proposal unnamed: describe what would settle the item, and let the
+item that settles it cite this one. Worth asking because it is the case a
+writer will reach for the rule's exception with, and the one where the rule
+feels most restrictive.
 
 ## Outcome
 

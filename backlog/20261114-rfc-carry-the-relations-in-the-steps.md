@@ -15,13 +15,13 @@ The `Items` section holds one line per item, and what a writer puts on the
 line is the slug:
 
 ```
-[rfc-cache-the-parse](20261114-rfc-cache-the-parse.md)
-[plan-split-the-lexer](20261115-plan-split-the-lexer.md)
-[bug-lexer-drops-eof](20261116-bug-lexer-drops-eof.md)
+[rfc-how-items-refer-to-each-other](closed/20261114-rfc-how-items-refer-to-each-other.md)
+[rfc-never-cite-an-open-item-from-a-closed-one](closed/20261114-rfc-never-cite-an-open-item-from-a-closed-one.md)
+[feedback-rename-plan-items-section](closed/20261114-feedback-rename-plan-items-section.md)
 ```
 
 Three items are named and no relation is stated. Does the plan wait for the
-RFC, or carry it out? Is the bug a reason to do either? The comment under the
+RFC, or carry it out? Is the feedback a reason to do either? The comment under the
 section explains what belongs there, but the comment is read after the
 heading, and the heading is what a reader uses to decide whether to read the
 section at all.
@@ -48,12 +48,12 @@ place, two rules about sentences that already have somewhere to go:
 **A relation that belongs to one step goes in that step.**
 
 ```markdown
-- [ ] Wait for
-      [rfc-how-items-refer-to-each-other](20261114-rfc-how-items-refer-to-each-other.md)
-      to be accepted, then apply the same rule to the templates.
-- [ ] Split the lexer out of `parse.rs`, in parallel with
-      [plan-cache-the-parse](20261114-plan-cache-the-parse.md); neither has to
-      wait for the other.
+- [ ] Apply
+      [rfc-how-items-refer-to-each-other](closed/20261114-rfc-how-items-refer-to-each-other.md)
+      to the templates, after the rule it decides is settled.
+- [ ] Settle
+      [rfc-never-cite-an-open-item-from-a-closed-one](closed/20261114-rfc-never-cite-an-open-item-from-a-closed-one.md)
+      in parallel with it; neither has to wait for the other.
 ```
 
 **A relation that is true of the plan as a whole goes in the Goal.**
@@ -62,7 +62,7 @@ place, two rules about sentences that already have somewhere to go:
 ## Goal
 
 Carry out
-[rfc-how-items-refer-to-each-other](20261114-rfc-how-items-refer-to-each-other.md):
+[rfc-how-items-refer-to-each-other](closed/20261114-rfc-how-items-refer-to-each-other.md):
 every reference in `templates/` is a link to the file.
 ```
 
@@ -77,7 +77,7 @@ the file a writer has open, and the detail stays in the one place it is kept.
 The `Sections:` line in `explain kinds` loses `Items`.
 
 References are links, as decided in
-[rfc-how-items-refer-to-each-other](20261114-rfc-how-items-refer-to-each-other.md);
+[rfc-how-items-refer-to-each-other](closed/20261114-rfc-how-items-refer-to-each-other.md);
 that one decides the spelling, and this one only decides where they go.
 
 ## Alternatives
@@ -130,8 +130,14 @@ The `Steps` comment gained the sentence and the three-line example, and the
 `Goal` comment gained the sentence about a whole-plan relation. `nokori
 explain kinds` lists the plan's sections without `Items`.
 
-Accepted together with the two RFCs this one depends on, in one change: the
-link form is what a relation is written in, so this file had nothing to add
-about it. This is also the item that the feedback about renaming `Items` was
-answered by, and that answer stands as it was written -- the section was
+Accepted together with
+[rfc-how-items-refer-to-each-other](closed/20261114-rfc-how-items-refer-to-each-other.md)
+and
+[rfc-never-cite-an-open-item-from-a-closed-one](closed/20261114-rfc-never-cite-an-open-item-from-a-closed-one.md),
+in one change: the link form is what a relation is written in, so this file
+had nothing to add about it.
+
+This is also where
+[feedback-rename-plan-items-section](closed/20261114-feedback-rename-plan-items-section.md)
+was answered, and that answer stands as it was written: the section was
 renamed first, and then dropped, as this RFC decided.

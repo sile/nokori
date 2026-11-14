@@ -2,12 +2,11 @@
 
 ## Summary
 
-An item refers to another item with a markdown link whose text is the file
-name and whose target is the path to that file from the referring file's own
-place: `[20261114-rfc-how-items-refer-to-each-other.md](20261114-rfc-how-items-refer-to-each-other.md)`.
+An item refers to another item with a markdown link whose text is the other
+item's kind and slug and whose target is the path to its file:
+[rfc-never-cite-an-open-item-from-a-closed-one](20261114-rfc-never-cite-an-open-item-from-a-closed-one.md).
 
-A link is what makes the rule in
-[rfc-never-cite-an-open-item-from-a-closed-one](20261114-rfc-never-cite-an-open-item-from-a-closed-one.md)
+A link is what makes the rule in that RFC
 checkable. That
 rule forbids a closed item from citing an open one, and with a name alone
 `close` could only guess at what a name meant; with a link, `close` can see
@@ -56,7 +55,7 @@ enforceable.
 A reference is a markdown link:
 
 ```markdown
-[rfc-how-items-refer-to-each-other](20261114-rfc-how-items-refer-to-each-other.md)
+[rfc-cache-the-parse](20261114-rfc-cache-the-parse.md)
 ```
 
 The text is the item's kind and slug, without the date. The target is the path
@@ -109,7 +108,7 @@ Each template's comment says it in a line, with one example and a pointer:
 
 ```
 To refer to another item, link it:
-[rfc-how-items-refer-to-each-other](20261114-rfc-how-items-refer-to-each-other.md).
+[feedback-rename-plan-items-section](closed/20261114-feedback-rename-plan-items-section.md).
 Run `nokori explain references` for where the path points from each
 section.
 ```

@@ -87,6 +87,11 @@ at that point is what the moving commit records.
 Say what actually happened, and name the change that fixed it; link the
 commit or pull request when there is one.
 
+To refer to another item, link it:
+[bug-empty-input](closed/20261114-bug-empty-input.md). Link only an item
+that is already closed: never link one that is still open, not even as
+background. Run `nokori explain references` for the paths and the rule.
+
 When the fix differs from what the sections above expected, say so here rather
 than editing them: those sections record what was thought while the bug was
 open, and rewriting them erases the very difference that is worth knowing.

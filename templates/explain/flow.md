@@ -22,14 +22,19 @@ Closing
     nokori close backlog/<file>
 
 Moves the item to `closed/`, and creates `closed/` the first time. `close`
-refuses the move in three cases, and each one is something to fix rather than
+refuses the move in four cases, and each one is something to fix rather than
 to work around:
 
 - a `NOKORI_TODO:` comment is left, which means a section is not written;
 - `## Outcome` is missing or empty, so there is nothing recording how it
   settled;
+- a link points at an item in `backlog/`, or at a file that is not there, so
+  the closed file would hold a link that is wrong and cannot be fixed;
 - the file has changes that are not committed, so the commit that moves it
   would also be the commit that edits it.
+
+The link check is the subject of `nokori explain references`, which says
+which links it looks at and which it leaves alone.
 
 `close` moves the file and touches nothing else. Committing the move is the
 user's step, and is the last one: a file in `closed/` is not edited afterwards.

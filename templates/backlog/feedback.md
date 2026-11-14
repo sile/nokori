@@ -32,6 +32,10 @@ the design goes and this file records that it happened.
 This section may be rewritten for as long as the file is open, as often as the
 understanding of the complaint changes.
 
+When this answers another item, link that item:
+[bug-empty-input](closed/20261114-bug-empty-input.md). Run `nokori explain
+references` for the paths and the rule.
+
 Delete this comment once the section is here. -->
 
 ## Outcome
@@ -60,5 +64,10 @@ Once this section is written and committed, treat the file as closed: do not
 edit any part of it again, and append nothing later. If something turns up
 later, leave the file as it is and open a new item that cites this one and
 acts on it.
+
+To refer to another item, link it:
+[bug-empty-input](closed/20261114-bug-empty-input.md). Link only an item
+that is already closed: never link one that is still open, not even as
+background. Run `nokori explain references` for the paths and the rule.
 
 Delete this comment when you write the section. -->

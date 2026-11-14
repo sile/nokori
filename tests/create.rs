@@ -112,11 +112,14 @@ fn create_writes_the_plan_template() {
         "plan",
         "split-the-lexer",
         "# Plan:",
-        &["## Goal", "## Items", "## Steps", "## Notes"],
+        &["## Goal", "## Steps", "## Notes"],
     );
     // The steps are checkboxes, and the template shows what one looks like:
     // without an example the format would be left for the author to guess.
     assert!(content.contains("- [ ] "), "{content}");
+    // A relation belongs in the step it matters in, so there is no section
+    // listing items on their own.
+    assert!(!content.contains("## Items"), "{content}");
 }
 
 #[test]
@@ -128,6 +131,28 @@ fn create_writes_the_feedback_template() {
         "# Feedback:",
         &["## Feedback"],
     );
+}
+
+#[test]
+fn every_template_says_how_to_refer_to_an_item() {
+    // The rule is in `explain references`, and every template meets the writer
+    // where they are: one line, one example, and the pointer.
+    for (kind, slug) in [
+        ("bug", "empty-input"),
+        ("rfc", "cache-the-parse"),
+        ("plan", "split-the-lexer"),
+        ("feedback", "faster-listing"),
+    ] {
+        let content = create_and_read(&format!("refs-{kind}"), kind, slug, "# ", &[]);
+        assert!(
+            content.contains("nokori explain references"),
+            "{kind} does not point at the rule: {content}"
+        );
+        assert!(
+            content.contains("](closed/"),
+            "{kind} has no example link: {content}"
+        );
+    }
 }
 
 #[test]

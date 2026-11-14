@@ -17,26 +17,11 @@ An implementation detail that is too small for an RFC belongs here, in the
 plan, not in the RFC: a proposal is argued on its shape, and the steps that
 follow from it are what this file is for.
 
+A relation that is true of the whole plan -- this plan assumes an RFC is
+accepted, whatever the steps say -- also goes here, as a sentence in this
+paragraph. A relation that belongs to one step goes in that step instead.
+
 Delete this comment once the paragraph is here. -->
-
-## Items
-
-<!-- NOKORI_TODO: (optional) the other items this plan is carried out
-through, one per line, by slug.
-
-A plan is often the one place where work that spans several items is kept in
-order: this RFC has to be accepted first, that bug waits on it, this other
-plan runs in parallel. Naming them here is what makes the order visible
-without opening each file.
-
-Refer to them by slug only -- `rfc-cache-the-parse`, not a path. An item
-moves to `closed/` when it settles, and a path would stop pointing at the
-file the moment it did.
-
-A plan that touches no other item is a normal plan: when there is nothing to
-link, delete this section along with its comment.
-
-Delete this comment once the list is here. -->
 
 ## Steps
 
@@ -53,6 +38,17 @@ to be one checkbox is two steps.
 Tick a box as the step finishes, before writing the next one. That is the
 whole of resume-from-here: there is no separate section saying where the work
 stopped, because the unchecked boxes say it.
+
+A step that waits on another item, or runs beside one, says so in the step
+itself: link the item where the relation matters, in as many words as it
+takes.
+
+    - [ ] Wait for
+          [rfc-cache-the-parse](20261114-rfc-cache-the-parse.md) to be
+          accepted, then apply the rule it decides.
+
+Run `nokori explain references` for how the link is written and where its
+path points from each place a file can be.
 
 Delete this comment once the steps are here. -->
 
@@ -89,6 +85,11 @@ at that point is what the moving commit records.
 Say which steps ran, which did not, and why the ones that did not were left
 out. Name the change that carried the plan out, or the item that did, when
 the work happened somewhere else.
+
+To refer to another item, link it:
+[bug-empty-input](closed/20261114-bug-empty-input.md). Link only an item
+that is already closed: never link one that is still open, not even as
+background. Run `nokori explain references` for the paths and the rule.
 
 An unchecked box in a closed plan means the step was decided against, not
 forgotten: `close` does not refuse a plan with steps left, so this section is

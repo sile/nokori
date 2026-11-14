@@ -60,6 +60,27 @@ fn explain_prints_the_flow() {
 }
 
 #[test]
+fn explain_prints_the_references() {
+    let dir = temp_dir("references");
+
+    let output = nokori(&dir, &["explain", "references"]);
+    assert!(output.status.success(), "{output:?}");
+
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    // The four cases of the table, which is what a writer has to get right and
+    // what `close` refuses a file for getting wrong.
+    for term in [
+        "closed/20261114-plan-split-the-lexer.md",
+        "not allowed",
+        "What close checks",
+    ] {
+        assert!(stdout.contains(term), "{term} in {stdout}");
+    }
+
+    std::fs::remove_dir_all(&dir).expect("failed to clean up");
+}
+
+#[test]
 fn explain_runs_without_a_backlog() {
     // A reader who has not run `init` is exactly who needs the flow explained.
     let dir = temp_dir("no-backlog");
@@ -78,7 +99,7 @@ fn explain_refuses_an_unknown_topic() {
     let output = nokori(&dir, &["explain", "nope"]);
     assert!(!output.status.success(), "explain should have failed");
     let stderr = String::from_utf8_lossy(&output.stderr);
-    assert!(stderr.contains("kinds, flow"), "{stderr}");
+    assert!(stderr.contains("kinds, flow, references"), "{stderr}");
 
     std::fs::remove_dir_all(&dir).expect("failed to clean up");
 }

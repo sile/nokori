@@ -139,6 +139,95 @@ fn close_refuses_an_item_already_closed() {
     std::fs::remove_dir_all(&dir).expect("failed to clean up");
 }
 
+/// Creates a second item, so that there is something for a link to point at.
+fn add_item(dir: &Path, name: &str) {
+    let path = dir.join("backlog").join(name);
+    std::fs::write(&path, format!("# Bug: {name}\n\n## Outcome\n\nFixed.\n"))
+        .expect("failed to write item");
+    git(dir, &["add", "."]);
+    git(dir, &["commit", "--quiet", "-m", "add second item"]);
+}
+
+#[test]
+fn close_refuses_a_link_into_backlog() {
+    // The link is in `Outcome`, and the section above it is left bare: a link
+    // in any section is refused, and the line the error names says which one
+    // was read.
+    let body = "# Bug: x\n\n## Summary\n\nIt was declined.\n\n## Outcome\n\nDeclined; see\n[bug-done-thing](20250101-bug-done-thing.md).\n";
+    let (dir, item) = repo_with_item("link-open", body);
+    add_item(&dir, "20250101-bug-done-thing.md");
+
+    let output = nokori(&dir, &["close", &item]);
+    assert!(!output.status.success(), "close should have failed");
+    assert!(dir.join(&item).exists(), "item was moved anyway");
+
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(
+        stderr.contains("A closed item never cites an open one"),
+        "{stderr}"
+    );
+    // The line the error names is the one the link is on, so that a writer
+    // with several links knows which of them to fix.
+    let line = body
+        .lines()
+        .position(|line| line.contains("]("))
+        .map(|line| line + 1)
+        .expect("the body has no link");
+    assert!(
+        stderr.contains(&format!("line {line}")),
+        "line {line} in {stderr}"
+    );
+
+    std::fs::remove_dir_all(&dir).expect("failed to clean up");
+}
+
+#[test]
+fn close_accepts_a_link_to_a_closed_item() {
+    let body = "# Bug: x\n\n## Summary\n\nAnswers\n[bug-done-thing](closed/20250101-bug-done-thing.md).\n\n## Outcome\n\nFixed in abc1234.\n";
+    let (dir, item) = repo_with_item("link-closed", body);
+    std::fs::create_dir_all(dir.join("closed")).expect("failed to create closed/");
+    std::fs::write(
+        dir.join("closed/20250101-bug-done-thing.md"),
+        "# Bug: done-thing\n\n## Outcome\n\nFixed.\n",
+    )
+    .expect("failed to write closed item");
+    git(&dir, &["add", "."]);
+    git(&dir, &["commit", "--quiet", "-m", "close another item"]);
+
+    let output = nokori(&dir, &["close", &item]);
+    assert!(output.status.success(), "{output:?}");
+
+    std::fs::remove_dir_all(&dir).expect("failed to clean up");
+}
+
+#[test]
+fn close_refuses_a_link_that_does_not_resolve() {
+    let body = "# Bug: x\n\n## Summary\n\nAnswers\n[bug-never-written](20250101-bug-never-written.md).\n\n## Outcome\n\nFixed in abc1234.\n";
+    let (dir, item) = repo_with_item("link-broken", body);
+
+    let output = nokori(&dir, &["close", &item]);
+    assert!(!output.status.success(), "close should have failed");
+    assert!(dir.join(&item).exists(), "item was moved anyway");
+
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(stderr.contains("does not resolve"), "{stderr}");
+
+    std::fs::remove_dir_all(&dir).expect("failed to clean up");
+}
+
+#[test]
+fn close_ignores_a_link_that_is_not_an_item() {
+    // `close` checks a link to an item and nothing else: a link to a file of
+    // the repository, or out of it, is the writer's business.
+    let body = "# Bug: x\n\n## Summary\n\nSee [src](src/main.rs) and\n[the docs](https://example.com/none).\n\n## Outcome\n\nFixed in abc1234.\n";
+    let (dir, item) = repo_with_item("link-other", body);
+
+    let output = nokori(&dir, &["close", &item]);
+    assert!(output.status.success(), "{output:?}");
+
+    std::fs::remove_dir_all(&dir).expect("failed to clean up");
+}
+
 #[test]
 fn close_refuses_a_path_outside_backlog() {
     let (dir, item) = repo_with_item("outside", FINISHED);

@@ -26,6 +26,10 @@ const KINDS: &[(&str, &str)] = &[
 const TOPICS: &[(&str, &str)] = &[
     ("kinds", include_str!("../templates/explain/kinds.md")),
     ("flow", include_str!("../templates/explain/flow.md")),
+    (
+        "references",
+        include_str!("../templates/explain/references.md"),
+    ),
 ];
 
 fn main() -> noargs::Result<()> {
@@ -147,7 +151,7 @@ fn try_run_close(args: &mut noargs::RawArgs) -> noargs::Result<bool> {
 
 fn try_run_explain(args: &mut noargs::RawArgs) -> noargs::Result<bool> {
     if !noargs::cmd("explain")
-        .doc("Print the rules behind the commands (`kinds`, `flow`)")
+        .doc("Print the rules behind the commands (see `<TOPIC>`)")
         .take(args)
         .is_present()
     {
@@ -155,7 +159,7 @@ fn try_run_explain(args: &mut noargs::RawArgs) -> noargs::Result<bool> {
     }
 
     let topic: String = noargs::arg("<TOPIC>")
-        .doc("Topic to explain (`kinds` or `flow`)")
+        .doc("Topic to explain (`kinds`, `flow`, or `references`)")
         .example("kinds")
         .take(args)
         .then(|a| a.value().parse())?;
@@ -266,6 +270,7 @@ for it.{hint}"
     let content =
         std::fs::read_to_string(src).map_err(|e| format!("failed to read `{file}`: {e}"))?;
     check_filled_in(file, &content)?;
+    check_links(file, src, &content)?;
     check_committed(file)?;
 
     let name = name.expect("a path under backlog/ is a file");
@@ -333,6 +338,100 @@ there. Say what actually happened and name the change that settled the item
     }
 
     Ok(())
+}
+
+/// Checks the links that point at an item, in a file about to move into
+/// `closed/`. A link to an item is a `.md` file under `backlog/` or `closed/`;
+/// any other link is left alone, since the rule here is about items.
+///
+/// Two things are refused: a link into `backlog/`, because the citing file is
+/// about to be closed and a closed item must not cite an open one, and a link
+/// that does not resolve, because a closed file is not edited again and a
+/// broken link in it could never be fixed.
+fn check_links(file: &str, src: &std::path::Path, content: &str) -> Result<(), String> {
+    let from = src.parent().unwrap_or_else(|| std::path::Path::new("."));
+    for (target, line) in links(content) {
+        let path = target_path(from, &target);
+        if !is_item_path(&path) {
+            continue;
+        }
+
+        if path.starts_with(BACKLOG_DIR) && path.is_file() {
+            return Err(format!(
+                r"`{file}` links `{target}` (line {line}), which is an item in
+`{BACKLOG_DIR}/`. A closed item never cites an open one: the item it names
+can still be renamed or turned down, and this file will not be edited again
+to follow it.
+
+Wait until that item is closed and point the link at `{CLOSED_DIR}/`, or take
+the link out and say what the item proposes in your own words. The rule is in
+`nokori explain references`."
+            ));
+        }
+
+        if !path.is_file() {
+            return Err(format!(
+                r"`{file}` links `{target}` (line {line}), which is not a file. A close
+refuses a link that does not resolve, because a closed item is not edited
+again and the link could never be repaired there.
+
+If the item it named was closed, point the link at its file in `{CLOSED_DIR}/`.
+If it was renamed, point it at the new name. If it was never written, say what
+it was going to do instead. The paths are in `nokori explain references`."
+            ));
+        }
+    }
+
+    Ok(())
+}
+
+/// Collects the targets of the markdown links in `content`, with the line each
+/// is on. Only inline links (`[text](target)`) with a target that is a plain
+/// path are read, since that is the form a reference is written in; a
+/// reference inside a code fence is read too, which is accepted, because a
+/// fence showing a link is a rare thing to write and a check that skipped
+/// fences would be more code than the mistake costs.
+fn links(content: &str) -> Vec<(String, usize)> {
+    let mut found = Vec::new();
+    for (index, line) in content.lines().enumerate() {
+        let mut rest = line;
+        while let Some(open) = rest.find("](") {
+            let after = &rest[open + 2..];
+            let Some(close) = after.find(')') else {
+                break;
+            };
+            let target = after[..close].trim();
+            if !target.is_empty() && !target.contains(['(', ' ', '\\']) {
+                found.push((target.to_owned(), index + 1));
+            }
+            rest = &after[close + 1..];
+        }
+    }
+    found
+}
+
+/// Reads a link target as a path from `from`, dropping an anchor and folding
+/// `.` and `..` away, so that the depth of the result says where the file is
+/// rather than how the link was spelled.
+fn target_path(from: &std::path::Path, target: &str) -> std::path::PathBuf {
+    let target = target.split('#').next().unwrap_or(target);
+    let mut path = std::path::PathBuf::new();
+    for component in from.join(target).components() {
+        match component {
+            std::path::Component::CurDir => {}
+            std::path::Component::ParentDir => {
+                path.pop();
+            }
+            other => path.push(other),
+        }
+    }
+    path
+}
+
+fn is_item_path(path: &std::path::Path) -> bool {
+    let under_backlog = path.starts_with(BACKLOG_DIR) || path.starts_with(CLOSED_DIR);
+    let depth = path.components().count();
+    under_backlog && depth == 2 && path.extension().is_some_and(|ext| ext == "md")
 }
 
 /// Checks that the file being moved has no changes git has not seen yet.

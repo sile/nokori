@@ -90,22 +90,36 @@ Decided
   kind.
 - A `plan` is a plan, not a report: it is written when the question of whether
 to do the work is already settled, and what it adds is the order and the
-progress. Its sections are `Goal`, `Items`, `Steps`, `Notes`, and `Outcome`.
+progress. Its sections are `Goal`, `Steps`, `Notes`, and `Outcome`.
   - `Goal` says what is true when the plan is finished, in a form that can be
     checked. Implementation details too small for an RFC go here, so that an
-    RFC can stay a proposal about shape.
-  - `Items` is optional and lists the other items the work is carried out
-    through, one slug per line. Work that spans several items is the reason
-    `plan` exists; a plan that touches no other item deletes the section.
+    RFC can stay a proposal about shape. A relation that holds for the whole
+    plan is written here too.
   - `Steps` is the plan itself: checkboxes in order, each saying what is done
     and what is true when it is. Ticking a box as the step finishes is the
     whole of resuming from here, so there is no separate section for where
-    the work stopped.
+    the work stopped. A relation that belongs to one step is written in that
+    step, so the order and the reason for it are said once, in the same
+    place.
   - `Notes` is optional, for what the steps assume, where they may get stuck,
     and which step to cut if the plan turns out to be too big.
-- Items are referred to by slug only, never by path. An item moves to
-  `closed/` when it settles, and a path would stop pointing at the file the
-  moment it did.
+  - There is no section listing the items the plan touches. A list of names
+    reads as structure and says nothing about how they relate, and the order
+    the relations are made of is already the subject of `Steps`.
+- An item refers to another item with a markdown link: the text is the kind
+  and slug, the target is the path to the file written as it is now. The link
+  is what makes the reference checkable, which a name in backticks is not.
+- `close` checks the links that point at an item, and nothing else. It refuses
+  the move when such a link points into `backlog/`, or at a file that is not
+  there. A link to a URL, to a file of the repository that is not an item, or
+  in some other notation is left alone, broken or not: keeping it right is the
+  writer's business. The rule, and the path each case needs, is in `nokori
+  explain references`.
+- A closed item never cites an open one, in any section. A closed file is not
+  edited again, so a link it holds is permanent and has to point at something
+  permanent: an open item can still be renamed, and its outcome is not known.
+  The check is in `close` rather than in a later `check`, because a closed
+  item is the one file a report of a broken link could not help.
 - `close` does not refuse a `plan` with unchecked steps. A box left unchecked
   in a closed plan means the step was decided against, not forgotten, and the
   decision is recorded in `## Outcome`. A plan that is to be picked up later
@@ -139,6 +153,9 @@ progress. Its sections are `Goal`, `Items`, `Steps`, `Notes`, and `Outcome`.
   written yet. The templates already say what each section needs, so the check
   only adds the one thing the file cannot say about itself: that a comment
   left behind would be read in `closed/` as part of the record.
+- A refusal names the file, the link, and the line it is on. A writer with
+  several links needs to know which of them broke, and the line is the one
+  thing the error can give that a search of the file would not.
 - `closed/` is not created by `init`. It appears when the first item is moved
   into it, so a repository that never closed anything has no directory whose
   contents nothing has produced yet. `create` treats a missing `backlog/` as
@@ -168,8 +185,9 @@ progress. Its sections are `Goal`, `Items`, `Steps`, `Notes`, and `Outcome`.
   create the first item and does not go on to explain the kinds: the generated
   file already shows what each kind's sections expect.
 - Reference material that does not follow from a command lives under
-  `explain <topic>`. The first two topics are `kinds` (the kinds, plus how to
-  choose between them) and `flow` (how an item is opened and closed). The text
+  `explain <topic>`. The topics are `kinds` (the kinds, plus how to choose
+  between them), `flow` (how an item is opened and closed), and `references`
+  (how one item cites another, and what `close` checks). The text
   is embedded from `templates/explain/<topic>.md`, so it is written as prose
   in a file rather than as `println!` calls in the command. The same include
   also puts it in the published crate, which is what lets `explain` work with

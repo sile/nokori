@@ -37,7 +37,7 @@ large enough that losing track of the steps is a real risk. It is also where
 implementation detail too small for an RFC goes, so that the RFC can stay a
 proposal about shape.
 
-Sections: Goal, Items (optional), Steps, Notes (optional).
+Sections: Goal, Steps, Notes (optional).
 
 
 feedback

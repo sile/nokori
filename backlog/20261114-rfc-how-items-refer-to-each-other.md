@@ -19,6 +19,9 @@ one of them closes. That cost is paid before the item moves: `close` refuses
 a file holding a link that does not resolve, so a broken link cannot reach
 `closed/`. It is fixed in the open item that holds it, not left behind.
 
+The rule itself lives in `nokori explain references`, and each template's
+comment carries a line and an example pointing there.
+
 ## Motivation
 
 A slug is not a name. Every item's file name starts with the date it was
@@ -96,9 +99,31 @@ that does not exist. A link to an item that is not created yet is therefore
 not writable before the item exists: write what would settle the item, and
 let the item that settles it link back.
 
-The RFC and bug templates gain no section for references: a reference goes
-where it belongs in prose, and a section would invite a list of links that
-reads as structure.
+The rule is written in three places, for three different moments.
+
+`nokori explain references` says it in full: the link form, the table of
+targets, the two things not to write, and why the close check exists. It is
+the one place to change when the rule changes.
+
+Each template's comment says it in a line, with one example and a pointer:
+
+```
+To refer to another item, link it:
+[rfc-how-items-refer-to-each-other](20261114-rfc-how-items-refer-to-each-other.md).
+Run `nokori explain references` for where the path points from each
+section.
+```
+
+That is in the comment of the section a reference is most often written in:
+`Outcome` for a closed item, `Motivation` for the `feedback` or `rfc` a
+change answers. A writer meets the rule in the file they have open, in the
+section they are filling in, without having been told to go read something
+first -- which is what a template is for. The detail is not repeated there,
+because a rule copied into four templates is four rules.
+
+No template gains a section for references. A section would invite a list of
+links, and a list reads as structure rather than as the sentence a reference
+belongs to.
 
 ## Alternatives
 

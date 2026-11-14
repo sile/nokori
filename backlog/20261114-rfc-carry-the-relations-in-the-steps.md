@@ -70,9 +70,11 @@ Both carry the relation in the writer's words, with no vocabulary to pick
 from. A step may name the item at the front or the back of the sentence,
 whichever reads better.
 
-The comment under `Steps` gains one sentence saying that an item another step
-waits on is named there, so that the rule is where a writer will be when
-writing one. The `Sections:` line in `explain kinds` loses `Items`.
+The comment under `Steps` gains two sentences: one saying that an item
+another step waits on is linked in that step, and one pointing at
+`nokori explain references` for how to write the link. The rule is then in
+the file a writer has open, and the detail stays in the one place it is kept.
+The `Sections:` line in `explain kinds` loses `Items`.
 
 References are links, as decided in
 [rfc-how-items-refer-to-each-other](20261114-rfc-how-items-refer-to-each-other.md);

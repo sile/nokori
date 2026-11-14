@@ -43,8 +43,8 @@ in order.
 Decided
 -------
 
-- `nokori init` writes `backlog/README.md` too, but its content stays minimal,
-  so that keeping it current as `nokori` changes costs little.
+- The three READMEs `nokori init` writes stay minimal, so that keeping them
+  current as `nokori` changes costs little.
 - The templates are self-descriptive instead. `nokori create <kind>` writes an
   item whose sections each carry a `<!-- NOKORI_TODO: ... -->` saying what
   belongs there and what to keep in mind; the author deletes the comment once
@@ -62,7 +62,9 @@ Decided
   never cites an item is written into the template, because a reader of an
   item may never open `backlog/README.md`, and because that file stays fixed
   after `init` and is kept minimal. Advice that does not fit an item goes in
-  `nokori explain <topic>`, not in the README.
+  `nokori explain <topic>`, not in the README. The advice no template can
+  carry -- what the states mean, and what an item is for -- is a topic of its
+  own for the same reason.
 - A `bug` item keeps an `## Outcome` section from the start, empty until
   `nokori close` writes it. A file that is complete on its own is worth more
   than one that matches the closed files in a reference repository, so the
@@ -85,7 +87,7 @@ Decided
   later finding is its own item, citing the closed one, and the closed file is
   left as it was written.
 - An item's state is expressed by the directory it is in, never by a `Status`
-  field inside the file. There are two: `backlog/` itself, and `closed/`.
+  field inside the file. There are two: `backlog/open/`, and `backlog/closed/`.
 - v1 has three item kinds: `rfc`, `bug`, and `plan`. There is no `memo`
   kind.
 - A `plan` is a plan, not a report: it is written when the question of whether
@@ -112,19 +114,32 @@ progress. Its sections are `Goal`, `Steps`, `Notes`, and `Outcome`.
   backticks is not. The writer spells it for where the file is now, and
   `close` respells the ones the move would change, so no target is ever
   written for a directory the file is not in yet.
-- `close` reads the links that point at an item, and nothing else. It refuses
-  the move when such a link points into `backlog/`, or at a file that is not
-  there. A link that resolves from `closed/` but was spelled for `backlog/` is
-  rewritten instead, and every rewrite is printed: the move is what changes
-  what the target means, so the repair belongs to the move. A link to a URL,
-  to a file of the repository that is not an item, or in some other notation
-  is left alone, broken or not: keeping it right is the writer's business. The
-  rule, and the path each case needs, is in `nokori explain references`.
-- `close` rewrites nothing but the targets whose meaning the move would change,
-  and it never visits `closed/`. A link that was already broken when the file
-  landed stays as it is, and a later finding goes in a new item. The same rule
-  covers everything written down: the record says what was concluded and is
-  not corrected to say what is known now.
+- `close` reads every link in the file it moves, and nothing else. It refuses
+  the move when a link would not resolve once the file is in `backlog/closed/`,
+  when it would name an item still in `backlog/open/`, and when it names one
+  file from the open directory and another from the closed one. A link that is
+  not a path is skipped: one with a scheme, and one that names only an anchor.
+  The scope is the whole file because a narrower one is a rule the writer has
+  to remember; there is nothing to gain from telling an item from any other
+  path now that `close` no longer rewrites targets.
+- `close` changes nothing in the file it moves. It used to rewrite the targets
+  the move would have broken, and that rewrite was dropped with this change:
+  moving a file is a change a reader can see in the diff, while a rewrite is a
+  second change hiding in the same commit. A link that was already broken when
+  the file landed stays as it is, and a later finding goes in a new item. The
+  same rule covers everything written down: the record says what was
+  concluded and is not corrected to say what is known now.
+- A target is a path from the file holding the link, and never from the root.
+  The rule that a target beginning with `backlog/` or `closed/` was read from
+  the root existed to make the rewrite predictable, and went with it.
+- `init` writes `backlog/README.md`, `backlog/open/README.md`, and
+  `backlog/closed/README.md`, each short: what the directory holds, and which
+  `explain` topic says the rest. Nothing about how nokori works beyond that
+  goes in them, because a file `init` writes once cannot follow a change of
+  policy. The advice that used to sit in `backlog/README.md` -- an item is a
+  record rather than a specification, and the source never points back at the
+  backlog -- is in `nokori explain flow` instead, which ships inside the
+  binary and is therefore always current.
 - A closed item never cites an open one, in any section. A closed file is not
   edited again, so a link it holds is permanent and has to point at something
   permanent: an open item can still be renamed, and its outcome is not known.
@@ -133,22 +148,27 @@ progress. Its sections are `Goal`, `Steps`, `Notes`, and `Outcome`.
 - `close` does not refuse a `plan` with unchecked steps. A box left unchecked
   in a closed plan means the step was decided against, not forgotten, and the
   decision is recorded in `## Outcome`. A plan that is to be picked up later
-  is not closed at all: it stays in `backlog/`, where the unchecked boxes are
+  is not closed at all: it stays in `backlog/open/`, where the unchecked boxes are
   the record of where it stopped.
 - Every file carries a kind in its filename (`YYYYMMDD-<kind>-<slug>.md`). The
   kind is part of the name rather than a state, so it stays put while the item
   is open; changing it means deleting the file and creating it again with the
   new kind. History is git's problem, so `nokori` offers no rename.
-- `backlog/` holds every item that is not closed yet, whether it is being
+- Both states are under `backlog/`: `backlog/open/` holds every item that is
+  not closed yet, and `backlog/closed/` the rest. The backlog is then one
+  directory to move, and neither state sits beside the source tree. The two are
+  also at the same depth, which is what lets a relative link keep its meaning
+  when an item moves between them.
+- `backlog/open/` holds every item that is not closed yet, whether it is being
   worked on right now or not. There is no directory for "started" and none for
   "not ready to start": an item that is waiting on something says so in its
   body, where a reader looks for the reason anyway.
-- `closed/` does not fork by outcome: it holds every closed item, and no kind
+- `backlog/closed/` does not fork by outcome: it holds every closed item, and no kind
   writes its outcome into the filename. A file keeps the name it was created
   with, so the outcome is read from the body, never from the path. An `rfc`
   that was accepted can be overturned by a later one, and the earlier file is
   not renamed to follow.
-- An item is closed by moving it to `closed/`, never by deleting it, so that
+- An item is closed by moving it to `backlog/closed/`, never by deleting it, so that
   closing it leaves a record. Deleting a file by hand is the user's own
   business, the same as any operation outside the flow.
 - Nothing written is rewritten to follow a later state. A closed item is not
@@ -157,34 +177,34 @@ progress. Its sections are `Goal`, `Steps`, `Notes`, and `Outcome`.
   the old file keeps saying what it said. The one exception is a threat to
   security or privacy, where the cost of leaving the text alone is paid by
   somebody other than the reader.
-- Moving an item into `closed/` is local only: the tool moves the file and
+- Moving an item into `backlog/closed/` is local only: the tool moves the file and
   touches nothing else. It does not commit, push, or otherwise change anything
   through git.
 - `close` refuses an item that still has a `TODO` comment, or whose `##
   Outcome` is missing or empty, and the error names the section that is not
   written yet. The templates already say what each section needs, so the check
   only adds the one thing the file cannot say about itself: that a comment
-  left behind would be read in `closed/` as part of the record.
+  left behind would be read in `backlog/closed/` as part of the record.
 - A refusal names the file, the link, and the line it is on. A writer with
   several links needs to know which of them broke, and the line is the one
   thing the error can give that a search of the file would not.
-- `closed/` is not created by `init`. It appears when the first item is moved
-  into it, so a repository that never closed anything has no directory whose
-  contents nothing has produced yet. `create` treats a missing `backlog/` as
-  "run `init` first"; the two directories are otherwise set up the first time
-  one is needed.
-- A `bug` that cannot be fixed for now stays in `backlog/`, with the reason it
+- `init` creates both `backlog/open/` and `backlog/closed/`, even though the
+  second stays empty until the first item closes. A directory that appears on
+  its first use would leave `init` producing two of the three places an item
+  can be, and a first-time reader unable to tell which one is missing. `create`
+  treats a missing `backlog/README.md` as "run `init` first".
+- A `bug` that cannot be fixed for now stays in `backlog/open/`, with the reason it
   is stuck written in its body. One that is decided never to be fixed is not a
   bug but a documented behavior: the behavior is written into the public docs
-  and the item goes to `closed/`, the same way a report that turns out not to
+  and the item goes to `backlog/closed/`, the same way a report that turns out not to
   be a bug does. A `plan` that stops partway is treated the same way: the
   unchecked steps say where it stopped, so `close` needs no rule of its own.
 - The commands are one per destination directory:
 
   | command | state after | directory | from |
   | ------- | ----------- | --------- | ---- |
-  | `create <kind> <slug>` | open | `backlog/` | -- |
-  | `close <file>` | closed | `closed/` | `backlog/` |
+  | `create <kind> <slug>` | open | `backlog/open/` | -- |
+  | `close <file>` | closed | `backlog/closed/` | `backlog/open/` |
 
   Two states leave little room for the table to grow, and that is the point:
   every state costs the reader a word to learn, and gives two files in
@@ -206,11 +226,11 @@ progress. Its sections are `Goal`, `Steps`, `Notes`, and `Outcome`.
   no backlog and no network: the text is not a file read at runtime.
 - `explain` also covers the cases a reader arrives with, and the commonest of
   those is a file in a state the command does not take. Running `close` on a
-  file already in `closed/` is an ordinary mistake, and the message a command
+  file already in `backlog/closed/` is an ordinary mistake, and the message a command
   prints for it says only that the move is not allowed; the explanation of
   what the states mean, and what to do with the file instead, belongs in a
   topic of its own. That is `flow`, which ends with the two mistakes a `close`
-  error only names: a file already in `closed/`, and a bare file name where a
+  error only names: a file already in `backlog/closed/`, and a bare file name where a
   path was meant.
 - An unknown topic lists the topics and then says what a topic is not: the
   reader who typed one has probably mistaken `explain` for usage help, so the
@@ -233,8 +253,8 @@ The reference repositories (kk, termnix, tuinix) use only `rfc` and `bug`.
 
 That criterion separates kinds into (a) a decision and (b) a piece of work.
 `rfc` and `bug` are decisions, and `plan` is the piece of work. Every kind
-walks the same directories (`backlog/` -> `closed/`); only what the move to
-`closed/` records differs. That record is in the body for every kind: a
+walks the same directories (`backlog/open/` -> `backlog/closed/`); only what
+`backlog/closed/` records differs. That record is in the body for every kind: a
 filename has to stay stable, while the outcome it would carry can change
 under it.
 
@@ -270,13 +290,13 @@ something with a kind, and everything is closed the same way.
 ### Why the state is the directory, not a `Status` field
 
 A field inside the file can disagree with where the file is. A file in
-`closed/` with `Status: open` leaves the reader to decide which one is true,
+`backlog/closed/` with `Status: open` leaves the reader to decide which one is true,
 and it takes a rule to say the directory wins -- a rule that has to be
 remembered whenever a file is edited by hand.
 
 Keeping the state in one place removes the question. `ls backlog/` and `ls
 closed/` tell the whole story. The cost is that a state change is a move, and
-that `closed/` has to record the outcome in the body rather than in the path.
+that `backlog/closed/` has to record the outcome in the body rather than in the path.
 
 ### Why there are only two states
 
@@ -293,9 +313,9 @@ A "waiting" directory is worse, because it is where items go to be forgotten.
 An item that is stuck is precisely the one that has to stay in view, and the
 place to say why it is stuck is its own body. With the directory in place, an
 item nobody intends to do any more collects there instead of ending in
-`closed/`, and the record of deciding not to do it never appears.
+`backlog/closed/`, and the record of deciding not to do it never appears.
 
-So an item is open or closed, and `backlog/` means what it says: everything
+So an item is open or closed, and `backlog/open/` means what it says: everything
 not closed, whether or not anybody is working on it. If a state later turns
 out to earn its place, adding one is easy; removing one costs the user a
 rename of every file in it, which is why the smaller set goes first.
@@ -392,14 +412,14 @@ not follow from a command, so nothing new has to be learned to find it.
 ### Why `init` does not explain the kinds
 
 `init` runs once per repository, and most of what it could say is needed later
-and elsewhere: which kind to use, what `backlog/` holds, what `close` does to
+and elsewhere: which kind to use, what `backlog/open/` holds, what `close` does to
 a file. Printing all of that would make the one output nobody
 re-reads long. So `init` stops at the next step, and the reference material is
 reached through `explain` from wherever it is needed.
 
 ### Why the outcome stays out of the filename
 
-An outcome is not final just because an item reached `closed/`. An `rfc` that
+An outcome is not final just because an item reached `backlog/closed/`. An `rfc` that
 was
 accepted can be overturned by a later one, and a `bug` closed as `not-a-bug`
 can turn out to be the user's own mistake. A filename that carried the outcome

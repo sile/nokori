@@ -88,7 +88,7 @@ Say what actually happened, and name the change that fixed it; link the
 commit or pull request when there is one.
 
 To refer to another item, link it:
-[bug-empty-input](closed/20261114-bug-empty-input.md). Link only an item
+[bug-empty-input](../closed/20261114-bug-empty-input.md). Link only an item
 that is already closed: never link one that is still open, not even as
 background. Run `nokori explain references` for the paths and the rule.
 

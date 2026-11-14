@@ -87,7 +87,7 @@ out. Name the change that carried the plan out, or the item that did, when
 the work happened somewhere else.
 
 To refer to another item, link it:
-[bug-empty-input](closed/20261114-bug-empty-input.md). Link only an item
+[bug-empty-input](../closed/20261114-bug-empty-input.md). Link only an item
 that is already closed: never link one that is still open, not even as
 background. Run `nokori explain references` for the paths and the rule.
 

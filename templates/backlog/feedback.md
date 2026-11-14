@@ -33,7 +33,7 @@ This section may be rewritten for as long as the file is open, as often as the
 understanding of the complaint changes.
 
 When this answers another item, link that item:
-[bug-empty-input](closed/20261114-bug-empty-input.md). Run `nokori explain
+[bug-empty-input](../closed/20261114-bug-empty-input.md). Run `nokori explain
 references` for the paths and the rule.
 
 Delete this comment once the section is here. -->
@@ -66,7 +66,7 @@ later, leave the file as it is and open a new item that cites this one and
 acts on it.
 
 To refer to another item, link it:
-[bug-empty-input](closed/20261114-bug-empty-input.md). Link only an item
+[bug-empty-input](../closed/20261114-bug-empty-input.md). Link only an item
 that is already closed: never link one that is still open, not even as
 background. Run `nokori explain references` for the paths and the rule.
 

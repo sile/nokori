@@ -34,8 +34,8 @@ fn today() -> String {
 }
 
 fn items(dir: &Path) -> Vec<String> {
-    let mut names: Vec<String> = std::fs::read_dir(dir.join("backlog"))
-        .expect("failed to read backlog dir")
+    let mut names: Vec<String> = std::fs::read_dir(dir.join("backlog/open"))
+        .expect("failed to read the open dir")
         .map(|e| e.expect("failed to read entry").file_name())
         .map(|n| n.to_string_lossy().into_owned())
         .filter(|n| n != "README.md")
@@ -57,7 +57,7 @@ fn create_and_read(name: &str, kind: &str, slug: &str, title: &str, sections: &[
     let expected = format!("{}-{kind}-{slug}.md", today());
     assert_eq!(items(&dir), vec![expected.clone()]);
 
-    let content = std::fs::read_to_string(dir.join("backlog").join(&expected))
+    let content = std::fs::read_to_string(dir.join("backlog/open").join(&expected))
         .expect("failed to read created item");
     assert!(content.starts_with(title), "{content}");
     for section in sections {
@@ -149,7 +149,7 @@ fn every_template_says_how_to_refer_to_an_item() {
             "{kind} does not point at the rule: {content}"
         );
         assert!(
-            content.contains("](closed/"),
+            content.contains("](../closed/"),
             "{kind} has no example link: {content}"
         );
     }

@@ -23,16 +23,30 @@ fn temp_dir(name: &str) -> std::path::PathBuf {
 }
 
 #[test]
-fn init_creates_backlog_readme() {
+fn init_creates_the_three_readmes() {
+    // One for the backlog and one for each state, so that neither state is a
+    // directory that appears when it is first used: a repository that has
+    // closed nothing still has the directory an item is closed into.
     let dir = temp_dir("creates");
     let output = nokori(&dir, &["init"]);
     assert!(output.status.success(), "{output:?}");
 
-    let readme = dir.join("backlog/README.md");
-    assert!(readme.is_file(), "{} was not created", readme.display());
-
-    let content = std::fs::read_to_string(&readme).expect("failed to read generated README");
-    assert!(!content.is_empty());
+    for path in [
+        "backlog/README.md",
+        "backlog/open/README.md",
+        "backlog/closed/README.md",
+    ] {
+        let readme = dir.join(path);
+        assert!(readme.is_file(), "{path} was not created");
+        let content = std::fs::read_to_string(&readme).expect("failed to read generated README");
+        // Each one is short and says where the rest is: a file `init` writes
+        // once cannot follow a change of policy, so the policy cannot be in
+        // it.
+        assert!(
+            content.contains("nokori explain flow"),
+            "{path} does not point at the rule: {content}"
+        );
+    }
 
     std::fs::remove_dir_all(&dir).expect("failed to clean up");
 }

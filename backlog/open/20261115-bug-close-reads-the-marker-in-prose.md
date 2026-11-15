@@ -79,40 +79,16 @@ section.
 
 ## Outcome
 
-<!-- NOKORI_TODO: the one section written later, when `nokori close` moves
-this file. It stays empty while the bug is open, this comment and all, and
-the comment is deleted in the same edit that writes the section -- which is
-the close, since `close` refuses a file whose outcome is still empty.
+Fixed in `bf408a4` ("Search the comments for a marker, not the whole file").
+`find_marker` walks the HTML comments and searches only their contents, and
+`check_filled_in` uses it in place of the search over the whole file.
 
-The sections above are written before the item moves: by the time `nokori
-close` moves this file, they are written, their comments are gone (this one
-with them), and the change is committed.
+The fix went where the notes said it belonged. A comment that is never closed
+is searched to the end of the file, which the notes did not cover: a file whose
+comment is left open is commented out from there on as far as a reader is
+concerned, so a marker in it is as unfinished as one in a closed comment.
 
-Those sections may be rewritten as long as the item is open, as often as the
-understanding changes. What they may not become is a description of work
-already done. `nokori close` needs the change committed, so whatever they say
-at that point is what the moving commit records.
-
-Say what actually happened, and name the change that fixed it; link the
-commit or pull request when there is one.
-
-To refer to another item, link it:
-[bug-empty-input](../closed/20261114-bug-empty-input.md). Link only an item
-that is already closed: never link one that is still open, not even as
-background. The rule is about this section and not the file: a closed item
-may not cite an open one, while an open item may cite either, so a section
-above this one may link an open item. Run `nokori explain references` for the
-paths and the rule.
-
-When the fix differs from what the sections above expected, say so here rather
-than editing them: those sections record what was thought while the bug was
-open, and rewriting them erases the very difference that is worth knowing.
-
-Once this section is written and committed, treat the file as closed: do not
-edit any part of it again, and append nothing later. If something turns up
-later -- most of all, if this turns out not to have been a bug -- leave the
-file as it is and open a new item (an RFC or another bug) that cites this one
-and acts on it.
-
-Delete this comment in the same edit that writes the section, and commit both
-together before the move. -->
+Confirmed against the case that prompted the report: the RFC that had to be
+moved to `backlog/closed/` by hand closes on its own once its file is put back
+in `backlog/open/`, and a freshly created item is still refused on the marker
+its template left in the title line.

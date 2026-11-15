@@ -2,13 +2,12 @@
 
 ## Summary
 
-The `Outcome` comment in every template is written as a comment to keep until
-the item closes, and `close` refuses a file that has any `NOKORI_TODO:` left.
-A file that follows the template exactly therefore cannot be closed. The
-change is to make the instruction say the one thing both rules need: the
-comment is deleted when the section is written, as every other comment is,
-and written instead is a line saying that the section is filled in when the
-item closes.
+The `Outcome` comment in every template says to keep it "until then, comment
+and all", and `close` refuses a file that has any `NOKORI_TODO:` left. A file
+that follows the template exactly therefore cannot be closed. The change is to
+say in the comment when it goes: it stays while the item is open, and it is
+gone by the time the file closes, because `close` is the step where the
+section is written and the comment is deleted with it.
 
 ## Motivation
 
@@ -22,7 +21,9 @@ Following the template as written therefore makes an item that cannot be
 closed, and the way out is to break the template: delete the comment before
 closing, which is the opposite of "comment and all". A reader who does this
 learns the rule wrong, and a reader who does not is stopped at the last step
-with an error that says the section is not written yet, which it is.
+with an error that says the section is not written yet, which it is. The rule
+the reader is left with is worse than either instruction alone: that the
+comment may be kept or deleted, and nothing says which.
 
 The run-in is not a corner case. Every item passes through it: it is the
 state `create` leaves the file in, and the state the first commit records. The
@@ -38,30 +39,48 @@ error sends the writer to a fix that leads to a second refusal.
 ## Design
 
 The comment in the `## Outcome` section of all four templates
-(`bug`, `feedback`, `plan`, `rfc`) changes in two ways, and one error message
-in `close` changes with it.
+(`bug`, `feedback`, `plan`, `rfc`) says when it goes, and one error message in
+`close` changes with it. Nothing else changes.
 
-**It is deleted rather than kept.** The opening paragraph no longer says to
-leave it, and the closing line is the same as the other sections': the comment
-goes when the section is written. That is the whole of the change to the
-template -- one paragraph shorter, and no new text.
+No other section moves: a writer deletes those comments as they write the
+sections, and they are gone long before the item is a candidate for closing.
+Only `## Outcome` has a comment that outlives the first day, and so only it
+needs to say when it goes.
 
-**The section it leaves is empty.** No placeholder takes the comment's place.
-The template already leaves `## Outcome` empty, which is what `close` checks
-for, and an empty section is what a file that has not closed yet should say.
-A mark saying "this emptiness is intended" would have to be told apart from
-the text that replaces it, and would make `close` ignore a comment it treats
-as content everywhere else.
+**The comment stays while the item is open.** It is the only place that says
+the section is written at the close: the author of an item and the person
+carrying it out are often not the same, and what tells the second one what is
+expected of them is the file as `create` wrote it. A section that is empty
+with no comment reads as a section with nothing to say, and the convention --
+record the outcome -- would not reach the reader at all.
+
+**It is gone by the time the file closes.** The opening sentence changes from
+"Leave it empty until then, comment and all" to say both halves: the section
+stays empty while the item is open, and the comment is deleted when the
+section is written -- which is the close, because `close` refuses a file whose
+`## Outcome` is empty. That is the whole of the change: one sentence restated,
+and the two later sentences that contradict it ("their comments are gone" in
+the middle paragraph, "Delete this comment when you write the section" at the
+end) brought into line. The instruction that carries the convention and the
+state `close` requires no longer disagree.
+
+**The section it leaves is empty.** The comment goes with no placeholder in
+its place. The template already leaves `## Outcome` empty, which is what
+`close` checks for, and an empty section is what a file that has not closed
+yet should say. A mark saying "this emptiness is intended" would have to be
+told apart from the text that replaces it, and would make `close` treat a
+comment as content everywhere and as nothing here.
 
 **The error `close` prints is narrowed.** The line about deleting a heading
 with its comment now says which sections it applies to: every section but
 `## Outcome`, which `close` needs to find. This is one sentence in the
-`NOKORI_TODO:` refusal, not a new failure mode.
+`NOKORI_TODO:` refusal, not a new failure mode. Without it, the error sends
+the writer to a fix that leads to a second refusal.
 
 `close` does not change. It already refuses an `## Outcome` with nothing in
 it, and that is the state the corrected template leaves behind: the writer
-gets there by deleting the comment while the item is open, and fills the
-section when it closes.
+deletes the comment as part of writing the section, and commits both together
+before the move, as `close` already requires.
 
 ## Alternatives
 
@@ -85,23 +104,35 @@ added to finish it.
 **Keep the instruction and print a warning from `create` about the one comment
 that has to go.** It loses because a warning that contradicts the file it just
 wrote is not a warning but a second instruction, and the reader has to work out
-which of the two the file means. A comment that is to be kept in one place and
-deleted in another teaches a rule that is not true.
+which of the two the file means. The file is what the person carrying the item
+out reads, long after the warning has scrolled away, so the one place the
+convention has to be right is the file.
 
-**Leave a placeholder in the empty section.** The comment deleted would be
-replaced by another saying the section is written at closing time, so that the
-emptiness reads as intended. It loses because emptiness is already what the
-template means and what `close` checks, and the placeholder would be the one
-comment `close` had to read as content everywhere and as nothing here.
+**Give the `Outcome` comment a marker of its own, so that `close` reads it as
+something other than unfinished work.** It loses even though it is the
+smallest change of all -- `close` would not change at all: the file would
+arrive in `backlog/closed/` with a comment still in it, and every other closed
+section has none. A reader who learns "a closed file has no comments left"
+would find one, in the section they came for, and look for a second rule to
+explain it. Two markers are two rules to remember; the rule `close` has now is
+one.
+
+**Leave a placeholder in the empty section, so that the convention sits in a
+comment the writer keeps.** A sentence saying "written at the close" would
+stay in place of the instructions, and the emptiness would read as intended.
+It loses because a comment in the section `close` requires to be empty is the
+one thing `close` cannot tell apart from text: either it reads the comment as
+content and an empty section passes with nothing in it, or it ignores comments
+there and the one section is read by a different rule than the rest.
 
 ## Open questions
 
 None.
 
-The placeholder that was weighed and left out -- a comment in the empty
-section saying it is written at closing time -- needs no answer later. It
-buys nothing the template does not already have, and it would cost `close` a
-special case.
+The comment that stays -- the one in `## Outcome` while the item is open --
+needs no answer later. It is deleted in the same edit that writes the section,
+so the file is committed as closed with nothing left in it; `close` already
+refuses a file with uncommitted changes.
 
 ## Outcome
 

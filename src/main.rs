@@ -37,8 +37,11 @@ const KINDS: &[(&str, &str)] = &[
 
 /// The topics `explain` prints, each with the text. They carry the material a
 /// command cannot: the rules about the states and the kinds, which read the
-/// same whatever command the reader arrived from.
+/// same whatever command the reader arrived from. `overview` comes first
+/// because it is the one to read first: the other three state rules that only
+/// make sense once the reader knows nothing here is enforced.
 const TOPICS: &[(&str, &str)] = &[
+    ("overview", include_str!("../templates/explain/overview.md")),
     ("kinds", include_str!("../templates/explain/kinds.md")),
     ("flow", include_str!("../templates/explain/flow.md")),
     (
@@ -175,15 +178,30 @@ fn try_run_explain(args: &mut noargs::RawArgs) -> noargs::Result<bool> {
         return Ok(false);
     }
 
-    let topic: String = noargs::arg("<TOPIC>")
-        .doc("Topic to explain (`kinds`, `flow`, or `references`)")
+    let topic = noargs::arg("[<TOPIC>]")
+        .doc("Topic to explain (`overview`, `kinds`, `flow`, or `references`)")
         .example("kinds")
         .take(args)
-        .then(|a| a.value().parse())?;
+        .present();
+    let topic: Option<String> = topic.map(|a| a.value().parse()).transpose()?;
 
     if args.metadata().help_mode {
         return Ok(true);
     }
+
+    // With no topic, the list itself is the answer: it is short enough to print
+    // whole, and `overview` comes first so that a reader who asked for nothing
+    // in particular is handed the one to read first.
+    let Some(topic) = topic else {
+        println!("The topics are:");
+        println!();
+        for (name, _) in TOPICS {
+            println!("- {name}");
+        }
+        println!();
+        println!("Run `nokori explain <topic>` for one of them.");
+        return Ok(true);
+    };
 
     let Some((_, text)) = TOPICS.iter().find(|(t, _)| *t == topic) else {
         let known: Vec<&str> = TOPICS.iter().map(|(t, _)| *t).collect();

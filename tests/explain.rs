@@ -122,7 +122,70 @@ fn explain_refuses_an_unknown_topic() {
     let output = nokori(&dir, &["explain", "nope"]);
     assert!(!output.status.success(), "explain should have failed");
     let stderr = String::from_utf8_lossy(&output.stderr);
-    assert!(stderr.contains("kinds, flow, references"), "{stderr}");
+    // The whole list, in the order `explain` prints it: a reader who mistyped a
+    // topic is being told what to type instead, and `overview` is the one to
+    // read first. Anchoring on the list rather than on a name keeps a topic
+    // added to `TOPICS` from passing this test without appearing here.
+    assert!(
+        stderr.contains("The topics are: overview, kinds, flow, references."),
+        "{stderr}"
+    );
+
+    std::fs::remove_dir_all(&dir).expect("failed to clean up");
+}
+
+#[test]
+fn explain_with_no_topic_lists_them() {
+    // The reader who has just installed the crate knows no topic names, so the
+    // bare command is the one they are most likely to run first.
+    let dir = temp_dir("no-topic");
+
+    let output = nokori(&dir, &["explain"]);
+    assert!(output.status.success(), "{output:?}");
+
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    for name in ["overview", "kinds", "flow", "references"] {
+        assert!(stdout.contains(name), "{name} in {stdout}");
+    }
+    // `overview` is the one to read first, so it is the one printed first.
+    let first = stdout
+        .lines()
+        .find(|line| line.starts_with("- "))
+        .expect("no topic listed");
+    assert_eq!(first, "- overview", "{stdout}");
+
+    std::fs::remove_dir_all(&dir).expect("failed to clean up");
+}
+
+#[test]
+fn explain_prints_the_overview() {
+    let dir = temp_dir("overview");
+
+    let output = nokori(&dir, &["explain", "overview"]);
+    assert!(output.status.success(), "{output:?}");
+
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    // The premise the other three topics presume: what the backlog is, what the
+    // tool is for, and that nothing here is enforced.
+    for term in ["What the backlog is", "What the tool is for", "enforce"] {
+        assert!(stdout.contains(term), "{term} in {stdout}");
+    }
+
+    std::fs::remove_dir_all(&dir).expect("failed to clean up");
+}
+
+#[test]
+fn flow_no_longer_says_what_an_item_is() {
+    // That section moved to `overview`, which is where the premise belongs:
+    // `flow` is about one item's life, and the rule that an item is a record
+    // rather than a specification is not a fact about a command.
+    let dir = temp_dir("flow-moved");
+
+    let output = nokori(&dir, &["explain", "flow"]);
+    assert!(output.status.success(), "{output:?}");
+
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    assert!(!stdout.contains("What an item is"), "{stdout}");
 
     std::fs::remove_dir_all(&dir).expect("failed to clean up");
 }

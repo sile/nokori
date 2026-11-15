@@ -4,21 +4,6 @@ in is the state. Both are under `backlog/`, so the backlog is one directory,
 and neither sits next to the source tree.
 
 
-What an item is
-===============
-
-An item is a record of work or a proposal, not a specification. The
-authoritative specification is the code and `README.md` of the crate; those
-must make sense without the backlog. The rule is one-way: an item may cite
-`src/` and `README.md`, but neither of them may point back at an item.
-
-Putting it there would tie the code to a file that is closed and never edited
-again, and it would make the code unreadable to somebody who does not have
-the backlog. So a `TODO` in the code that points at an item belongs in the
-code as a plain sentence, and the item is where the reasoning lives. The same
-holds for a commit message and a pull request.
-
-
 Opening
 =======
 

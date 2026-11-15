@@ -60,6 +60,29 @@ fn explain_prints_the_flow() {
 }
 
 #[test]
+fn explain_says_when_an_accepted_rfc_closes() {
+    let dir = temp_dir("accepted-rfc");
+
+    let output = nokori(&dir, &["explain", "flow"]);
+    assert!(output.status.success(), "{output:?}");
+
+    // The examples in the paragraph above it are all decisions not to do the
+    // work, so an accepted RFC is the case a reader has to be told about.
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    let start = stdout
+        .find("An `rfc` that is accepted")
+        .unwrap_or_else(|| panic!("no paragraph on accepted RFCs in {stdout}"));
+    let paragraph = &stdout[start..];
+    let paragraph = &paragraph[..paragraph.find("\n\n").unwrap_or(paragraph.len())];
+    assert!(
+        paragraph.contains("stays open until the change it names has landed"),
+        "{paragraph}"
+    );
+
+    std::fs::remove_dir_all(&dir).expect("failed to clean up");
+}
+
+#[test]
 fn explain_prints_the_references() {
     let dir = temp_dir("references");
 

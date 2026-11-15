@@ -64,6 +64,23 @@ that turns out not to be a bug, an `rfc` that is turned down, and a `plan`
 whose steps were decided against are all closed, with the reason in
 `## Outcome`.
 
+An `rfc` that is accepted is the case those examples do not cover, and it
+stays open until the change it names has landed. The decision is settled when
+the RFC is accepted, so it could be argued that the file is ready to close
+then. It is not, because an accepted RFC is still being read against the code
+while the work is carried out: a detail of the design often turns out wrong,
+and sometimes the whole change is dropped. Each of those is an edit to the
+proposal, and a closed file is never edited. So the RFC closes when the
+implementation lands, and its `## Outcome` names the change that implemented
+it.
+
+Nothing here is a rule `close` enforces. It reads the file, not whether the
+change it names has landed, so an accepted RFC closed ahead of its
+implementation is refused only if the file itself is unfinished -- an empty
+`## Outcome`, or a link that the move would break. What keeps such an RFC open
+is the habit this section describes, and the reason for it: a design that is
+edited after it closed leaves a record that says something no longer true.
+
 
 Stopping without closing
 ========================

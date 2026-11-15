@@ -321,7 +321,8 @@ fn check_filled_in(file: &str, content: &str) -> Result<(), String> {
             r"`{file}` still has a `{TODO_MARKER}` comment (line {line}), so it is not
 finished. Each comment says what its section needs; write that, delete the
 comment, and commit the file. If a section has nothing to say, delete its
-comment along with the heading."
+comment along with the heading -- every section but `{OUTCOME_SECTION}`, which
+has to stay even when it is empty: `close` records the outcome there."
         );
         return match content[..todo]
             .lines()

@@ -71,11 +71,13 @@ section if there is nothing to add. -->
 ## Outcome
 
 <!-- NOKORI_TODO: the one section written later, when `nokori close` moves
-this file. Leave it empty until then, comment and all.
+this file. It stays empty while the plan is open, this comment and all, and
+the comment is deleted in the same edit that writes the section -- which is
+the close, since `close` refuses a file whose outcome is still empty.
 
 The sections above are written before the item moves: by the time `nokori
-close` moves this file, they are written, their comments are gone, and the
-change is committed.
+close` moves this file, they are written, their comments are gone (this one
+with them), and the change is committed.
 
 Those sections may be rewritten as long as the item is open, as often as the
 understanding changes. What they may not become is a description of work
@@ -105,4 +107,5 @@ edit any part of it again, and append nothing later. If something turns up
 later, leave the file as it is and open a new item that cites this one and
 acts on it.
 
-Delete this comment when you write the section. -->
+Delete this comment in the same edit that writes the section, and commit both
+together before the move. -->

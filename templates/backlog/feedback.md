@@ -41,7 +41,9 @@ Delete this comment once the section is here. -->
 ## Outcome
 
 <!-- NOKORI_TODO: the one section written later, when `nokori close` moves
-this file. Leave it empty until then, comment and all.
+this file. It stays empty while the item is open, this comment and all, and
+the comment is deleted in the same edit that writes the section -- which is
+the close, since `close` refuses a file whose outcome is still empty.
 
 Two things are recorded here, and both are needed: what was decided, and what
 came of it. The decision is written when it is made, even though the file is
@@ -73,4 +75,5 @@ may not cite an open one, while an open item may cite either, so a section
 above this one may link an open item. Run `nokori explain references` for the
 paths and the rule.
 
-Delete this comment when you write the section. -->
+Delete this comment in the same edit that writes the section, and commit both
+together before the move. -->

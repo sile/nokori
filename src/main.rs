@@ -106,7 +106,7 @@ fn try_run_init(args: &mut noargs::RawArgs) -> noargs::Result<bool> {
 
 fn try_run_create(args: &mut noargs::RawArgs) -> noargs::Result<bool> {
     if !noargs::cmd("create")
-        .doc("Create a new item in backlog/")
+        .doc("Create a new item")
         .take(args)
         .is_present()
     {
@@ -153,7 +153,7 @@ fn try_run_check(args: &mut noargs::RawArgs) -> noargs::Result<bool> {
     }
 
     let file: String = noargs::arg("<FILE>")
-        .doc("Item to check, as a path under backlog/open/")
+        .doc("Item to check, given as its path")
         .example("backlog/open/20250101-bug-panic-on-empty-input.md")
         .take(args)
         .then(|a| a.value().parse())?;
@@ -171,7 +171,7 @@ fn try_run_check(args: &mut noargs::RawArgs) -> noargs::Result<bool> {
 
 fn try_run_close(args: &mut noargs::RawArgs) -> noargs::Result<bool> {
     if !noargs::cmd("close")
-        .doc("Close an item by moving it to backlog/closed/")
+        .doc("Close an item")
         .take(args)
         .is_present()
     {
@@ -179,7 +179,7 @@ fn try_run_close(args: &mut noargs::RawArgs) -> noargs::Result<bool> {
     }
 
     let file: String = noargs::arg("<FILE>")
-        .doc("Item to close, as a path under backlog/open/")
+        .doc("Item to close, given as its path")
         .example("backlog/open/20250101-bug-panic-on-empty-input.md")
         .take(args)
         .then(|a| a.value().parse())?;

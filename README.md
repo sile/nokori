@@ -189,11 +189,18 @@ progress. Its sections are `Goal`, `Steps`, `Notes`, and `Outcome`.
 - A refusal names the file, the link, and the line it is on. A writer with
   several links needs to know which of them broke, and the line is the one
   thing the error can give that a search of the file would not.
-- `check <file>` says whether an item being written is written: a `TODO`
-  comment left in it, or a link that does not resolve. It reports what `close`
-  would say about the same file, minus the parts that only apply at the close:
-  `## Outcome` is expected to be empty, an uncommitted file is the normal
-  state of one being worked on, and a link into `backlog/open/` is allowed.
+- `check <file>` says whether the work on an item is written down: a `TODO`
+  comment left outside `## Outcome`, or a link that does not resolve. It
+  reports what `close` would say about the same file, minus the parts that
+  only apply at the close: `## Outcome` is expected to be empty, an
+  uncommitted file is the normal state of one being worked on, and a link
+  into `backlog/open/` is allowed. It leaves out the sections only the close
+  writes, because their comments sit in the file for the whole of the working
+  time: an item is open precisely while `## Outcome` has nothing in it, so
+  reporting that comment would report every item anybody is working on.
+  When nothing is reported, the output says the item can be closed once the
+  outcome is written, which is the next thing to do rather than a refusal to
+  repeat.
   The two commands answer different questions at different times, so `check`
   is not a flag on `close`: `close --check` on a file still being written
   would say it is not ready, which is true and not what the writer asked.
@@ -208,9 +215,10 @@ progress. Its sections are `Goal`, `Steps`, `Notes`, and `Outcome`.
 - `check` names the file in its success line as well as in a refusal, so that
   a transcript of several runs has the same shape wherever the answer changed,
   and so that "it is written" cannot be read as being about some other file.
-- `check` does not report a `## Outcome` written while the item is still open.
-  An accepted `rfc` stays open until its change lands, but a command about
-  being written is not the place to refuse a mistake about closing.
+- `check` does not report an `## Outcome` written while the item is still
+  open, either. An accepted `rfc` stays open until its change lands, but a
+  command about being written is not the place to refuse a mistake about
+  closing.
 - `init` creates both `backlog/open/` and `backlog/closed/`, even though the
   second stays empty until the first item closes. A directory that appears on
   its first use would leave `init` producing two of the three places an item

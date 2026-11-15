@@ -133,13 +133,13 @@ fn try_run_create(args: &mut noargs::RawArgs) -> noargs::Result<bool> {
 
     println!("Created {file}");
     println!();
-    println!("Next, replace the `{TODO_MARKER}` comments in the file with what");
-    println!("they ask for, and commit it. Every comment has to be gone before");
-    println!("the file moves, so delete each one as its section is written.");
+    println!("Next, do the work and write it down: replace each `{TODO_MARKER}`");
+    println!("comment with what it asks for, and delete the comment.");
     println!();
-    println!("Run `nokori check {file}` to see what is left to write.");
+    println!("Run `nokori check {file}` to see what is left.");
     println!();
-    println!("When the item is settled, close it with `nokori close {file}`.");
+    println!("When nothing is, say what happened in `{OUTCOME_SECTION}` and close");
+    println!("the item with `nokori close {file}`.");
 
     Ok(true)
 }
@@ -165,7 +165,10 @@ fn try_run_check(args: &mut noargs::RawArgs) -> noargs::Result<bool> {
 
     check_item(&file)?;
 
-    println!("{file} is written");
+    println!("{file} is written, so it can be closed once `{OUTCOME_SECTION}`");
+    println!("says what happened:");
+    println!();
+    println!("  nokori close {file}");
 
     Ok(true)
 }
@@ -333,7 +336,7 @@ for it.{hint}"
 
     let content =
         std::fs::read_to_string(src).map_err(|e| format!("failed to read `{file}`: {e}"))?;
-    check_markers(file, &content)?;
+    check_markers_outside_outcome(file, &content)?;
     check_links_now(file, src, &content)
 }
 
@@ -341,27 +344,71 @@ for it.{hint}"
 /// `TODO` comments, and nothing about `## Outcome`, which is empty until the
 /// close.
 fn check_markers(file: &str, content: &str) -> Result<(), String> {
-    let Some(todo) = find_marker(content) else {
-        return Ok(());
-    };
+    check_marker(content, |_| true).map_or(Ok(()), |(todo, line)| {
+        let last = format!(
+            " If a section has nothing to say, delete its comment along with\n\
+             the heading -- every section but `{OUTCOME_SECTION}`, which has to stay\n\
+             even when it is empty."
+        );
+        Err(marker_message(file, content, todo, line, &last))
+    })
+}
 
-    let line = content[..todo].lines().count();
+/// `check_markers` for a file that is still being worked on: the same, without
+/// the sections the close writes. A comment is left in those for the whole of
+/// the working time, so its being there says nothing about whether the work is
+/// done.
+fn check_markers_outside_outcome(file: &str, content: &str) -> Result<(), String> {
+    check_marker(content, |heading| heading != OUTCOME_SECTION).map_or(Ok(()), |(todo, line)| {
+        let last = format!(
+            " `{OUTCOME_SECTION}` is not reported here: its comment stays until the\n\
+             item is closed, so it is still there while the work is going on. When\n\
+             every other section is written, the item can be closed, and the close\n\
+             is where that section is written."
+        );
+        Err(marker_message(file, content, todo, line, &last))
+    })
+}
+
+/// The first marker left in a comment whose section `in_section` accepts, as
+/// the offset of the marker and the line it is on.
+fn check_marker(content: &str, in_section: impl Fn(&str) -> bool) -> Option<(usize, usize)> {
+    let mut from = 0;
+    while let Some(found) = find_marker(&content[from..]) {
+        let todo = from + found;
+        let line = content[..todo].lines().count();
+        let heading = content[..todo]
+            .lines()
+            .rev()
+            .find(|line| line.starts_with("## "))
+            .unwrap_or("");
+        if in_section(heading) {
+            return Some((todo, line));
+        }
+        // Resume after the comment the marker was in, so that the next search
+        // looks at the next comment rather than at this one again.
+        from = content[todo..]
+            .find("-->")
+            .map_or(content.len(), |end| todo + end + 3);
+    }
+    None
+}
+
+fn marker_message(file: &str, content: &str, todo: usize, line: usize, last: &str) -> String {
     let message = format!(
         r"`{file}` still has a `{TODO_MARKER}` comment (line {line}), so it is not
 finished. Each comment says what its section needs; write that and delete the
-comment. If a section has nothing to say, delete its comment along with the
-heading -- every section but `{OUTCOME_SECTION}`, which has to stay even when
-it is empty."
+comment.{last}"
     );
     match content[..todo]
         .lines()
         .rev()
         .find(|line| line.starts_with("## "))
     {
-        Some(heading) => Err(format!(
+        Some(heading) => format!(
             "{message}\n\nThe comment is in `{heading}`, so that section is not written yet."
-        )),
-        None => Err(message),
+        ),
+        None => message,
     }
 }
 

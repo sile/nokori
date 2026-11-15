@@ -49,6 +49,11 @@ fn repo_with_item(name: &str, body: &str) -> (std::path::PathBuf, String) {
 /// an open item looks like: the outcome is written at the close.
 const WRITTEN: &str = "# Bug: empty input panics\n\n## Summary\n\nIt panics.\n\n## Outcome\n\n";
 
+/// The same, with the `## Outcome` comment still in place. That is how an item
+/// looks for most of its life: the comment is only deleted in the edit that
+/// writes the outcome, which is the close.
+const WRITTEN_WITH_OUTCOME_COMMENT: &str = "# Bug: empty input panics\n\n## Summary\n\nIt panics.\n\n## Outcome\n\n<!-- NOKORI_TODO: say what happened, when the item is closed. -->\n";
+
 #[test]
 fn check_says_a_written_item_is_written() {
     let (dir, item) = repo_with_item("written", WRITTEN);
@@ -58,6 +63,23 @@ fn check_says_a_written_item_is_written() {
 
     let stdout = String::from_utf8_lossy(&output.stdout);
     assert!(stdout.contains("is written"), "{stdout}");
+    assert!(stdout.contains("nokori close"), "{stdout}");
+
+    std::fs::remove_dir_all(&dir).expect("failed to clean up");
+}
+
+#[test]
+fn check_does_not_report_the_outcome_comment() {
+    let (dir, item) = repo_with_item("outcome-comment", WRITTEN_WITH_OUTCOME_COMMENT);
+
+    let output = nokori(&dir, &["check", &item]);
+    assert!(output.status.success(), "{output:?}");
+
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    assert!(
+        stdout.contains("can be closed"),
+        "a written item should be told it can be closed: {stdout}"
+    );
 
     std::fs::remove_dir_all(&dir).expect("failed to clean up");
 }
@@ -85,6 +107,29 @@ fn check_ignores_a_marker_written_in_prose() {
 
     let output = nokori(&dir, &["check", &item]);
     assert!(output.status.success(), "{output:?}");
+
+    std::fs::remove_dir_all(&dir).expect("failed to clean up");
+}
+
+#[test]
+fn check_reports_a_todo_before_the_outcome_comment() {
+    // Both comments are there; the one to report is the one that is work.
+    let body = "# Bug: x\n\n## Summary\n\n<!-- NOKORI_TODO: say what is broken. -->\n\n\
+                ## Outcome\n\n<!-- NOKORI_TODO: say what happened. -->\n";
+    let (dir, item) = repo_with_item("todo-before-outcome", body);
+
+    let output = nokori(&dir, &["check", &item]);
+    assert!(!output.status.success(), "check should have failed");
+
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(
+        stderr.contains("The comment is in `## Summary`"),
+        "{stderr}"
+    );
+    assert!(
+        !stderr.contains("The comment is in `## Outcome`"),
+        "the outcome is not reported: {stderr}"
+    );
 
     std::fs::remove_dir_all(&dir).expect("failed to clean up");
 }

@@ -13,8 +13,8 @@ hidden file, and nothing that can only be read through this tool. Anything in
 nothing -- those are the same files this tool reads and writes.
 
 `nokori init` writes the three READMEs and nothing else. `create` writes a
-template, `check` reads one back and says what is still unwritten, and `close`
-moves a file. Every other way of using a backlog -- a manager's list, a review
+template, `check` reads one back and says what is still unwritten outside the
+section the close writes, and `close` moves a file. Every other way of using a backlog -- a manager's list, a review
 queue, a filter over the open items -- is reading the files yourself, which is
 what the tool is doing too.
 

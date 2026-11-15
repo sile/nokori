@@ -315,7 +315,7 @@ again.",
 /// Checks that the item is ready to be closed: no `TODO` left anywhere, and the
 /// `## Outcome` section filled in.
 fn check_filled_in(file: &str, content: &str) -> Result<(), String> {
-    if let Some(todo) = content.find(TODO_MARKER) {
+    if let Some(todo) = find_marker(content) {
         let line = content[..todo].lines().count();
         let message = format!(
             r"`{file}` still has a `{TODO_MARKER}` comment (line {line}), so it is not
@@ -360,6 +360,34 @@ there. Say what actually happened and name the change that settled the item
     }
 
     Ok(())
+}
+
+/// Finds the byte offset of the first marker left in a comment, or `None` when
+/// every section is written.
+///
+/// Only the inside of an HTML comment is searched. The marker is a comment in
+/// every template, and an item is allowed to write *about* it -- a bug report
+/// on this check is one -- so a marker in a sentence is prose and not work left
+/// undone. Searching the comments is what tells the two apart without asking
+/// the writer to escape anything.
+///
+/// A comment that is never closed is searched to the end of the file, since the
+/// rest of such a file is commented out as far as a reader is concerned, and a
+/// marker in it is as unfinished as one in a closed comment.
+fn find_marker(content: &str) -> Option<usize> {
+    let mut rest = 0;
+    while let Some(open) = content[rest..].find("<!--") {
+        let body = rest + open + 4;
+        let (end, next) = match content[body..].find("-->") {
+            Some(close) => (body + close, body + close + 3),
+            None => (content.len(), content.len()),
+        };
+        if let Some(found) = content[body..end].find(TODO_MARKER) {
+            return Some(body + found);
+        }
+        rest = next;
+    }
+    None
 }
 
 /// A link found in a file: the target as it is written, and the line it is on

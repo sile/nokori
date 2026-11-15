@@ -103,6 +103,19 @@ fn close_ignores_a_todo_written_in_the_body() {
 }
 
 #[test]
+fn close_ignores_a_marker_written_in_prose() {
+    // An item may write *about* the marker -- a report on this check is one --
+    // so a marker in a sentence is not a section left unfinished.
+    let body = "# Bug: x\n\n## Summary\n\n`close` refuses a file that has any `NOKORI_TODO:` left,\nwhich is what this sentence says about it.\n\n## Outcome\n\nFixed in abc1234.\n";
+    let (dir, item) = repo_with_item("prose-marker", body);
+
+    let output = nokori(&dir, &["close", &item]);
+    assert!(output.status.success(), "{output:?}");
+
+    std::fs::remove_dir_all(&dir).expect("failed to clean up");
+}
+
+#[test]
 fn close_refuses_an_empty_outcome() {
     let body = "# Bug: x\n\n## Summary\n\nIt panics.\n\n## Outcome\n\n";
     let (dir, item) = repo_with_item("empty-outcome", body);

@@ -217,9 +217,12 @@ progress. Its sections are `Goal`, `Steps`, `Notes`, and `Outcome`.
   create the first item and does not go on to explain the kinds: the generated
   file already shows what each kind's sections expect.
 - Reference material that does not follow from a command lives under
-  `explain <topic>`. The topics are `kinds` (the kinds, plus how to choose
-  between them), `flow` (how an item is opened and closed), and `references`
-  (how one item cites another, and what `close` checks). The text
+  `explain <topic>`. The topics are `overview` (what the backlog and the tool
+  are, and that nothing here is enforced), `kinds` (the kinds, plus how to
+  choose between them), `flow` (how an item is opened and closed), and
+  `references` (how one item cites another, and what `close` checks).
+  `overview` comes first in the list because the other three state rules that
+  only make sense once the reader knows the rules are recommendations. The text
   is embedded from `templates/explain/<topic>.md`, so it is written as prose
   in a file rather than as `println!` calls in the command. The same include
   also puts it in the published crate, which is what lets `explain` work with
@@ -235,6 +238,9 @@ progress. Its sections are `Goal`, `Steps`, `Notes`, and `Outcome`.
 - An unknown topic lists the topics and then says what a topic is not: the
   reader who typed one has probably mistaken `explain` for usage help, so the
   error points at `nokori --help` and `nokori <command> --help` instead.
+- `explain` with no topic lists the topics rather than refusing for a missing
+  argument. The reader who knows no topic name is the one who most needs the
+  list, and it is short enough to print whole.
 
 
 Rationale

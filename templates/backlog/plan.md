@@ -89,7 +89,10 @@ the work happened somewhere else.
 To refer to another item, link it:
 [bug-empty-input](../closed/20261114-bug-empty-input.md). Link only an item
 that is already closed: never link one that is still open, not even as
-background. Run `nokori explain references` for the paths and the rule.
+background. The rule is about this section and not the file: a closed item
+may not cite an open one, while an open item may cite either, so a section
+above this one may link an open item. Run `nokori explain references` for the
+paths and the rule.
 
 An unchecked box in a closed plan means the step was decided against, not
 forgotten: `close` does not refuse a plan with steps left, so this section is

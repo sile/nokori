@@ -90,7 +90,10 @@ commit or pull request when there is one.
 To refer to another item, link it:
 [bug-empty-input](../closed/20261114-bug-empty-input.md). Link only an item
 that is already closed: never link one that is still open, not even as
-background. Run `nokori explain references` for the paths and the rule.
+background. The rule is about this section and not the file: a closed item
+may not cite an open one, while an open item may cite either, so a section
+above this one may link an open item. Run `nokori explain references` for the
+paths and the rule.
 
 When the fix differs from what the sections above expected, say so here rather
 than editing them: those sections record what was thought while the bug was

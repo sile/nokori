@@ -3,7 +3,8 @@
 ## Summary
 
 A command that takes the words of a person who is not in this repository and
-writes them down as it is said: `feedback <path> <text>`. It writes
+writes them down as it is said: `feedback <path>`, with the words on the
+command line, in a file, or on standard input. It writes
 `backlog/open/YYYYMMDD-feedback-<slug>.md` with the words copied into the
 `## Feedback` section, the slug made from them, and that is all. There is no
 kind to choose and no slug to invent, because the person saying it is not
@@ -38,22 +39,63 @@ the reading that has not happened yet.
 
 ## Design
 
-    nokori feedback <path> <text>
+    nokori feedback <path> [--message <text> | --file <file>]
 
 `<path>` is the directory to write the item into: `.` for this repository, or
-the root of another one, which is the directory that holds its `backlog/`.
-`<text>` is what the person said, in their words, on the command line.
+the root of another one, which is the directory that holds its `backlog/`. It
+is always given.
+
+The person's words come from one of three places, in the shape `git commit`
+has for a message:
+
+- `--message <text>`, `-m <text>`: the words, on the command line;
+- `--file <file>`, `-f <file>`: the words, read from a file;
+- neither: the words, read from standard input.
+
+`-m` and `-f` together are an error rather than one of the two being taken:
+which one was meant is not something the command can tell, and it is a run
+that would be written up wrong rather than not at all. So is `-m ""`: an
+empty `## Feedback` is an item with nothing in it, and the run that writes one
+is the run that should have stopped.
+
+**Why the words are not the second argument.** They were, and it made the
+common case the hard one: the words of a person who met a problem are a
+paragraph, a list of steps, or an error message, and a shell argument is not
+where those live. The words are in a chat window or an editor, and the shell
+is between them and the file -- `-m` puts quoting in the way, `-f` puts a
+rebuild of what was already written in the way, and standard input puts one
+keystroke in the way (`|`, or Ctrl-D). Which of the three fits is the
+writer's, and the default is the one that takes any of them.
+
+**Reading from a terminal.** With neither option, standard input is where the
+words come from, and the shell will wait for them -- which, at a terminal,
+looks like the command hanging. So when standard input is a terminal, the
+command writes one line to standard error saying it is waiting and that Ctrl-D
+ends the words, then reads until the end. When it is not a terminal, nothing
+is written: a pipe is somebody who is already sending, and a line saying so
+would be part of the output of whatever is being piped.
+
+This is the first thing `nokori` writes that is not an answer to a command,
+and it is written for the one case where the silence would be mistaken for a
+hang. It goes to standard error, so that redirecting standard output still
+gets only the path of the file written.
 
 **What it writes.** `backlog/open/YYYYMMDD-feedback-<slug>.md`, from the
-`feedback` template, with `<text>` placed under `## Feedback`. The title line
-and the slug both come from `<text>`: the summary of an item is what it says,
+`feedback` template, with the words placed under `## Feedback`. The title line
+and the slug both come from the words: the summary of an item is what it says,
 and the words are the only summary there is.
 
-**The slug is mechanical.** The first words of `<text>`, lowercased, with a
+**The words are copied as they are**, leading and trailing whitespace around
+the whole of them aside. A file read with `-f` is the words and nothing more:
+no note goes into the item saying which file they came from, since the person
+who said them is the author of the item and the file they were kept in is an
+accident of how they travelled.
+
+**The slug is mechanical.** The first words of the text, lowercased, with a
 run of characters that are not a letter or a digit cut down to one `-`, and a
 bound on how long it may be. It is the text and not a reading of it, so the
 same words make the same slug, and nobody chooses anything. A slug that comes
-out empty, because `<text>` was punctuation or a script the rule has nothing
+out empty, because the words were punctuation or a script the rule has nothing
 left of, takes a fallback and the run says so.
 
 **Where the rest of the item comes from.** Nowhere: the file is written with
@@ -65,23 +107,40 @@ until somebody has read it.
 
 **The other repository.** `<path>` is resolved the way a directory is, so
 `../other` and `/home/x/other` both work, and the item is written under
-`<path>/backlog/open/`. It is an error if `<path>/backlog/README.md` is
-missing, and the error says to run `nokori init` there: `init` writes three
-files, and when to make them is the other repository's decision. Nothing is
-read from the backlog in this repository, so the command behaves the same in a
-repository that has no backlog at all.
+`<path>/backlog/open/`. Nothing is read from the backlog in this repository,
+so the command behaves the same in a repository that has no backlog at all.
+
+The path is the one thing the writer cannot be helped with -- where the other
+repository is, only somebody who knows does -- so what is left is that every
+way of getting it wrong says which way it was. There are three, and each gets
+its own message with its own next step:
+
+- the directory does not exist: the message quotes it as the command read it,
+  which is the common mistake of a relative path resolved from another
+  directory, and says nothing about `nokori`;
+- the directory exists and `<path>/backlog/README.md` does not: the backlog is
+  not set up there, and the message says to run `nokori init` in `<path>` --
+  `init` writes three files, and when to make them is the other repository's
+  decision;
+- the directory is there and its backlog is set up, but there is no
+  `backlog/open/`: the message names the two and says the layout is not the
+  one this version writes, rather than reporting a missing file.
+
+The help says that `<path>` is the directory that holds `backlog/` and not the
+`backlog/` itself, which is the near miss the third message is written for.
 
 **What it does not do.** It does not choose a kind, write a `bug`, an `rfc`, or
 a `plan`, or edit the words it was given. It does not commit, in either
-repository. It does not open the file. It does not ask a question, so that it
-can be run on the command line with the words somebody just said.
+repository. It does not open the file. It does not ask a question: a prompt is
+something somebody has to answer before the words are written down, and the
+words are the one thing the run already has.
 
 **Reading the words back.** A file made this way is a `feedback` item like any
 other, and what happens to it next is the flow: read it, decide what to do,
 write the item that does it, then close the feedback with the decision in
-`## Outcome`. `explain flow` gains a paragraph saying that when what to do is
-not yet known, the next item is made with `create` in that repository, or in
-this one -- which is what the kind and the slug in `create` are for.
+`## Outcome`. `explain flow` gains a paragraph saying that an item for another
+repository, or words that are not an item yet, are written with `feedback`,
+and that the rest of the flow happens in the repository the item landed in.
 
 ## Alternatives
 
@@ -101,6 +160,16 @@ repository the command ran in, which is the one place it was not meant to go.
 looking at, in the repository that user is in, so an option that names a
 repository would let `close` move an item in one the user is not in.
 
+**Make `<path>` optional, defaulting to this repository.** Type the command,
+and leave the path out when the item is for here. It loses because it is the
+wrong default for the one case the command exists for. A path left out is a
+file written in the repository the command ran in, and nothing about the run
+says a destination was left out -- the same silence that losing `--into`
+costs, arrived at by another route. An item for this repository is what
+`create` is for: a kind, a slug, and a section to fill in. So a `feedback` with
+no path is either the wrong command or the wrong input, and both are better
+stopped than written.
+
 **Have `create feedback` ask for the words when the slug is left out.** Keep
 one command, and read the section from the command line when it is given.
 It loses because the choice of what to ask for is the command's, and `create`
@@ -115,23 +184,29 @@ the person who wrote the words is the one who is there when they are said, and
 the hand is what is being removed: the words travel through a chat or a mail,
 and the summary is made by whoever receives them.
 
+**An editor, opened when there is nothing on the command line.** The words are
+written in the editor `git commit` would open, so they can be as long as they
+need and nothing is quoted. It loses because `create` does not open one either:
+the tool writes a file with a template in it and leaves the editing to whoever
+comes back later, and a run that blocks on an editor is a run that cannot be
+put in a shell pipeline or done in the middle of another command. Standard
+input takes the same text without taking the terminal.
+
 ## Open questions
 
-Whether `<text>` is the whole of what goes into `## Feedback`, with no way to
-pass a file or a longer text. The case the command is for is a sentence or a
-paragraph said by somebody, which fits on a command line; a long report is not
-what `feedback` is for, and an item that is mostly a pasted document is one to
-write with `create` after reading it.
+Whether the title line is the first line of the words or all of them. A title
+is read in a list of items and a section is read in a file, so the two want
+different lengths, and cutting the text is a rule about the text that the tool
+would have to get right -- a full stop that ends a sentence and one that ends
+an abbreviation, a first line that is a whole paragraph on its own. Expected
+answer: the first line, cut to a bound, since a writer who starts with the
+sentence they would want in a title is the one case that is both common and
+free to get right.
 
-Whether the title line is the first sentence of `<text>` or the whole of it.
-A title is read in a list of items and a section is read in a file, so the two
-want different lengths, and cutting the text into a sentence is a rule about
-the text that the tool would have to get right.
-
-The order of `<path>` and `<text>`. `<path>` first keeps the text last, where
-a shell hands over a quoted string without trouble; `<text>` first reads as
-"write this down here". Expected answer: `<path>` first, since the words of a
-person may begin with anything.
+Whether `-f -` reads standard input, as `git commit -F -` does. With no option
+at all already meaning standard input, it is a second spelling of the same
+thing, and one more branch for no case that is not already covered. Expected
+answer: no, `-f` takes a file name.
 
 ## Outcome
 

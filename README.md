@@ -37,7 +37,8 @@ The tool exists at all, rather than as a page of documentation, so that the
 flow can be walked without knowing it in advance. Every command reports what
 to do next, so `nokori --help`, then `nokori init`, then `nokori create` each
 lead on to the following step, and the whole shape is learned by running them
-in order.
+in order. `nokori check` is named by `create` for the same reason: the command
+that wrote the file says how to find out whether it is written yet.
 
 
 Decided
@@ -188,6 +189,28 @@ progress. Its sections are `Goal`, `Steps`, `Notes`, and `Outcome`.
 - A refusal names the file, the link, and the line it is on. A writer with
   several links needs to know which of them broke, and the line is the one
   thing the error can give that a search of the file would not.
+- `check <file>` says whether an item being written is written: a `TODO`
+  comment left in it, or a link that does not resolve. It reports what `close`
+  would say about the same file, minus the parts that only apply at the close:
+  `## Outcome` is expected to be empty, an uncommitted file is the normal
+  state of one being worked on, and a link into `backlog/open/` is allowed.
+  The two commands answer different questions at different times, so `check`
+  is not a flag on `close`: `close --check` on a file still being written
+  would say it is not ready, which is true and not what the writer asked.
+  `create` names the command in its output, so it is found from the run that
+  made the file rather than from `--help`.
+- `check` reads the links where the file is now, and `close` where it is
+  going. Where it is going depends on how the file is spelled, and a file
+  being written is allowed to be unfinished in ways the move would settle, so
+  `check` reports what is wrong now rather than what the move would make
+  wrong. The two messages differ for the same reason the commands do: the same
+  file is being read at two different moments of its life.
+- `check` names the file in its success line as well as in a refusal, so that
+  a transcript of several runs has the same shape wherever the answer changed,
+  and so that "it is written" cannot be read as being about some other file.
+- `check` does not report a `## Outcome` written while the item is still open.
+  An accepted `rfc` stays open until its change lands, but a command about
+  being written is not the place to refuse a mistake about closing.
 - `init` creates both `backlog/open/` and `backlog/closed/`, even though the
   second stays empty until the first item closes. A directory that appears on
   its first use would leave `init` producing two of the three places an item
@@ -206,7 +229,9 @@ progress. Its sections are `Goal`, `Steps`, `Notes`, and `Outcome`.
   | `create <kind> <slug>` | open | `backlog/open/` | -- |
   | `close <file>` | closed | `backlog/closed/` | `backlog/open/` |
 
-  Two states leave little room for the table to grow, and that is the point:
+  `check` is not in the table: it reads a file and leaves it where it is, so
+  it moves an item into no state at all. Two states leave little room for the
+  table to grow, and that is the point:
   every state costs the reader a word to learn, and gives two files in
   different states a way to say the same thing.
 - Commands may read git state, but never change it: no commit, no push, no
@@ -219,8 +244,9 @@ progress. Its sections are `Goal`, `Steps`, `Notes`, and `Outcome`.
 - Reference material that does not follow from a command lives under
   `explain <topic>`. The topics are `overview` (what the backlog and the tool
   are, and that nothing here is enforced), `kinds` (the kinds, plus how to
-  choose between them), `flow` (how an item is opened and closed), and
-  `references` (how one item cites another, and what `close` checks).
+  choose between them), `flow` (how an item is opened, checked while it is
+  written, and closed), and `references` (how one item cites another, and what
+  `close` checks).
   `overview` comes first in the list because the other three state rules that
   only make sense once the reader knows the rules are recommendations. The text
   is embedded from `templates/explain/<topic>.md`, so it is written as prose

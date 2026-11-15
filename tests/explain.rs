@@ -175,6 +175,21 @@ fn explain_prints_the_overview() {
 }
 
 #[test]
+fn flow_names_check() {
+    // `check` is not a step in the flow, and its section says so: what the
+    // reader has to find is the command, which `create` prints too.
+    let dir = temp_dir("flow-check");
+
+    let output = nokori(&dir, &["explain", "flow"]);
+    assert!(output.status.success(), "{output:?}");
+
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    assert!(stdout.contains("nokori check"), "{stdout}");
+
+    std::fs::remove_dir_all(&dir).expect("failed to clean up");
+}
+
+#[test]
 fn flow_no_longer_says_what_an_item_is() {
     // That section moved to `overview`, which is where the premise belongs:
     // `flow` is about one item's life, and the rule that an item is a record

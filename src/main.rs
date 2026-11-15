@@ -63,6 +63,7 @@ fn main() -> noargs::Result<()> {
 
     let _ = try_run_init(&mut args)?
         || try_run_create(&mut args)?
+        || try_run_check(&mut args)?
         || try_run_close(&mut args)?
         || try_run_explain(&mut args)?;
 
@@ -136,6 +137,34 @@ fn try_run_create(args: &mut noargs::RawArgs) -> noargs::Result<bool> {
     println!("the file moves, so delete each one as its section is written.");
     println!();
     println!("Close the item with `nokori close <file>` once it is settled.");
+    println!();
+    println!("Run `nokori check <file>` to see what is left to write.");
+
+    Ok(true)
+}
+
+fn try_run_check(args: &mut noargs::RawArgs) -> noargs::Result<bool> {
+    if !noargs::cmd("check")
+        .doc("Say whether an open item is written yet")
+        .take(args)
+        .is_present()
+    {
+        return Ok(false);
+    }
+
+    let file: String = noargs::arg("<FILE>")
+        .doc("Item to check, as a path under backlog/open/")
+        .example("backlog/open/20250101-bug-panic-on-empty-input.md")
+        .take(args)
+        .then(|a| a.value().parse())?;
+
+    if args.metadata().help_mode {
+        return Ok(true);
+    }
+
+    check_item(&file)?;
+
+    println!("{file} is written");
 
     Ok(true)
 }
@@ -263,6 +292,107 @@ today. Pick another slug, or edit the existing file.",
     Ok(path)
 }
 
+/// Reads an item that is still being written and refuses the two things that
+/// are wrong while it is open: a `TODO` left in a comment, and a link that
+/// does not resolve.
+///
+/// The checks `close` makes that are not here are the point of the command.
+/// `## Outcome` is *expected* to be empty, a file with uncommitted changes is
+/// the normal state of something being written, and the link into
+/// `backlog/open/` is allowed -- that rule is about a file that has moved.
+///
+/// The one check that is not the same as `close`'s is the link: `close` reads
+/// the file from where it is going, and this reads it from where it is. Where
+/// it is going depends on how it is spelled, and a file being written is
+/// allowed to be unfinished in ways the move would settle, so what is
+/// reported is what is wrong now.
+fn check_item(file: &str) -> Result<(), String> {
+    let src = std::path::Path::new(file);
+    if !src.is_file() {
+        return Err(format!(
+            r"`{file}` is not a file, so there is no item to check. Pass the item as
+a path, such as `nokori check {OPEN_DIR}/20250101-bug-panic-on-empty-input.md`."
+        ));
+    }
+
+    if src.parent() != Some(std::path::Path::new(OPEN_DIR)) {
+        let hint = if src.components().count() == 1 {
+            format!(" The item is probably `{OPEN_DIR}/{file}`.")
+        } else {
+            format!(
+                r" There is nothing to check about an item in `{CLOSED_DIR}/`: it is
+written and settled, and it is not edited again."
+            )
+        };
+        return Err(format!(
+            r"`{file}` is not an item in `{OPEN_DIR}/`, so `check` is not the command
+for it.{hint}"
+        ));
+    }
+
+    let content =
+        std::fs::read_to_string(src).map_err(|e| format!("failed to read `{file}`: {e}"))?;
+    check_markers(file, &content)?;
+    check_links_now(file, src, &content)
+}
+
+/// The half of `check_filled_in` that is about a file still being written: the
+/// `TODO` comments, and nothing about `## Outcome`, which is empty until the
+/// close.
+fn check_markers(file: &str, content: &str) -> Result<(), String> {
+    let Some(todo) = find_marker(content) else {
+        return Ok(());
+    };
+
+    let line = content[..todo].lines().count();
+    let message = format!(
+        r"`{file}` still has a `{TODO_MARKER}` comment (line {line}), so it is not
+finished. Each comment says what its section needs; write that and delete the
+comment. If a section has nothing to say, delete its comment along with the
+heading -- every section but `{OUTCOME_SECTION}`, which has to stay even when
+it is empty."
+    );
+    match content[..todo]
+        .lines()
+        .rev()
+        .find(|line| line.starts_with("## "))
+    {
+        Some(heading) => Err(format!(
+            "{message}\n\nThe comment is in `{heading}`, so that section is not written yet."
+        )),
+        None => Err(message),
+    }
+}
+
+/// Checks the links in a file where it is now. Nothing is refused for the
+/// direction or for what the move would do to it, since neither is a problem
+/// yet: a link into `backlog/open/` is allowed from `backlog/open/`, and a
+/// target that only becomes wrong when the file moves is one to fix before the
+/// move, which is the next command.
+fn check_links_now(file: &str, src: &std::path::Path, content: &str) -> Result<(), String> {
+    let here = src.parent().unwrap_or_else(|| std::path::Path::new("."));
+    for link in links(content) {
+        if is_external(&link.target) {
+            continue;
+        }
+        let path = target_path(here, &link.target);
+        if !path.exists() {
+            return Err(format!(
+                r"`{file}` links `{}` (line {}), which is not a file. A link to a file in
+this repository is read as a path, so it has to resolve for the item to be
+written.
+
+If the file it names was renamed, point the link at the new name. If it was
+never written, say what it will say instead. The paths are in `nokori explain
+references`.",
+                link.target, link.line
+            ));
+        }
+    }
+
+    Ok(())
+}
+
 fn close_item(file: &str) -> Result<Closing, String> {
     let src = std::path::Path::new(file);
     let name = src.file_name().map(|name| name.to_owned());
@@ -333,27 +463,13 @@ again.",
 /// Checks that the item is ready to be closed: no `TODO` left anywhere, and the
 /// `## Outcome` section filled in.
 fn check_filled_in(file: &str, content: &str) -> Result<(), String> {
-    if let Some(todo) = find_marker(content) {
-        let line = content[..todo].lines().count();
-        let message = format!(
-            r"`{file}` still has a `{TODO_MARKER}` comment (line {line}), so it is not
-finished. Each comment says what its section needs; write that, delete the
-comment, and commit the file. If a section has nothing to say, delete its
-comment along with the heading -- every section but `{OUTCOME_SECTION}`, which
-has to stay even when it is empty: `close` records the outcome there."
-        );
-        return match content[..todo]
-            .lines()
-            .rev()
-            .find(|line| line.starts_with("## "))
-        {
-            Some(heading) => Err(format!(
-                "{message}\n\nThe comment is in `{heading}`, so that section is not written yet."
-            )),
-            None => Err(message),
-        };
-    }
+    check_markers(file, content)?;
+    check_outcome(file, content)
+}
 
+/// The half of `check_filled_in` that only `close` makes: the section that
+/// records how the item settled has to be there, and has to say something.
+fn check_outcome(file: &str, content: &str) -> Result<(), String> {
     let outcome = content
         .lines()
         .position(|line| line.trim_end() == OUTCOME_SECTION);

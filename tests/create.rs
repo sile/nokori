@@ -206,3 +206,18 @@ fn create_fails_without_a_backlog() {
 
     std::fs::remove_dir_all(&dir).expect("failed to clean up");
 }
+
+#[test]
+fn create_points_at_check() {
+    // The command is found from the run that made the file, rather than from
+    // the help of a tool the writer has already started using.
+    let dir = temp_dir("points-at-check");
+    assert!(nokori(&dir, &["init"]).status.success());
+
+    let output = nokori(&dir, &["create", "bug", "x"]);
+    assert!(output.status.success(), "{output:?}");
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    assert!(stdout.contains("nokori check"), "{stdout}");
+
+    std::fs::remove_dir_all(&dir).expect("failed to clean up");
+}

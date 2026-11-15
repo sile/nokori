@@ -19,13 +19,36 @@ directory means everything not closed, whether or not anybody is working on
 it right now.
 
 
+Checking what is written
+========================
+
+    nokori check backlog/open/<file>
+
+Says whether the sections are written: a `NOKORI_TODO:` comment left in the
+file stops it, and so does a link that does not resolve. Nothing else does.
+`## Outcome` is *expected* to be empty while the item is open, an uncommitted
+file is the normal state of one being written, and a link into
+`backlog/open/` is allowed -- the rule against it is about a file that has
+moved.
+
+What it is for is the stretch between `create` and `close`, when the file is
+rewritten over one sitting or several and nothing else looks at it. `create`
+names the command in the output that wrote the file, so it is found from the
+run that made the work rather than from the help.
+
+Running it is not a step in the flow, and `close` does not want it to have
+been run: `close` makes the same checks itself, and a file moved without a
+`check` is closed the same way.
+
+
 Closing
 =======
 
     nokori close backlog/open/<file>
 
 Moves the item to `backlog/closed/`. `close` refuses the move in four cases,
-and each one is something to fix rather than to work around:
+and each one is something to fix rather than to work around -- the first two
+are the ones `check` reports:
 
 - a `NOKORI_TODO:` comment is left, which means a section is not written;
 - `## Outcome` is missing or empty, so there is nothing recording how it

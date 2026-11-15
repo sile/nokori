@@ -129,16 +129,17 @@ fn try_run_create(args: &mut noargs::RawArgs) -> noargs::Result<bool> {
     }
 
     let path = create_item(&kind, &slug)?;
+    let file = path.display();
 
-    println!("Created {}", path.display());
+    println!("Created {file}");
     println!();
     println!("Next, replace the `{TODO_MARKER}` comments in the file with what");
     println!("they ask for, and commit it. Every comment has to be gone before");
     println!("the file moves, so delete each one as its section is written.");
     println!();
-    println!("Close the item with `nokori close <file>` once it is settled.");
+    println!("Run `nokori check {file}` to see what is left to write.");
     println!();
-    println!("Run `nokori check <file>` to see what is left to write.");
+    println!("When the item is settled, close it with `nokori close {file}`.");
 
     Ok(true)
 }

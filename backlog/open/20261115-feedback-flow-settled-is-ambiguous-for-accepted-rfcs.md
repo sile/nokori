@@ -37,34 +37,25 @@ explains when to close does not answer the case that made me close too early.
 
 ## Outcome
 
-<!-- NOKORI_TODO: the one section written later, when `nokori close` moves
-this file. Leave it empty until then, comment and all.
+Accepted, as the second of the three answers the report offered: an accepted
+`rfc` stays open until its implementation lands.
 
-Two things are recorded here, and both are needed: what was decided, and what
-came of it. The decision is written when it is made, even though the file is
-not closed until the result is known, because the reason for a decision is hard
-to recover later and is exactly what a reader of a closed file asks for.
+Stated a little wider than the report did. An RFC whose acceptance is the whole
+of the work has no change to wait for, so the rule is written as "until the
+change it names has landed" rather than "until the implementation is complete",
+and the report's second reading is the ordinary case of that.
 
-Accepted, reshaped, declined, and held -- say which, and why. A declined
-request needs its reason as much as an accepted one: the next person with the
-same complaint will look for this file, and "no" without a reason sends them to
-file it again.
+The reason is the one the report gave: a closed file is never edited, so a
+design that still changes while the work is carried out would leave a record
+saying something no longer true. The reason went into the text, since a rule
+with no reason behind it is the one that gets broken next time.
 
-Then say what came of it. A new item usually carries the work, so name that
-item and let it stand for the change; whether it is a bug that reports the
-program misbehaving, an RFC that argues the new shape, or a plan that says how
-the work runs is decided then, by what the response turned out to be. When the
-response was to do nothing, say that instead: an `Outcome` that says nothing
-about the result is read as work nobody got to, not as a decision to leave it.
+The change is the commit `902fcc8` ("Say that an accepted RFC stays open until
+it is built"), which adds the paragraph to `nokori explain flow` under `Closing`,
+and a test that fails if the paragraph is dropped.
 
-Once this section is written and committed, treat the file as closed: do not
-edit any part of it again, and append nothing later. If something turns up
-later, leave the file as it is and open a new item that cites this one and
-acts on it.
-
-To refer to another item, link it:
-[bug-empty-input](../closed/20261114-bug-empty-input.md). Link only an item
-that is already closed: never link one that is still open, not even as
-background. Run `nokori explain references` for the paths and the rule.
-
-Delete this comment when you write the section. -->
+The report also offered a third answer, that `close` should say which reading
+the backlog expects. It does not, and the new paragraph says why: `close` reads
+the file and not the repository, so it cannot tell whether a named change has
+landed, and a check it cannot make is not one to promise. What keeps an
+accepted RFC open is the habit and the reason for it.

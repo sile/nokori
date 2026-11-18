@@ -76,6 +76,10 @@ It changes nothing in the file. What it checks is what the file will read as
 once it is closed, since that is the only state the file is ever read in
 afterwards, and a link that is wrong then could not be repaired.
 
+The first of the three is not only refused: the message says what to write
+instead, which is a name (below), and whether the other file links back
+already. That file is read for the second half and never written.
+
 A link that is not a path is skipped: one with a scheme, such as `https://`
 or `mailto:`, and one that names only an anchor in this file. Everything else
 is read as a path, whether or not it points at an item. There is no narrower
@@ -111,5 +115,30 @@ which is why `close` checks the whole file.
 
 The case that looks like it needs an exception does not. When an item answers
 an open proposal, the answer is not settled yet either, so it stays in
-`backlog/` with its outcome unwritten; the item that finishes the work links
-back at the end.
+`backlog/open/` with its outcome unwritten; the item that finishes the work
+links back at the end.
+
+
+A name where a link will not do
+===============================
+
+A closed file may not hold a link into `backlog/open/`, and one case puts it
+there every time: two items that answer each other are written while both are
+open, and the one closed first has a link to a file that is still open. What
+it writes instead is the target's link text, as a name in a code span:
+
+    the decision was made in `rfc-cache-the-parse`
+
+Link text is the kind and slug, so the name reads the same as the link did.
+The code span is what tells a reader it is a name and not a bare word. A
+reader who wants the file finds it from the directory the two share.
+
+A name stays readable where a link would not. A closed file is not edited, so
+a link in it is permanent while the item it names can still be renamed: a
+stale name reads as something written earlier, a stale link points at nothing
+in a file nobody will repair.
+
+Nothing is checked about this. A name holds no `](`, which is all `close`
+looks for, so a writer who leaves the sentence as it was can close the item
+-- and so can one who writes the name without the backticks. It is a form to
+reach for when the link cannot stay, not a rule.

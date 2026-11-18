@@ -618,16 +618,8 @@ fn check_links(
         // useful thing to say.
         let cites_open = |path: &std::path::Path| path.starts_with(OPEN_DIR) && path.is_file();
         if cites_open(&now) || cites_open(&then) {
-            return Err(format!(
-                r"`{file}` links `{}` (line {}), which names an item in `{OPEN_DIR}/`.
-A closed item never cites an open one: the item it names can still be renamed
-or turned down, and this file will not be edited again to follow it.
-
-Wait until that item is closed and point the link at its file in `{CLOSED_DIR}/`,
-or take the link out and say what the item proposes in your own words. The rule
-is in `nokori explain references`.",
-                link.target, link.line
-            ));
+            let named = if then.is_file() { then } else { now };
+            return Err(cites_open_message(file, &link, &named));
         }
 
         if !then.exists() {
@@ -645,6 +637,90 @@ it was going to do instead. The paths are in `nokori explain references`.",
     }
 
     Ok(())
+}
+
+/// The message for a link that names an item still in `backlog/open/`. What to
+/// do with it depends on the other file: a link is stored at either end, so
+/// when that file links back the relation survives the link becoming a name,
+/// and the message stops after saying to write the name. When it does not, the
+/// relation would be nowhere once the link is a name, so the message says to
+/// add the link there while that file is still open.
+///
+/// The other file is read, never written. It is the one file the link names and
+/// not the whole of `backlog/open/`: the question is about these two items, and
+/// a link from a third one says nothing about it.
+fn cites_open_message(file: &str, link: &Link, target: &std::path::Path) -> String {
+    let head = format!(
+        r"`{file}` links `{}` (line {}), which names an item that is still open.
+A closed item never cites an open one: the item it names can still be renamed
+or turned down, and this file will not be edited again to follow it.
+
+The relation does not need the link, though -- one link holds it from either
+end -- so what a closed file needs is a name to read, not a target to follow.",
+        link.target, link.line
+    );
+    let name = link_name(&link.target);
+    let fix = format!(
+        r"Write the target as a name instead, where the link is:
+
+  `{name}`"
+    );
+
+    let other = target.display();
+    if links_back(target, file) {
+        return format!(
+            "{head}\n\n{fix}\n\n`{other}` links back, so the relation is held from that end and\nthis name is all this file owes."
+        );
+    }
+    format!(
+        r"{head}
+
+{fix}
+
+`{other}` does not link back, so that name would be the only thing recording
+the relation and a name is not followable. Add the link there while that file
+is still open, at either end, and close this one afterwards. The rule is in
+`nokori explain references`."
+    )
+}
+
+/// The name a link's target is written as when the link has to go: its text
+/// without the path. The text of a link is already the kind and slug (see
+/// `nokori explain references`), so the name reads the same as the link did.
+fn link_name(target: &str) -> String {
+    let path = std::path::Path::new(target);
+    let file = path
+        .file_name()
+        .and_then(|name| name.to_str())
+        .unwrap_or(target);
+    let stem = file.strip_suffix(".md").unwrap_or(file);
+    // The date is a run of digits at the front and the `-` that joins it to
+    // the kind, so that `20250101-bug-x` becomes `bug-x`.
+    let digits = stem.chars().take_while(char::is_ascii_digit).count();
+    if digits > 0 {
+        let rest = &stem[digits..];
+        if let Some(name) = rest.strip_prefix('-') {
+            return name.to_owned();
+        }
+    }
+    stem.to_owned()
+}
+
+/// Says whether `other` holds a link to `file`. Both are read as paths, and
+/// every link in `other` is resolved from the directory it is in, so a link
+/// written the way `explain references` says is found whichever end it is at.
+///
+/// A file that cannot be read links back to nothing: the writer has the other
+/// file to look at, and the message then says the safe thing.
+fn links_back(other: &std::path::Path, file: &str) -> bool {
+    let Ok(content) = std::fs::read_to_string(other) else {
+        return false;
+    };
+    let here = other.parent().unwrap_or_else(|| std::path::Path::new("."));
+    let me = std::path::Path::new(file);
+    links(&content)
+        .iter()
+        .any(|link| !is_external(&link.target) && target_path(here, &link.target) == me)
 }
 
 /// Says whether a target is something other than a path in this repository: a

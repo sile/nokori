@@ -18,6 +18,11 @@ never mention `backlog/` in the source code, in a commit message, or in a pull
 request. A proposal is something you read and act on here, and it stops
 working as one if the code it describes has to be read for it to make sense.
 
+Say what this RFC answers, when it answers something, as a link to that item
+(`nokori explain references`). Write it in this item or in the other one -- one
+link holds the relation -- and write it before either is closed, since a
+closed item may not link an open one. Nothing to answer is a normal item.
+
 Delete this comment once the paragraph is here. -->
 
 ## Motivation

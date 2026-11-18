@@ -337,33 +337,33 @@ search through `explain references`.
 ## Open questions
 
 Whether `close` should follow the link it stops on before writing the message,
-or say the same thing whether or not the other file links back. Following it
-costs the second file read and gives a message that says the half is already
-held, which is the difference between a writer who does nothing and a writer
-who adds a link that was not needed. Expected answer: follow it -- one file,
-read and not written.
+or say the same thing whether or not the other file links back. Resolved by
+the implementation: it follows it. The message then says whether the half is
+already held, which is the difference between a writer who does nothing and a
+writer who adds a link that was not needed. One file, read and not written.
 
 Whether the message should name the line in the other file to add the link
-at, or only the file. Expected answer: the file. Which section of another
-item answers this one is the writer's reading of it, and a line number in a
-file they are about to open says less than the file name does.
+at, or only the file. Resolved: the file. Which section of another item
+answers this one is the writer's reading of it, and a line number in a file
+they are about to open says less than the file name does.
 
 Whether a `feedback` item that does find a related earlier one should cite it,
-or leave the citing to the maintainer. Expected answer: cite it if it is
-handy, and do not go looking; the template says as much and no more, since a
-rule would put the search back.
+or leave the citing to the maintainer. Resolved: cite it if it is handy, and
+do not go looking; the template says as much and no more, since a rule would
+put the search back.
 
 Whether `check` should say anything about a link into `backlog/open/`, since
-that is the state the close will stop on. Expected answer: no. Mutual links
-between open items are the normal state, so `check` would report the work in
-progress on nearly every item that has a relation at all, which is the same
-reason `check` leaves out the `## Outcome` comment.
+that is the state the close will stop on. Resolved: no. Mutual links between
+open items are the normal state, so `check` would report the work in progress
+on nearly every item that has a relation at all, which is the same reason
+`check` leaves out the `## Outcome` comment.
 
 Whether the line for the relation belongs in `Summary` or in a section of its
-own. Under `Summary` it is read before anything else and is short; a section
-of its own would make it structure, and the items that have no relation would
-carry an empty section. Expected answer: `Summary`, one line, and only when
-there is an item to name.
+own. Resolved: `Summary`, one line, and only when there is an item to name. A
+section of its own would make it structure, and the items that have no
+relation would carry an empty section. `plan` is the exception that falls out
+of its own shape: it has `Goal` where the other kinds have `Summary`, so the
+line goes there and the relation that belongs to one step goes in that step.
 
 ## Outcome
 

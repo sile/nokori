@@ -214,6 +214,91 @@ fn close_refuses_a_link_into_open() {
 }
 
 #[test]
+fn close_says_to_write_a_name_when_the_other_file_links_back() {
+    // Two items answering each other is the normal state, so the item closed
+    // first has a link to a file that is still open. The other file holding
+    // the link back means the relation survives the link becoming a name, so
+    // the message stops after saying what to write.
+    let body = "# Bug: x\n\n## Summary\n\nIt came from\n[bug-done-thing](20250101-bug-done-thing.md).\n\n## Outcome\n\nFixed in abc1234.\n";
+    let (dir, item) = repo_with_item("name-back", body);
+    add_open_item_answering(&dir, "20250101-bug-done-thing.md", Some(&item));
+
+    let output = nokori(&dir, &["close", &item]);
+    assert!(!output.status.success(), "close should have failed");
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(stderr.contains("Write the target as a name"), "{stderr}");
+    // The name is the link text without the date, in a code span.
+    assert!(stderr.contains("`bug-done-thing`"), "{stderr}");
+    assert!(stderr.contains("links back"), "{stderr}");
+    assert!(!stderr.contains("does not link back"), "{stderr}");
+
+    std::fs::remove_dir_all(&dir).expect("failed to clean up");
+}
+
+#[test]
+fn close_asks_for_the_link_back_when_the_other_file_has_none() {
+    // Without the link back, the name would be the only thing recording the
+    // relation and a name cannot be followed, so the message names the other
+    // file and says to add the link there while it is still open.
+    let body = "# Bug: x\n\n## Summary\n\nIt came from\n[bug-done-thing](20250101-bug-done-thing.md).\n\n## Outcome\n\nFixed in abc1234.\n";
+    let (dir, item) = repo_with_item("name-ask", body);
+    add_open_item_answering(&dir, "20250101-bug-done-thing.md", None);
+
+    let output = nokori(&dir, &["close", &item]);
+    assert!(!output.status.success(), "close should have failed");
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(stderr.contains("does not link back"), "{stderr}");
+    assert!(
+        stderr.contains("backlog/open/20250101-bug-done-thing.md"),
+        "{stderr}"
+    );
+    assert!(stderr.contains("`bug-done-thing`"), "{stderr}");
+
+    std::fs::remove_dir_all(&dir).expect("failed to clean up");
+}
+
+#[test]
+fn close_reads_the_named_file_and_not_the_rest_of_open() {
+    // The question is about these two items: a link from a third one says
+    // nothing about whether this relation is held, so it does not count as the
+    // link back.
+    let body = "# Bug: x\n\n## Summary\n\nIt came from\n[bug-done-thing](20250101-bug-done-thing.md).\n\n## Outcome\n\nFixed in abc1234.\n";
+    let (dir, item) = repo_with_item("name-third", body);
+    add_open_item_answering(&dir, "20250101-bug-done-thing.md", None);
+    add_open_item_answering(
+        &dir,
+        "20250101-bug-third.md",
+        Some("backlog/open/20250101-bug-name-third.md"),
+    );
+
+    let output = nokori(&dir, &["close", &item]);
+    assert!(!output.status.success(), "close should have failed");
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(stderr.contains("does not link back"), "{stderr}");
+
+    std::fs::remove_dir_all(&dir).expect("failed to clean up");
+}
+
+/// Creates an open item that answers `name`, linking `back` when it is given.
+fn add_open_item_answering(dir: &Path, name: &str, back: Option<&str>) {
+    let link = match back {
+        Some(item) => format!(
+            "\n\nIt came from\n[bug-friend]({}).",
+            item.rsplit('/').next().unwrap_or(item)
+        ),
+        None => String::new(),
+    };
+    let path = dir.join("backlog/open").join(name);
+    std::fs::write(
+        &path,
+        format!("# Bug: {name}\n\n## Outcome\n\nFixed.{link}\n"),
+    )
+    .expect("failed to write item");
+    git(dir, &["add", "."]);
+    git(dir, &["commit", "--quiet", "-m", "add second item"]);
+}
+
+#[test]
 fn close_ignores_a_link_inside_a_comment_or_code() {
     // `close` reads links through the same `links` as `check`, so a link that
     // is not rendered must not stop the move either.

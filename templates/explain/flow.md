@@ -18,6 +18,28 @@ An item may stay in `backlog/open/` for as long as it needs to. The open
 directory means everything not closed, whether or not anybody is working on
 it right now.
 
+An item that settles another is not finished until the relation is written,
+at one end or the other. One link holds it, since whoever has both files can
+follow it from either side, so which end is the writer's. The usual one is
+later to earlier: the writer of the new item is the one creating the file and
+the target already exists.
+
+When to write it matters. An open item may cite an open one, but a closed item
+may not, so the half written in the item that closes first has only until that
+close to be written. That is usually the item being worked on when the new one
+is created, which is the same sitting -- both halves are ordinary edits to
+ordinary files, and no command writes them for you.
+
+Looking for the item to cite is also where a duplicate is noticed, which
+`create` cannot do: it writes a file from a slug and reads nothing. What this
+asks for is the search that would have found the earlier file.
+
+It is not a ban on items that stand alone. A `bug` fixed on sight and work
+nobody asked for are ordinary items, and a relation that is not there is not
+one to invent -- what the rule asks is that you look. A `feedback` item is
+the case where the look is optional: it is written by the person who hit
+something, at the moment they hit it, and a duplicate is not damage there.
+
 
 Checking what is written
 ========================
@@ -62,7 +84,11 @@ the one `check` reports:
   settled;
 - a link in the file would not resolve once it is in `backlog/closed/`, or
   would name an item still in `backlog/open/`, so the closed file would hold a
-  link that is wrong and cannot be fixed.
+  link that is wrong and cannot be fixed. The second of those is the normal
+  state while two items answer each other, and the message says what to write
+  instead: the target's name in a code span where the link is, plus the link to
+  add if the other file does not already hold it. `nokori explain references`
+  has the form.
 
 Nothing is asked of git. Whether the file is committed is not `close`'s
 question: an item is written in the same sitting it is closed in, and a rule

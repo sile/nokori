@@ -36,6 +36,10 @@ When this answers another item, link that item:
 [bug-empty-input](../closed/20261114-bug-empty-input.md). Run `nokori explain
 references` for the paths and the rule.
 
+Looking for that item is optional here, unlike the other kinds: this is what
+you ran into, and a second report of the same thing is not an error. A link
+you happen to know is worth writing; no search is owed.
+
 Delete this comment once the section is here. -->
 
 ## Outcome

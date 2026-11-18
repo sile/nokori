@@ -84,38 +84,18 @@ wrong once the file has moved.
 
 ## Outcome
 
-<!-- NOKORI_TODO: the one section written later, when `nokori close` moves
-this file. It stays empty while the bug is open, this comment and all, and
-the comment is deleted in the same edit that writes the section -- which is
-the close, since `close` refuses a file whose outcome is still empty.
+Fixed in `eefc0ba` by the fix the notes asked for, in `links` rather than in
+`check_links_now`: `check` and `close` read links through `links`, so putting
+it there fixed both at once and neither can now refuse a file the other passes.
 
-The sections above are written before the item moves: by the time `nokori
-close` moves this file, they are written and their comments are gone.
+The file is scanned line by line, and a link is read only from text a reader
+would see. An open comment is carried across lines, so a comment that spans
+half the file hides all of it. A fence is entered on a run of three or more
+backticks or tildes and left on a run of the same character at least as long.
+A code span is removed before the search, by matching backtick runs of equal
+length, so `` `x` `` and `` ``x`` `` are both code.
 
-Those sections may be rewritten as long as the item is open, as often as the
-understanding changes. What they may not become is a description of work
-already done.
-
-Say what actually happened, and name the change that fixed it; link the
-commit or pull request when there is one.
-
-To refer to another item, link it:
-[bug-empty-input](../closed/20261114-bug-empty-input.md). Link only an item
-that is already closed: never link one that is still open, not even as
-background. The rule is about this section and not the file: a closed item
-may not cite an open one, while an open item may cite either, so a section
-above this one may link an open item. Run `nokori explain references` for the
-paths and the rule.
-
-When the fix differs from what the sections above expected, say so here rather
-than editing them: those sections record what was thought while the bug was
-open, and rewriting them erases the very difference that is worth knowing.
-
-Once this section is written, treat the file as closed: do not
-edit any part of it again, and append nothing later. If something turns up
-later -- most of all, if this turns out not to have been a bug -- leave the
-file as it is and open a new item (an RFC or another bug) that cites this one
-and acts on it.
-
-Delete this comment in the same edit that writes the section, and commit both
-together with the move. -->
+Three tests hold it: that a link in a comment is not read, that a link in a
+fence and one in a span are not read, and that `close` moves a file that has
+all three. `explain references` now says where a link is read from, since the
+answer is no longer "anywhere in the file".

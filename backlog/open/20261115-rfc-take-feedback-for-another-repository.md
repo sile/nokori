@@ -5,11 +5,11 @@
 A command that takes the words of a person who is not in this repository and
 writes them down as it is said: `feedback <path>`, with the words on the
 command line, in a file, or on standard input. It writes
-`backlog/open/YYYYMMDD-feedback-<slug>.md` with the words copied into the
-`## Feedback` section, the slug made from them, and that is all. There is no
-kind to choose and no slug to invent, because the person saying it is not
-writing an item -- they are saying what happened, and the tool is where the
-item comes from.
+`backlog/open/YYYYMMDD-feedback-<HHMMSS>.md` with the words copied into the
+`## Feedback` section, the first line made into the title, and that is all.
+There is no kind to choose and no slug to invent: the name is the day and the
+second, because the person saying it is not writing an item -- they are saying
+what happened, and the tool is where the item comes from.
 
 ## Motivation
 
@@ -80,10 +80,22 @@ and it is written for the one case where the silence would be mistaken for a
 hang. It goes to standard error, so that redirecting standard output still
 gets only the path of the file written.
 
-**What it writes.** `backlog/open/YYYYMMDD-feedback-<slug>.md`, from the
-`feedback` template, with the words placed under `## Feedback`. The title line
-and the slug both come from the words: the summary of an item is what it says,
-and the words are the only summary there is.
+**What it writes.** `backlog/open/YYYYMMDD-feedback-<HHMMSS>.md`, from the
+`feedback` template, with the words placed under `## Feedback` and the title
+line made from them. The name has no slug: the item is named by the day and the
+second it was written.
+
+**Two comments go and one section arrives.** The `feedback` template leaves a
+`NOKORI_TODO` comment in the title line and another in `## Feedback`. Both are
+answers the command already has, so both are replaced in the file it writes:
+the comment after `# Feedback:` with the title, and the whole comment inside
+`## Feedback` with the words. What is left is an item whose title and section
+are written and whose `## Outcome` comment is still there, which is the state
+`create` leaves every item in minus the two sections the command filled in.
+
+Without that, the file would be refused by `nokori check` for a comment the
+command itself left, and the writer would be told to write what they had just
+said.
 
 **The words are copied as they are**, leading and trailing whitespace around
 the whole of them aside. A file read with `-f` is the words and nothing more:
@@ -91,19 +103,65 @@ no note goes into the item saying which file they came from, since the person
 who said them is the author of the item and the file they were kept in is an
 accident of how they travelled.
 
-**The slug is mechanical.** The first words of the text, lowercased, with a
-run of characters that are not a letter or a digit cut down to one `-`, and a
-bound on how long it may be. It is the text and not a reading of it, so the
-same words make the same slug, and nobody chooses anything. A slug that comes
-out empty, because the words were punctuation or a script the rule has nothing
-left of, takes a fallback and the run says so.
+**The words must be something.** The empty text is refused, however it
+arrived: an empty `## Feedback` is an item with nothing in it, and it is read
+back as a file nobody wrote rather than a report that said nothing. So `-m ""`,
+a `-f` naming a file with only whitespace in it, and a run that was given no
+standard input and sent none are the same error, worded as the same thing.
 
-**Where the rest of the item comes from.** Nowhere: the file is written with
-its `## Feedback` filled in and every other section as the template has it, so
-the comments that ask for the `Outcome` are still there and the item is plainly
+**The title is the first line**, with its leading and trailing whitespace and
+its trailing full stop removed, and cut to 60 characters if it is longer. A
+writer who starts with the sentence they would want in a title is the common
+case, and it is the one case where taking the first line is free to get right.
+When the words are one line, the title is that line and the section is the same
+text -- an item whose title says what its body says, which is what the person
+wrote.
+
+The cut is counted in characters and not bytes, so a title in a script that
+uses more than one byte per character is cut where a reader would cut it. One
+character is one character to whoever typed it, and the rule is about how the
+title reads, not about how many bytes it takes.
+
+**The name is the day and the time.** `YYYYMMDD-feedback-<HHMMSS>.md`, with the
+time the run wrote the file. Two items written in the same second are the one
+collision there is, and it is refused with the message `create` gives for a
+name already taken -- wait a second and run it again.
+
+What the name would have been is a slug, and a slug is not here. The writer of
+a `feedback` has just been told something and is writing it down; a name they
+chose is a summary they made before reading the words, and the summary is the
+reading. A name the command makes out of the text is worse than that: the rule
+would cut the words down to whatever it can spell, so a report that opens with
+a sentence about the tool gets a name about the tool, and one that opens with
+where the person was gets a name about that -- a bias in the name that nobody
+chose and that the person who reads the file has to ignore.
+
+The slug belongs to the item the feedback turns into. A name says what a thing
+is so that a reader can find it in a list, and the thing worth naming is what
+was decided, which is not known until somebody has read the words. That is the
+`rfc`, the `bug`, or the `plan` written in answer, and naming those is the work
+of whoever writes them.
+
+So the name of a file made this way says only that it is a `feedback` and when
+it arrived, and the title line says what it is about -- which is where a
+reader looks first anyway. That is also the honest order of the flow: the
+feedback is a message, and a message is read before it is named.
+
+**Where the rest of the item comes from.** Nowhere: the title and `## Feedback`
+are what the run has, and every other section is as the template has it. The
+comment asking for the `Outcome` is still there and the item is plainly
 unfinished. `nokori close` refuses it for the same reason it refuses any other
 item whose sections are unwritten, which is what keeps it in `backlog/open/`
 until somebody has read it.
+
+**`create feedback` and `feedback` make different names for the same kind.**
+`create feedback <slug>` writes `YYYYMMDD-feedback-<slug>.md` and `feedback`
+writes `YYYYMMDD-feedback-<HHMMSS>.md`. That is not an inconsistency to iron
+out: the two are for different writers. `create` is run by somebody who has
+decided what the item is and can say it in a word; `feedback` is run by
+somebody who is copying down what another person just said. Both make a file
+that `close` and `tree` read the same way, and nothing in the tool parses the
+part after `-<kind>-`, so a name is a name.
 
 **The other repository.** `<path>` is resolved the way a directory is, so
 `../other` and `/home/x/other` both work, and the item is written under
@@ -142,6 +200,14 @@ write the item that does it, then close the feedback with the decision in
 repository, or words that are not an item yet, are written with `feedback`,
 and that the rest of the flow happens in the repository the item landed in.
 
+**The file is the other repository's from the moment it is written.** The run
+that made it took no part in reading it, so it does not close it either: the
+`## Outcome` says what was decided about the words, and that is a decision the
+repository the item landed in makes. So the writer's part ends with the file
+on disk and uncommitted, and the sentence the other repository needs -- that
+there is a new item, and who said it -- is the one thing this command cannot
+put anywhere. It is said in the same place the words came from.
+
 ## Alternatives
 
 **`create-external <kind> <slug> --into <dir>`.** The command in the help of
@@ -169,6 +235,22 @@ costs, arrived at by another route. An item for this repository is what
 `create` is for: a kind, a slug, and a section to fill in. So a `feedback` with
 no path is either the wrong command or the wrong input, and both are better
 stopped than written.
+
+**Make a slug out of the words.** The first words, lowercased with the runs of
+other characters cut down to `-`, so the file is named after what it says. It
+loses because the rule decides what the item looks like in a list from the
+first sentence the person happened to say. A report that opens with a sentence
+about the tool gets a name about the tool; one that opens with where the
+person was gets a name about that; one that opens with the steps gets a name
+about the steps. None of those is wrong, and none was chosen -- the bias comes
+from the rule, and the reader has to look past the name to find out what the
+item is. A name that says only *when* claims nothing about the content, and
+the title line says the rest.
+
+There is a second reason. A slug made from the words is still a name in the
+list, and a good name is a comprehension of what was said -- which is the
+reading the tool is trying to postpone, not to fake. The file is read first,
+and the item that comes out of the reading is the one worth naming.
 
 **Have `create feedback` ask for the words when the slug is left out.** Keep
 one command, and read the section from the command line when it is given.
@@ -198,10 +280,10 @@ Whether the title line is the first line of the words or all of them. A title
 is read in a list of items and a section is read in a file, so the two want
 different lengths, and cutting the text is a rule about the text that the tool
 would have to get right -- a full stop that ends a sentence and one that ends
-an abbreviation, a first line that is a whole paragraph on its own. Expected
-answer: the first line, cut to a bound, since a writer who starts with the
-sentence they would want in a title is the one case that is both common and
-free to get right.
+an abbreviation, a first line that is a whole paragraph on its own. Resolved:
+the first line, cut to 60 characters. The rule about full stops turned out not to be
+one: a trailing full stop is dropped and no other is read, so the title is the
+first line with the end tidied, not a reading of where its sentences are.
 
 Whether `-f -` reads standard input, as `git commit -F -` does. With no option
 at all already meaning standard input, it is a second spelling of the same

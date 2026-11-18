@@ -149,6 +149,36 @@ fn check_reports_a_link_that_does_not_resolve() {
 }
 
 #[test]
+fn check_ignores_a_link_inside_a_comment() {
+    // A comment is not rendered, so a link in one is not a link. The templates
+    // put their example there, and `create` would otherwise hand out an item
+    // that `check` refuses until the comment is deleted.
+    let body = "# Bug: x\n\n## Summary\n\nAnswers.\n\n## Outcome\n\n\
+                <!-- NOKORI_TODO: [bug-never-written](20250101-bug-never-written.md) -->\n";
+    let (dir, item) = repo_with_item("comment-link", body);
+
+    let output = nokori(&dir, &["check", &item]);
+    assert!(output.status.success(), "{output:?}");
+
+    std::fs::remove_dir_all(&dir).expect("failed to clean up");
+}
+
+#[test]
+fn check_ignores_a_link_inside_code() {
+    // Neither a fence nor a span is rendered as a link, so neither is one.
+    let body = "# Bug: x\n\n## Summary\n\nAnswers.\n\n\
+                A fence:\n\n```\n[bug-never-written](20250101-bug-never-written.md)\n```\n\n\
+                And a span: `[bug-never-written](20250101-bug-never-written.md)`.\n\n\
+                ## Outcome\n\n";
+    let (dir, item) = repo_with_item("code-link", body);
+
+    let output = nokori(&dir, &["check", &item]);
+    assert!(output.status.success(), "{output:?}");
+
+    std::fs::remove_dir_all(&dir).expect("failed to clean up");
+}
+
+#[test]
 fn check_allows_a_link_into_open() {
     // The direction is only forbidden for a file in `backlog/closed/`, and the
     // item is not there yet.

@@ -214,6 +214,22 @@ fn close_refuses_a_link_into_open() {
 }
 
 #[test]
+fn close_ignores_a_link_inside_a_comment_or_code() {
+    // `close` reads links through the same `links` as `check`, so a link that
+    // is not rendered must not stop the move either.
+    let body = "# Bug: x\n\n## Summary\n\nAnswers.\n\n```\n[no](nope-fence.md)\n```\n\n\
+                A span: `[no](nope-span.md)`.\n\n## Outcome\n\nFixed in abc1234.\n\n\
+                <!-- [no](nope-comment.md) -->\n";
+    let (dir, item) = repo_with_item("comment-link", body);
+
+    let output = nokori(&dir, &["close", &item]);
+    assert!(output.status.success(), "{output:?}");
+    assert!(!dir.join(&item).exists(), "the item was not moved");
+
+    std::fs::remove_dir_all(&dir).expect("failed to clean up");
+}
+
+#[test]
 fn close_keeps_a_link_to_a_closed_item() {
     // `../closed/x.md` names the closed item from the open directory, and the
     // same text names it from the closed one: the two directories are at the

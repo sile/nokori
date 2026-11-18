@@ -82,6 +82,12 @@ is read as a path, whether or not it points at an item. There is no narrower
 scope to remember: a check that covers every path in the file is one a writer
 can rely on without knowing where its edge is.
 
+A link is read only where a reader would see one. Text inside an HTML comment
+is not rendered, and text inside a code fence or a code span is code rather
+than prose, so a `](` in any of those is text about a link and not a link.
+That is where the example in a template's comment sits, and it is why a
+freshly created item passes `check` without its comments being deleted first.
+
 A link to a file in this repository that does not exist is refused all the
 same, since the target is missing. When the item that would settle this one is
 not written yet, say what would settle it, and let that item link back from

@@ -107,9 +107,13 @@ below -- an item reached twice by different paths is still printed twice.
 **An item reached by two paths is printed under both**, as `cargo tree`
 prints a shared dependency. Deduplicating would say which path was taken
 instead, and that is a rule about the graph the files do not have. The shape
-of the output is then a tree of the paths, not a tree of the items -- which
-is what makes it long, and why `--depth` and the `cargo tree` repeat mark are
-things to decide once a real backlog has been printed.
+of the output is then a tree of the paths, not a tree of the items.
+
+There is no repeat mark and no `--depth`. Both are ways of cutting a tree
+that has grown too long to read, and neither is needed by a backlog whose
+tree fits on a screen. Three conventions -- the indent, the mark, and the
+shape of the names -- is what a reader learns; a fourth is what a real output
+would ask for, in an item citing this one.
 
 **An item with no relation is printed alone**, its own name and nothing
 under it. That is the answer to the question it was asked.
@@ -178,43 +182,44 @@ file and say what stopped it.
 
 ## Open questions
 
-Whether the command is named `tree`. The name is `cargo tree`'s, and the
-output is `cargo tree`'s, so the name now matches what the command does. The
-question that is left is whether the resemblance promises something the
-command does not do -- it reads the item graph, not the build, and an item is
-not something that is built. Expected answer: `tree`, decided when the
-command is written.
+Whether the command is named `tree`. Resolved: `tree`. The name is
+`cargo tree`'s and so is the shape of the output, and what the command does
+is walk one graph -- that it is the item graph and not the build is said by
+the argument, which is an item. A second name would have to say what kind of
+graph, and nothing shorter than the argument does.
 
-Whether `-` and `<-` are the marks to use. Two marks that differ by one
-character are easy to misread in a long output, and the alternative is a word
-or a pair of symbols that differ more (`>`, `<`, `⋅`). Expected answer:
-`-` and `<-`, decided when the output is written -- the mark has to be
-recognisable at the start of a line that is already indented.
+Whether `-` and `<-` are the marks to use. Resolved: `-` and `<-`. Both are
+plain ASCII, both sit after the indent without pushing the name right, and
+the line is read from its indentation first and its mark second. A word would
+compete with the name for the reader's eye, and the output is already a list
+of names.
 
 Whether the walk drops into a cycle if one is there, or refuses to print at
-all. A cycle in `backlog/closed/` is possible: two items that cite each other
-and are committed in the same run pass `close`'s checks. It is not a state the
-writer creates on purpose, and a command that hangs on it is the worst
-outcome. Expected answer: keep a set of the items on the current path only,
-and refuse the walk when one repeats -- that is not the visited set that
-deduplicates, and it turns a hang into a sentence.
+all. Resolved: keep a set of the items on the current path only, and refuse
+the walk when one repeats. That is not the visited set that deduplicates, and
+it turns a hang into a sentence. A cycle in `backlog/closed/` is possible --
+two items that cite each other and are committed in the same run pass
+`close`'s checks -- and it is not a state a writer creates on purpose, so the
+cost of the set is paid only by the run that meets one.
 
 Whether the walk repeats an item reached by two paths, as `cargo tree` does,
 or prints it once under the first path and marks the repeat as such
-(`*` in `cargo tree`). The repeat is what says a shared item is shared; the
-mark is what keeps a large graph readable. Expected answer: decide when the
-output is written, after the graph of a real backlog is printed once.
+(`*` in `cargo tree`). Resolved: print it under each. The repeat is what says
+the item is shared, and the mark is a second rule to read on top of the
+indentation and the two marks -- three conventions for an output that is not
+yet long enough to need them. If a real backlog prints too long, the mark is
+a change to make on its own, citing this one.
 
-Whether the item's own line carries the path as well. A reader who is going
-to edit a relation needs the path, and the item was named by path on the
-command line and is a directory away. Expected answer: kind and slug only,
-since the command was given the path and the other commands' output uses the
-labels.
+Whether the item's own line carries the path as well. Resolved: kind and slug
+only. The command was given the path, so a reader who is about to edit a
+relation has it in the run that printed the tree; the line says which item,
+the way a link's text does, and the other commands name items the same way.
 
-Whether the depth is bounded by a flag (`--depth`, as `cargo tree` has). It
-is not part of the design because the walk is the point, but a long chain is
-a screenful of names that a reader may want cut at one hop. Expected answer:
-add it if the first real output is too long, not before.
+Whether the depth is bounded by a flag (`--depth`, as `cargo tree` has).
+Resolved: not yet. The walk is the point, and the length of a real backlog is
+the thing that would ask for the cut; adding it before there is one guesses
+at a default. When the output is long enough to want it, that is a new item
+citing this one.
 
 ## Outcome
 

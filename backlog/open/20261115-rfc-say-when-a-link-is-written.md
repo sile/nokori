@@ -7,16 +7,24 @@ opens a file can follow the links in it and the files that link to it, so one
 link between two items relates them both ways. One direction is enough, and
 which one is for the writer to choose. What the rules do not say is *when* a
 writer owes one, so the flow should say it -- an item is not finished until
-the relation to what it answers is written, at one end or the other -- and
-`close` should say so when the item it is about to move has no relation at
-all, from either side.
+the relation to what it answers is written, at one end or the other.
 
-The rule is not a prohibition. An item with no link is a normal item: a `bug`
-fixed on sight, a piece of work nobody else asked for. It asks the writer to
-look, and what to do with what the look finds is the writer's: a relation that
-is not there is not one to invent, and a `feedback` item -- written by the
-person who hit something, at the moment they hit it -- may be filed as it is,
-duplicate or not.
+Mutual links between two open items are the normal state, since both files
+are being written and both writers can see the other. What that leaves is the
+close: a closed file may not link an open one, so the item closed first has
+to lose its half. `close` should say what to do with that half rather than
+refuse it -- the target is written as a name instead of a link, so the
+closed file still records what it was about without holding a link that the
+next rename would break. And when the other item does not link back, the
+relation would then be nowhere, so `close` should say to add that link while
+the other file is still open.
+
+The rule is not a prohibition. An item with no relation is a normal item: a
+`bug` fixed on sight, a piece of work nobody else asked for. It asks the
+writer to look, and what to do with what the look finds is the writer's: a
+relation that is not there is not one to invent, and a `feedback` item --
+written by the person who hit something, at the moment they hit it -- may be
+filed as it is, duplicate or not.
 
 ## Motivation
 
@@ -91,11 +99,22 @@ The exemption is not a licence to skip that search. A relation that is hard
 to write is one thing, and a relation that is not there is another, and only
 the second is exempt.
 
-The item that comes out with no link at all is the one nobody looks at again:
-nothing points at it, so it is found only by opening the directory. A step in
-the flow is what prevents it, and a report at the close is what catches the
-one the step missed -- one line, where the file is still open and its writer
-is standing.
+The other end of the flow is the close, and it is where the rule costs
+something. Two open items may link each other, and both are right to: neither
+knows which will be closed first. The item closed first then has a link to a
+file that is still open, which a closed file may not hold. Until now the only
+answer was to refuse the close, which leaves the writer to work out for
+themselves what to do with the half -- usually at the end of the work, which
+is the worst moment to be handed a puzzle.
+
+What that half is for is worth separating from what it is. The relation does
+not need the link: the other item's link holds it from the other side, or,
+when there is none, still can be written while that file is open. What the
+closed file needs is a note of what it was about -- which is what a reader of
+a settled item asks after, having found it by some other route -- and a name
+in prose does that without going stale. A name that has since been renamed is
+a name a reader can tell is old; a link that has since been renamed is one
+that fails to resolve, in a file nobody will edit again.
 
 ## Design
 
@@ -107,18 +126,69 @@ target already exists.
 
 What the change adds is not a new restriction on what an item may be. It is
 a step in the flow -- the relation is written before the item is closed, not
-at some point nobody names -- and a report in `close` for the item that comes
-out with neither end written. An item with no relation is a normal item and
-closes like any other; the report is a line, not a refusal, and writes
-nothing.
+at some point nobody names -- and, at the close, a sentence telling the writer
+what to do with the half that can no longer be a link. Nothing is reported
+for the item that has no relation at all: such an item is rare enough that a
+line of output for it costs more than it saves, and the writer who meant to
+link something has the step.
 
-**The ban on closed-to-open is as it is.** It is not part of this change and
-the check stays where it is. It does mean that the earlier file can only get
-its link while it is open, since a closed file cannot link the item that
-settles it -- so the relation is written from the open item, which is also
-where the writer is while the answer is being written. Writing it is ordinary
-work on an open item, and the alternatives argue about whether `create`
-should do it in the same run as the new file.
+**The ban on closed-to-open is narrowed, not lifted.** It still holds for
+links: a closed file may not hold a link into `backlog/open/`. What changes is
+that a target may also be written as a name, and a name is not a link. The
+check keeps looking for `](`, so a name is not something it has to learn to
+except -- it is a thing the writer can already put in a file.
+
+**The name form is recommended, not enforced.** The target is written as its
+link text alone, in a code span, where the link was. With a link:
+
+    the shape argued in [rfc-how-items-refer-to-each-other]
+    (../closed/20261114-rfc-how-items-refer-to-each-other.md)
+
+With a name, and the file it names moved to `backlog/closed/`:
+
+    the shape argued in `rfc-how-items-refer-to-each-other`
+
+Link text is already kind and slug without the date (`explain references`
+says so), so the name reads the same as the link did, and a reader who wants
+the file can resolve it from the directory the two share. The code span is
+what tells a reader it is a name and not a bare word in the prose. None of
+this is checked: `close` does not require it, `check` says nothing about it,
+and a writer who leaves the sentence as it was -- or writes the name without
+the backticks -- can close the item.
+
+What it buys is the one case the ban exists for. A closed file is not edited,
+so a link in it is permanent, while the item it names can still be renamed.
+A name that has since gone stale is a sentence that reads as old; a link that
+has since gone stale is a file nobody will repair. So the form is recommended
+for the same reason the ban is there, and it is recommended rather than
+required because a rule here would be a rule about prose, which is the one
+thing the tool does not own.
+
+**`close` guides in two cases, and writes nothing.** When the file being
+moved holds a link that resolves into `backlog/open/`, `close` stops as it
+does today, and the message says what to do instead: write the target as a
+name where the link is. It does not rewrite the file. The file being moved is
+not necessarily committed, and a command that edits what it was asked to move
+is a command whose output is a diff nobody read.
+
+**The other item decides the second half of the message.** `close` follows
+the one link it found, to the one file it names, and reads it. If that file
+holds a link back, the relation survives the name -- the other end holds it,
+the other file is still open, and the message stops after the first sentence.
+If it does not, the relation would exist nowhere once the link is a name, so
+the message says to add the link in the other file while it is still open, and
+names the file.
+
+That is the second file `close` reads (the first is the one it moves), and it
+is read, never written. One file and not the whole `backlog/open/`: the
+question is about these two items, and a link from a third one says nothing
+about it. `explain flow` says nothing of this -- what a reader of the flow
+needs is the rule, not which file the command opens to apply it.
+
+**`check` is silent about all of this.** A link into `backlog/open/` is
+ordinary while the item is open, and mutual links are the normal state, so
+reporting one before the close would report the work in progress. What `check`
+reports is about the file as it stands, and as it stands the link resolves.
 
 **The step has a moment, and it is the close.** `explain flow` gains the step:
 an item that settles another is not finished until the relation is written,
@@ -127,19 +197,10 @@ being written; the earlier end is written then too, since the file that would
 have to take it may close before the new one does. Both are ordinary edits to
 ordinary files, and in the usual case both happen in the same sitting.
 
-**An item with no link at all is reported.** `close` gains a check that says
-so when the file it is about to move holds no link to another item and no
-other item holds a link to it. It is a report and not a refusal: an item may
-legitimately stand alone -- a `bug` found and fixed without any item being
-involved -- and the tool cannot tell that from an item whose relation was
-forgotten. What the report does is make the forgotten one visible at the
-moment the file stops being edited.
-
-Nothing is filled in to make the report go away, and no relation is to be
-invented for it. The reason an item has no link is that there is no item to
-link -- if there were, the rule would have had the writer link it -- so the
-report is answered by saying so in the `Outcome`, or by leaving it: a report
-is not a refusal, and the move goes ahead either way.
+What the flow says about the close changes by one clause: the third refusal
+is about a link, and a target written as a name is not one. That is the whole
+of it -- the flow states the rule and the two places it is applied, and the
+file `close` reads to apply it is left out.
 
 **The link is recommended for `feedback`, not expected.** A `feedback` item is
 written by the person who hit something, at the moment they hit it, and the
@@ -158,42 +219,33 @@ answer to it; a duplicate carries no such claim. The `Summary` of a `feedback`
 template says the link is optional for this kind, so the writer knows the
 search is theirs to skip.
 
-The relation is read from both sides, so the check reads the whole open
-directory for links that point at the closing file as well as the file
-itself. That is the one place where a `close` has to look at files other than
-the one it moves; it reads them and writes nothing, and the open directory is
-small enough that reading it is what a writer would do by hand to answer the
-same question.
-
-A link from a file in `backlog/closed/` is read too, since a relation written
-at the earlier end is written while that item is open and the file may have
-closed since. What the check asks is whether the relation exists in either
-direction, not whether the file it is about holds the link itself.
-
-**What a link is, for this check.** Only a link to an item in this backlog
-counts: a target that resolves to a markdown file under `backlog/open/` or
-`backlog/closed/`. A link to `src/main.rs`, to a URL, or to a heading counts
-for nothing, and an item whose only links are of that kind stands alone. That
-is narrower than the scope `close` already checks for resolution, and it is
-narrow on purpose: the two questions are different -- "does this target
-exist" is about the shape of the file, "is this item related to anything" is
-about the graph.
-
-The report says so and the move goes ahead. There is no flag to silence it,
-since it is one line on the one item out of many that has no relation, and a
-flag would be a thing to remember for an output nobody minds reading.
-
 **The documentation is reorganized around it.** `explain references` spends
 most of its words on the shapes a link may take, and what it does not say is
 what a link is for: a relation that is readable from either end, one link
 enough to hold it, and the one thing the writer has to get right -- that the
-target resolves. `explain flow` gains the step: an item that settles another
-is not finished until the relation between the two is written, in one
-direction at least, and the earlier end has to be written while it is still
-open -- with `feedback` as the one kind where the step is a suggestion rather
-than a step. Each template's `Outcome` comment keeps the line about how to
-write a link, and the `Summary` of each gains a line for the relation to the
-item this one answers; the `feedback` one says the line may be left out.
+target resolves. It gains a section on the name form: what it looks like, why
+a closed file takes one where a link will not do, and that it is a
+recommendation and not a rule. The step goes into `explain flow`, with
+`feedback` as the one kind where it is a suggestion rather than a step. Each
+template's `Outcome` comment keeps the line about how to write a link, and the
+`Summary` of each gains a line for the relation to the item this one answers;
+the `feedback` one says the line may be left out.
+
+**The close message says what to do, not what is wrong.** Two messages, one
+per case, both of them naming the file and the line:
+
+    `backlog/open/a.md` links to an item that is still open:
+      line 12: `rfc-b`
+
+    A closed item is not edited, so a link it holds breaks the day its
+    target is renamed. Write the target as a name instead, where the link
+    is:
+
+      `rfc-b`
+
+and, when the other file does not link back, one more paragraph naming that
+file and saying to add the link there while it is still open. The first
+sentence is the refusal; the rest is the way out of it.
 
 ## Alternatives
 
@@ -225,18 +277,30 @@ are two reports.
 
 **Require the relation to be found before the item is written.** Make the
 search the first step of `create`, so a duplicate cannot be filed at all. It
-loses for the reason the report is not a refusal: the tool cannot tell a
-relation that is absent from one the writer could not name, and the kind that
-this matters most for, `feedback`, is the one where the search is the least
-reasonable thing to ask.
+loses because the tool cannot tell a relation that is absent from one the
+writer could not name, and the kind that this matters most for, `feedback`,
+is the one where the search is the least reasonable thing to ask.
 
-**Report the orphan from a command of its own, instead of `close`.** A
-`nokori check` that reads the open directory and lists the items with no
-relation, over the whole backlog at once. It loses because the moment the
-orphan is fixable is the close: after the file is in `backlog/closed/` it is
-not edited, and a report on a backlog of many items is read once and acted on
-later. The report belongs where the file can still be changed, which is one
-line in `close`.
+**Report every item that closes with no relation at all.** A line in `close`
+for the item that has neither a link out nor a link in. It loses because such
+an item is rare and the report is paid for by all the others: an item standing
+alone is a normal shape -- a `bug` fixed on sight, work nobody asked for -- and
+the tool cannot tell it from the relation the writer forgot. A sentence on
+every close that nobody acts on is the line a reader learns to skip, which
+costs more than the one item it would have caught.
+
+**Have `close` stop on a link into `backlog/open/` and say nothing more.** The
+refusal is right -- the closed file would hold a link it cannot be repaired
+for -- but the writer is left at the end of the work with a link and no way
+out that the tool has named. Either they work out that a name will do, or
+they delete the sentence. The message is where the rule is applied, so it is
+the place to say what to write instead.
+
+**Have `close` rewrite the link into a name itself.** One command that moves
+the file and fixes the one thing that would break it. It loses because the
+file being moved is not necessarily committed, and a command that edits what
+it was asked to move writes a change nobody reviewed -- the same reason `close`
+changes nothing else in the file it moves.
 
 **A command that writes the relation into the older file.** `nokori link
 <new> <old>`, or an option on `create` that adds the line to the slot it
@@ -249,52 +313,51 @@ resolve, in a run that was about creating a different file. The half belongs
 in an ordinary edit to the older item, at the point the writer has both files
 in hand, and that is also the commit in which the relation is visible.
 
-**Have `close` add the forward link to the older file.** The writer closes
-the newer item, and `close` adds the link to the item it settles. It loses because it makes a
-`close` edit a second file, which is the kind of change this tool has already
-decided against -- a move is visible in the diff, and a rewrite hidden in the
-same commit is not. It also cannot know which older item to link, since a
-`close` sees one file.
+**Have `close` add the missing link to the other file.** The writer closes
+the item, `close` sees that the other file has no link back, and adds one
+while it reads it. It loses because it makes a `close` edit a second file,
+and the second file is one somebody else may be working in at that moment.
+The name plus a sentence saying where to add the link leaves the edit where
+it belongs, with the writer who has both files in hand.
 
 **Nothing in the tool, only in the documentation.** Say in `explain flow`
 that the relation may be written in either direction, that one link holds it,
-and at what point in the work it is written. It loses because the rule is then
-a thing a writer has to remember at the moment they stop rereading the file,
-and the tool's own reason for existing is that every command reports what to
-do next. A report does not make the rule, but it is the sentence in the place
-the writer is standing.
+and that the item closed first writes the name instead of the link. It loses
+because the writer meets the problem at the close, not while reading the flow,
+and a link that no longer resolves is what tells them at that moment -- the
+message is the only place they are standing.
 
-**Say it in `explain flow` alone, and have `close` report nothing.** The flow
-is where the step belongs, and an item that stands alone is not an error. It
-loses because the flow is read when the flow is learned, not at the moment a
-file is closed, and the writer who forgot the link is the one who does not
-know to look.
+**Say it in `explain flow` alone, and have `close` keep refusing.** The flow
+is where the rules belong, and a link into `backlog/open/` is already refused
+with a message naming the line. It loses because the refusal says what is
+wrong and not what to write, and the writer is at the end of their work with
+the file in front of them -- the one moment where one more sentence saves the
+search through `explain references`.
 
 ## Open questions
 
-Whether the report is worth a line of output at all, given that an item
-without a relation is normal. Expected answer: yes, as one line and not a
-refusal -- the case it is for is the relation the writer meant to write and
-did not, and a writer who did not mean one reads the line and moves on.
+Whether `close` should follow the link it stops on before writing the message,
+or say the same thing whether or not the other file links back. Following it
+costs the second file read and gives a message that says the half is already
+held, which is the difference between a writer who does nothing and a writer
+who adds a link that was not needed. Expected answer: follow it -- one file,
+read and not written.
 
-Whether `feedback` is exempt from the report as well as from the rule, so that
-an orphan `feedback` closes with nothing said. Expected answer: no, report it
-like any other -- the writer of the close is the maintainer, who has read the
-record, and a silent `feedback` would hide the one item whose relation the
-tool could have helped add.
+Whether the message should name the line in the other file to add the link
+at, or only the file. Expected answer: the file. Which section of another
+item answers this one is the writer's reading of it, and a line number in a
+file they are about to open says less than the file name does.
 
 Whether a `feedback` item that does find a related earlier one should cite it,
 or leave the citing to the maintainer. Expected answer: cite it if it is
 handy, and do not go looking; the template says as much and no more, since a
 rule would put the search back.
 
-Whether `close` reporting an orphan is a check or the beginning of the `check`
-command proposed in
-[rfc-check-an-item-before-closing](20261115-rfc-check-an-item-before-closing.md).
-That item reads one file before the close; an orphan is read from two sides,
-and the second side is the directory. Expected answer: the report is in
-`close`, since it is about the state a close produces, and `check` is about a
-file still being written.
+Whether `check` should say anything about a link into `backlog/open/`, since
+that is the state the close will stop on. Expected answer: no. Mutual links
+between open items are the normal state, so `check` would report the work in
+progress on nearly every item that has a relation at all, which is the same
+reason `check` leaves out the `## Outcome` comment.
 
 Whether the line for the relation belongs in `Summary` or in a section of its
 own. Under `Summary` it is read before anything else and is short; a section
@@ -310,33 +373,32 @@ the comment is deleted in the same edit that writes the section -- which is
 the close, since `close` refuses a file whose outcome is still empty.
 
 The sections above are written before the item moves: by the time `nokori
-close` moves this file, they are written, their comments are gone (this one
-with them), and the change is committed.
+close` moves this file, they are written and their comments are gone.
 
 Those sections may be rewritten as long as the item is open, as often as the
 understanding changes. What they may not become is a description of work
-already done. `nokori close` needs the change committed, so whatever they say
-at that point is what the moving commit records.
+already done.
 
 Say whether the RFC was accepted or rejected, and why. When it is accepted,
 name the change that implements it, or the item that does, if the work happens
 somewhere else.
 
 To refer to another item, link it:
-[bug-empty-input](../closed/20261114-bug-empty-input.md). Link only an item
-that is already closed: never link one that is still open, not even as
-background. The rule is about this section and not the file: a closed item
-may not cite an open one, while an open item may cite either, so a section
-above this one may link an open item. Run `nokori explain references` for the
+[rfc-how-items-refer-to-each-other](../closed/20261114-rfc-how-items-refer-to-each-other.md)
+
+Link only an item that is already closed: never link one that is still open,
+not even as background. The rule is about this section and not the file: a
+closed item may not cite an open one, while an open item may cite either, so
+a section above this one may link an open item -- and a closed section names
+an open one rather than linking it. Run `nokori explain references` for the
 paths and the rule.
 
 An accepted RFC can still be overturned later. Say so in the later item and
 cite this one; do not edit this file afterwards to follow it.
 
-Once this section is written and committed, treat the file as closed: do not
-edit any part of it again, and append nothing later. If something turns up
-later, leave the file as it is and open a new item that cites this one and
-acts on it.
+Once this section is written, treat the file as closed: do not edit any part
+of it again, and append nothing later. If something turns up later, leave the
+file as it is and open a new item that cites this one and acts on it.
 
 Delete this comment in the same edit that writes the section, and commit both
-together before the move. -->
+together with the move. -->

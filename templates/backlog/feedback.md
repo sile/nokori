@@ -62,7 +62,7 @@ the work runs is decided then, by what the response turned out to be. When the
 response was to do nothing, say that instead: an `Outcome` that says nothing
 about the result is read as work nobody got to, not as a decision to leave it.
 
-Once this section is written and committed, treat the file as closed: do not
+Once this section is written, treat the file as closed: do not
 edit any part of it again, and append nothing later. If something turns up
 later, leave the file as it is and open a new item that cites this one and
 acts on it.
@@ -76,4 +76,4 @@ above this one may link an open item. Run `nokori explain references` for the
 paths and the rule.
 
 Delete this comment in the same edit that writes the section, and commit both
-together before the move. -->
+together with the move. -->

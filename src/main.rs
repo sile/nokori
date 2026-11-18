@@ -490,7 +490,6 @@ for it.{hint}"
     // file in `open/` and another in `closed/` would be broken by the move,
     // and a closed file is not edited to repair it afterwards.
     check_links(file, src, &dst, &content)?;
-    check_committed(file)?;
 
     if dst.exists() {
         return Err(format!(
@@ -718,34 +717,6 @@ fn target_path(from: &std::path::Path, target: &str) -> std::path::PathBuf {
         }
     }
     path
-}
-
-/// Checks that the file being moved has no changes git has not seen yet.
-fn check_committed(file: &str) -> Result<(), String> {
-    let output = std::process::Command::new("git")
-        .args(["status", "--porcelain", "--", file])
-        .output()
-        .map_err(|e| format!("failed to run `git status`: {e}"))?;
-    if !output.status.success() {
-        let message = String::from_utf8_lossy(&output.stderr);
-        return Err(format!(
-            r"`git status` failed while checking `{file}`, and `close` refuses to move
-a file it cannot check. The commit that moves an item is meant to record
-only the move, so the file has to be committed first.
-
-{message}"
-        ));
-    }
-
-    if !output.stdout.is_empty() {
-        return Err(format!(
-            r"`{file}` has changes that are not committed yet, so moving it would mix
-the close with an edit of what the item says. Commit the file first, so that
-the commit that closes it records only the move."
-        ));
-    }
-
-    Ok(())
 }
 
 fn today() -> Result<String, String> {

@@ -128,14 +128,17 @@ fn close_refuses_an_empty_outcome() {
 }
 
 #[test]
-fn close_refuses_an_uncommitted_edit() {
+fn close_moves_an_uncommitted_item() {
+    // The `## Outcome` is written by whoever closes the item, so the edit and
+    // the move are the same commit. `close` asks nothing of git, which is
+    // what lets it be one commit instead of two.
     let (dir, item) = repo_with_item("dirty", FINISHED);
     std::fs::write(dir.join(&item), "# Bug: x\n\n## Outcome\n\nEdited.\n")
         .expect("failed to edit item");
 
     let output = nokori(&dir, &["close", &item]);
-    assert!(!output.status.success(), "close should have failed");
-    assert!(dir.join(&item).exists(), "item was moved anyway");
+    assert!(output.status.success(), "{output:?}");
+    assert!(!dir.join(&item).exists(), "item was left in backlog/open/");
 
     std::fs::remove_dir_all(&dir).expect("failed to clean up");
 }

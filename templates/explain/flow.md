@@ -30,9 +30,8 @@ file stops it, and so does a link that does not resolve. Nothing else does.
 It leaves out the sections only the close writes. `## Outcome` is *expected*
 to be empty while the item is open, and its comment stays in place for the
 whole of that time, so reporting it would report every item that anybody is
-working on. An uncommitted file is the normal state of one being written, and
-a link into `backlog/open/` is allowed -- the rule against it is about a file
-that has moved.
+working on. A link into `backlog/open/` is allowed -- the rule against it is
+about a file that has moved.
 
 When nothing is reported, the item is as far as it can be without the close,
 and the output says so.
@@ -54,7 +53,7 @@ Closing
 
     nokori close backlog/open/<file>
 
-Moves the item to `backlog/closed/`. `close` refuses the move in four cases,
+Moves the item to `backlog/closed/`. `close` refuses the move in three cases,
 and each one is something to fix rather than to work around -- the first is
 the one `check` reports:
 
@@ -63,17 +62,21 @@ the one `check` reports:
   settled;
 - a link in the file would not resolve once it is in `backlog/closed/`, or
   would name an item still in `backlog/open/`, so the closed file would hold a
-  link that is wrong and cannot be fixed;
-- the file has changes that are not committed, so the commit that moves it
-  would also be the commit that edits it.
+  link that is wrong and cannot be fixed.
+
+Nothing is asked of git. Whether the file is committed is not `close`'s
+question: an item is written in the same sitting it is closed in, and a rule
+that made that two commits would be paid on every item to guard the one run
+that closed a file by mistake.
 
 The link check is the subject of `nokori explain references`, which says
 which links it looks at and which it leaves alone.
 
-`close` moves the file and changes nothing in it. Committing the move is the
-user's step, and it is the last one, because a file in `backlog/closed/` is
-not edited afterwards. A link that was already wrong when the file reached
-`backlog/closed/` stays as it is, for the same reason.
+`close` moves the file and changes nothing in it. Committing that, with the
+`## Outcome` that was written just before it, is the user's step and the last
+one, because a file in `backlog/closed/` is not edited afterwards. A link that
+was already wrong when the file reached `backlog/closed/` stays as it is, for
+the same reason.
 
 An item is closed when it is settled, not when the work is finished. A `bug`
 that turns out not to be a bug, an `rfc` that is turned down, and a `plan`

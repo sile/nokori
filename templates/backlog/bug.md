@@ -78,13 +78,11 @@ the comment is deleted in the same edit that writes the section -- which is
 the close, since `close` refuses a file whose outcome is still empty.
 
 The sections above are written before the item moves: by the time `nokori
-close` moves this file, they are written, their comments are gone (this one
-with them), and the change is committed.
+close` moves this file, they are written and their comments are gone.
 
 Those sections may be rewritten as long as the item is open, as often as the
 understanding changes. What they may not become is a description of work
-already done. `nokori close` needs the change committed, so whatever they say
-at that point is what the moving commit records.
+already done.
 
 Say what actually happened, and name the change that fixed it; link the
 commit or pull request when there is one.
@@ -101,11 +99,11 @@ When the fix differs from what the sections above expected, say so here rather
 than editing them: those sections record what was thought while the bug was
 open, and rewriting them erases the very difference that is worth knowing.
 
-Once this section is written and committed, treat the file as closed: do not
+Once this section is written, treat the file as closed: do not
 edit any part of it again, and append nothing later. If something turns up
 later -- most of all, if this turns out not to have been a bug -- leave the
 file as it is and open a new item (an RFC or another bug) that cites this one
 and acts on it.
 
 Delete this comment in the same edit that writes the section, and commit both
-together before the move. -->
+together with the move. -->

@@ -180,7 +180,8 @@ progress. Its sections are `Goal`, `Steps`, `Notes`, and `Outcome`.
   somebody other than the reader.
 - Moving an item into `backlog/closed/` is local only: the tool moves the file and
   touches nothing else. It does not commit, push, or otherwise change anything
-  through git.
+  through git. It does not read git either, so the edit that writes `##
+  Outcome` and the move that follows it are one commit, decided by the user.
 - `close` refuses an item that still has a `TODO` comment, or whose `##
   Outcome` is missing or empty, and the error names the section that is not
   written yet. The templates already say what each section needs, so the check
@@ -192,8 +193,7 @@ progress. Its sections are `Goal`, `Steps`, `Notes`, and `Outcome`.
 - `check <file>` says whether the work on an item is written down: a `TODO`
   comment left outside `## Outcome`, or a link that does not resolve. It
   reports what `close` would say about the same file, minus the parts that
-  only apply at the close: `## Outcome` is expected to be empty, an
-  uncommitted file is the normal state of one being worked on, and a link
+  only apply at the close: `## Outcome` is expected to be empty, and a link
   into `backlog/open/` is allowed. It leaves out the sections only the close
   writes, because their comments sit in the file for the whole of the working
   time: an item is open precisely while `## Outcome` has nothing in it, so
@@ -242,10 +242,10 @@ progress. Its sections are `Goal`, `Steps`, `Notes`, and `Outcome`.
   table to grow, and that is the point:
   every state costs the reader a word to learn, and gives two files in
   different states a way to say the same thing.
-- Commands may read git state, but never change it: no commit, no push, no
-  network. A move checks that the file it touches is committed, the way
-  `cargo publish` refuses a dirty tree, but only for that file rather than the
-  whole repository. `nokori` assumes it runs inside a git repository.
+- No command reads or changes git state: no commit, no push, no network, no
+  `git status`. What an item is, is in its file, and the commit that moves it
+  records the `## Outcome` and the move together. `nokori` does not need to run
+  inside a git repository.
 - A command reports what to do next when it finishes. `init` prints how to
   create the first item and does not go on to explain the kinds: the generated
   file already shows what each kind's sections expect.

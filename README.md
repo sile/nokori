@@ -133,6 +133,12 @@ progress. Its sections are `Goal`, `Steps`, `Notes`, and `Outcome`.
 - A target is a path from the file holding the link, and never from the root.
   The rule that a target beginning with `backlog/` or `closed/` was read from
   the root existed to make the rewrite predictable, and went with it.
+- `nokori tree <item>` is how the relations are read back. It prints the item
+  and everything reachable from it, one per line, with a mark saying whether
+  the link that reached it is in the line above or in the line itself, since
+  which file to edit is what a reader of a relation acts on. It reads the same
+  links as `close` and writes nothing: an index in a file would be a second
+  copy of what the files already say, and a copy is what goes out of step.
 - `init` writes `backlog/README.md`, `backlog/open/README.md`, and
   `backlog/closed/README.md`, each short: what the directory holds, and which
   `explain` topic says the rest. Nothing about how nokori works beyond that

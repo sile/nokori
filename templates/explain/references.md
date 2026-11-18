@@ -142,3 +142,32 @@ Nothing is checked about this. A name holds no `](`, which is all `close`
 looks for, so a writer who leaves the sentence as it was can close the item
 -- and so can one who writes the name without the backticks. It is a form to
 reach for when the link cannot stay, not a rule.
+
+
+Reading the relations back
+==========================
+
+    nokori tree backlog/open/<item>.md
+
+Prints the item and the items reachable from it, one per line, nested two
+spaces per hop. The mark before a line says which file holds the link that
+reached it:
+
+    rfc-show-the-relations-between-items
+      - plan-the-reading-commands
+        <- rfc-show-the-relations-between-items
+      <- feedback-slugs-are-hard-to-type
+
+`-` is a link in the line above, `<-` is a link in the line itself. A
+relation written at both ends is reached twice, once per link, since two
+links is what is in the files.
+
+An item reached by two paths is printed under each, the way `cargo tree`
+prints a shared dependency. There is no repeat mark and no `--depth`: both are
+ways of cutting a tree that has grown too long, and the cut is a change to
+make when one does. A cycle -- possible between two closed items -- stops the
+walk where it meets it and says so.
+
+A link to anything that is not an item is skipped: a path into the source
+tree, a URL, a heading. What the command reads is what `close` reads, so the
+graph it prints is the one the rules are about.

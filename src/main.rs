@@ -65,6 +65,7 @@ fn main() -> noargs::Result<()> {
         || try_run_create(&mut args)?
         || try_run_check(&mut args)?
         || try_run_close(&mut args)?
+        || try_run_tree(&mut args)?
         || try_run_explain(&mut args)?;
 
     if let Some(help) = args.finish()? {
@@ -200,6 +201,220 @@ fn try_run_close(args: &mut noargs::RawArgs) -> noargs::Result<bool> {
     println!("`{CLOSED_DIR}/` is a record, so later work cites it rather than editing it.");
 
     Ok(true)
+}
+
+fn try_run_tree(args: &mut noargs::RawArgs) -> noargs::Result<bool> {
+    if !noargs::cmd("tree")
+        .doc("Print the items reachable from one item")
+        .take(args)
+        .is_present()
+    {
+        return Ok(false);
+    }
+
+    let file: String = noargs::arg("<ITEM>")
+        .doc("Item to start from, given as its path")
+        .example("backlog/open/20250101-rfc-panic-on-empty-input.md")
+        .take(args)
+        .then(|a| a.value().parse())?;
+
+    if args.metadata().help_mode {
+        return Ok(true);
+    }
+
+    let tree = walk_tree(&file)?;
+    print!("{tree}");
+
+    Ok(true)
+}
+
+/// Reads every item under `backlog/open/` and `backlog/closed/`, with the links
+/// each one holds, keyed by the path the links are resolved against.
+///
+/// Nothing is cached between runs: a link from a closed item is a relation like
+/// any other, and a copy of the graph would be right until somebody edited a
+/// file.
+fn read_items() -> Result<Vec<Item>, String> {
+    let mut items = Vec::new();
+    for dir in [OPEN_DIR, CLOSED_DIR] {
+        let entries = match std::fs::read_dir(dir) {
+            Ok(entries) => entries,
+            // A directory that is not there holds no item, and a backlog with
+            // nothing closed yet has no `closed/`. That is a backlog with
+            // fewer relations in it, not a reason to refuse the walk.
+            Err(e) if e.kind() == std::io::ErrorKind::NotFound => continue,
+            Err(e) => return Err(format!("failed to read `{dir}`: {e}")),
+        };
+        for entry in entries {
+            let entry = entry.map_err(|e| format!("failed to read `{dir}`: {e}"))?;
+            let name = entry.file_name().to_string_lossy().into_owned();
+            if name == "README.md"
+                || !std::path::Path::new(&name)
+                    .extension()
+                    .is_some_and(|e| e == "md")
+            {
+                continue;
+            }
+            let path = std::path::Path::new(dir).join(&name);
+            let content = std::fs::read_to_string(&path)
+                .map_err(|e| format!("failed to read `{}`: {e}", path.display()))?;
+            let here = path.parent().unwrap_or_else(|| std::path::Path::new("."));
+            let links = links(&content)
+                .into_iter()
+                .filter(|link| !is_external(&link.target))
+                .map(|link| target_path(here, &link.target))
+                .filter(|target| is_item_path(target))
+                .collect();
+            items.push(Item {
+                path: normalize(&path),
+                name: item_label(&name),
+                links,
+            });
+        }
+    }
+    Ok(items)
+}
+
+/// An item read for the walk: the file it is in, the label a line prints, and
+/// the items it links.
+struct Item {
+    path: std::path::PathBuf,
+    name: String,
+    links: Vec<std::path::PathBuf>,
+}
+
+/// The walk from one item, as the text `tree` prints. Each item is printed
+/// under the line that reached it, indented two spaces per hop, with a mark
+/// saying which file holds the link that reached it: `-` for a link in the line
+/// above, `<-` for a link in the line itself.
+///
+/// An item reached by two paths is printed under both, since deduplicating
+/// would say which path was taken instead. What keeps the walk finite is the
+/// set of items on the current path: a repeat there is a cycle, and the walk
+/// stops and says so rather than hanging.
+fn walk_tree(file: &str) -> Result<String, String> {
+    let start = std::path::Path::new(file);
+    if !start.is_file() {
+        return Err(format!(
+            r"`{file}` is not a file, so there is no item to walk from. Pass the item as a
+path, such as `nokori tree {OPEN_DIR}/20250101-bug-panic-on-empty-input.md`."
+        ));
+    }
+    if !is_item_path(&normalize(start)) {
+        return Err(format!(
+            r"`{file}` is not an item. `tree` walks the links between items, so it starts
+from one in `{OPEN_DIR}/` or `{CLOSED_DIR}/`. Run `nokori explain overview` for what an item
+is."
+        ));
+    }
+
+    let items = read_items()?;
+    let start = normalize(start);
+    let Some(first) = items.iter().find(|item| item.path == start) else {
+        return Err(format!(
+            r"`{file}` is not an item. Nothing under `{OPEN_DIR}/` or `{CLOSED_DIR}/` has that
+name. Pass the path of a file in one of them."
+        ));
+    };
+
+    let mut out = String::new();
+    out.push_str(&first.name);
+    out.push('\n');
+    let mut path = vec![first.path.clone()];
+    walk_children(first, &items, 1, &mut path, &mut out);
+    Ok(out)
+}
+
+/// Prints the items related to `item`, one hop out, and then theirs.
+fn walk_children(
+    item: &Item,
+    items: &[Item],
+    depth: usize,
+    path: &mut Vec<std::path::PathBuf>,
+    out: &mut String,
+) {
+    for (next, forward) in neighbours(item, items) {
+        let indent = "  ".repeat(depth);
+        let mark = if forward { "- " } else { "<- " };
+        out.push_str(&format!("{indent}{mark}{}\n", next.name));
+
+        if path.contains(&next.path) {
+            // A cycle: the item is already on this path, so following it again
+            // would print it forever. This is the only way the walk could not
+            // end, and it is said here rather than refused before printing.
+            out.push_str(&format!(
+                "{}  (already on the path: the links run in a circle, so the walk stops here)\n",
+                "  ".repeat(depth)
+            ));
+            continue;
+        }
+        path.push(next.path.clone());
+        walk_children(next, items, depth + 1, path, out);
+        path.pop();
+    }
+}
+
+/// The items one hop from `item`, each with a mark saying where the link is:
+/// `true` when the link is in `item` and points at the other one, `false` when
+/// the link is in the other one and points back at `item`.
+///
+/// The ones `item` links come first, in the order the links are in its file,
+/// since that is the order the writer wrote them in. The ones that link to it
+/// follow, in the order the files are read from the directory.
+fn neighbours<'a>(item: &'a Item, items: &'a [Item]) -> Vec<(&'a Item, bool)> {
+    let mut found: Vec<(&Item, bool)> = Vec::new();
+    for target in &item.links {
+        if let Some(other) = items.iter().find(|candidate| &candidate.path == target) {
+            found.push((other, true));
+        }
+    }
+    for other in items {
+        if other.path == item.path {
+            continue;
+        }
+        if other.links.contains(&item.path) {
+            found.push((other, false));
+        }
+    }
+    found
+}
+
+/// Says whether a path names an item: a file directly in `backlog/open/` or
+/// `backlog/closed/` whose name is `YYYYMMDD-<kind>-<slug>.md`.
+fn is_item_path(path: &std::path::Path) -> bool {
+    let parent = path.parent().unwrap_or_else(|| std::path::Path::new(""));
+    if parent != std::path::Path::new(OPEN_DIR) && parent != std::path::Path::new(CLOSED_DIR) {
+        return false;
+    }
+    let Some(name) = path.file_name().and_then(|name| name.to_str()) else {
+        return false;
+    };
+    let Some(stem) = name.strip_suffix(".md") else {
+        return false;
+    };
+    let digits = stem.chars().take_while(char::is_ascii_digit).count();
+    digits == 8 && stem[digits..].starts_with('-')
+}
+
+/// The label a line prints for an item: the kind and slug, which is the text a
+/// link to it carries.
+fn item_label(name: &str) -> String {
+    link_name(name)
+}
+
+/// Folds `.` and `..` away, so that two spellings of one path compare equal.
+fn normalize(path: &std::path::Path) -> std::path::PathBuf {
+    let mut out = std::path::PathBuf::new();
+    for component in path.components() {
+        match component {
+            std::path::Component::CurDir => {}
+            std::path::Component::ParentDir => {
+                out.pop();
+            }
+            other => out.push(other),
+        }
+    }
+    out
 }
 
 fn try_run_explain(args: &mut noargs::RawArgs) -> noargs::Result<bool> {

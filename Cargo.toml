@@ -1,10 +1,9 @@
 [package]
 name = "nokori"
-version = "0.0.1"
+version = "0.0.2"
 edition = "2024"
 license = "MIT"
 description = "A markdown-file-based backlog management CLI"
-homepage = "https://github.com/sile/nokori"
 repository = "https://github.com/sile/nokori"
 readme = "README.md"
 keywords = ["backlog", "task-management"]

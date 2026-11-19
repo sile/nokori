@@ -241,7 +241,15 @@ progress. Its sections are `Goal`, `Steps`, `Notes`, and `Outcome`.
   | command | state after | directory | from |
   | ------- | ----------- | --------- | ---- |
   | `create <kind> <slug>` | open | `backlog/open/` | -- |
+  | `feedback <path>` | open | `<path>/backlog/open/` | -- |
   | `close <file>` | closed | `backlog/closed/` | `backlog/open/` |
+
+  `feedback` is the one row whose directory is not this repository's, and it
+  is the reason it is a command and not an option on `create`: an option left
+  out is silent, so the item would land in the wrong repository without a
+  word. Everything else about the item is `create`'s -- the same template, the
+  same `check`, the same `close` in the repository it landed in -- so the only
+  thing that needed a command is where it goes.
 
   `check` is not in the table: it reads a file and leaves it where it is, so
   it moves an item into no state at all. Two states leave little room for the
@@ -415,6 +423,26 @@ same step, so a reader who has used `gh` already knows the word.
 The pair `create`/`close` is not symmetric, and that is accepted: only the
 closing command has to agree with a state the item ends up in, because that is
 the state the directory names. Nothing about creating an item is a state.
+
+### Why a `feedback` written by the command has no slug
+
+Every other item is named by a slug, and a slug is a summary. The summary of a
+`feedback` is what the person said, and the run that writes the file has not
+read it -- it is copying words down as they arrive. A slug the writer invents
+is a reading made before the reading; a slug cut from the words is the same
+badly, since the rule can only keep what it can spell, and the first sentence
+of a report decides what the file is called for good.
+
+The name is the day and the second instead, and the file says nothing above
+the words. What a name is for -- being found in a list -- is served by the
+moment the run happened, which is what a reader of a pile of reports is
+looking for. A name for what it is about is made when somebody reads it and
+writes the `rfc`, `bug`, or `plan` it turns into.
+
+The title line comes out of the file for the same reason. A title made of the
+first line is that line repeated just above itself, shorter and without the
+rest. `create feedback` keeps the line, because a writer there knows the
+phrase before the words.
 
 ### Why a move checks that the file is clean
 

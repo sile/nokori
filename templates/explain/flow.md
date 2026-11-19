@@ -18,6 +18,37 @@ An item may stay in `backlog/open/` for as long as it needs to. The open
 directory means everything not closed, whether or not anybody is working on
 it right now.
 
+
+Writing down what somebody said
+===============================
+
+    nokori feedback <path>
+
+The words come the way `git commit` takes a message: `-m` for text on the
+command line, `-f` for a file, and standard input when neither is given.
+
+`<path>` is the directory holding the backlog the item belongs to -- `.` for
+this repository, or the root of another one. That is what makes this command
+different from `create`: the person who met the problem is often not in the
+repository the report belongs to, and the run happens where the words come
+from rather than where the item lives.
+
+The file is `backlog/open/YYYYMMDD-feedback-<HHMMSS>.md`. The name is the day
+and the second it was written, with no slug: a slug is a summary, and a
+summary is made by reading the words, which this run has not done. There is no
+title line either, for the same reason. What the run knows is that somebody
+said something, and when.
+
+The rest of the flow happens in the repository it landed in. That repository
+is the one that reads the words, decides what they turn into, and closes the
+feedback with the decision in `## Outcome`. Nothing is committed by the run,
+in either repository.
+
+Putting an item in another repository is the one thing every other command
+does not do, so it is one command rather than an option on `create`: an
+option that is left out is silent, and the item lands in the wrong
+repository without a word.
+
 An item that settles another is not finished until the relation is written,
 at one end or the other. One link holds it, since whoever has both files can
 follow it from either side, so which end is the writer's. The usual one is

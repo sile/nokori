@@ -35,6 +35,16 @@ const KINDS: &[(&str, &str)] = &[
     ("feedback", include_str!("../templates/backlog/feedback.md")),
 ];
 
+/// The kind `feedback` writes, and the two markers in its template that the
+/// words replace rather than an answer to.
+///
+/// The title line is cut out whole: the words are the item, and a title made
+/// of their first line is that line repeated a little above itself. `create`
+/// keeps the line, because a writer there knows the phrase before the words.
+const FEEDBACK_KIND: &str = "feedback";
+const FEEDBACK_TITLE_PREFIX: &str = "# Feedback:";
+const FEEDBACK_SECTION: &str = "## Feedback";
+
 /// The topics `explain` prints, each with the text. They carry the material a
 /// command cannot: the rules about the states and the kinds, which read the
 /// same whatever command the reader arrived from. `overview` comes first
@@ -63,6 +73,7 @@ fn main() -> noargs::Result<()> {
 
     let _ = try_run_init(&mut args)?
         || try_run_create(&mut args)?
+        || try_run_feedback(&mut args)?
         || try_run_check(&mut args)?
         || try_run_close(&mut args)?
         || try_run_tree(&mut args)?
@@ -143,6 +154,254 @@ fn try_run_create(args: &mut noargs::RawArgs) -> noargs::Result<bool> {
     println!("the item with `nokori close {file}`.");
 
     Ok(true)
+}
+
+fn try_run_feedback(args: &mut noargs::RawArgs) -> noargs::Result<bool> {
+    if !noargs::cmd("feedback")
+        .doc("Write down what somebody said, as a feedback item")
+        .take(args)
+        .is_present()
+    {
+        return Ok(false);
+    }
+
+    let path: String = noargs::arg("<PATH>")
+        .doc("Repository to write the item in, given as the directory holding `backlog/`")
+        .example("../other")
+        .take(args)
+        .then(|a| a.value().parse())?;
+    let message: Option<String> = noargs::opt("message")
+        .short('m')
+        .doc("Take the words from this argument, or give `--file` or standard input")
+        .take(args)
+        .present_and_then(|a| a.value().parse())?;
+    let source: Option<String> = noargs::opt("file")
+        .short('f')
+        .doc("Take the words from this file")
+        .take(args)
+        .present_and_then(|a| a.value().parse())?;
+
+    if args.metadata().help_mode {
+        return Ok(true);
+    }
+
+    let words = feedback_words(message, source)?;
+    let path = write_feedback(std::path::Path::new(&path), &words)?;
+    let file = path.display();
+
+    println!("Created {file}");
+    println!();
+    println!("The item belongs to the repository it was written into, so it is read");
+    println!("and closed there. Nothing is committed and the file was not opened.");
+
+    Ok(true)
+}
+
+/// Reads the words from the one place they were given, and refuses the run
+/// that would write an empty `## Feedback`.
+///
+/// The empty text is one error however it arrived, since the run that writes
+/// it is the run that had nothing to say, and which flag was typed is not the
+/// part to tell the writer about.
+fn feedback_words(message: Option<String>, source: Option<String>) -> Result<String, String> {
+    if message.is_some() && source.is_some() {
+        return Err(
+            r"`--message` and `--file` cannot be used together, since which one was meant
+is not something this command can tell. Give the words one way."
+                .to_owned(),
+        );
+    }
+
+    let words = match (message, source) {
+        (Some(words), _) => words,
+        (None, Some(source)) => std::fs::read_to_string(&source).map_err(|e| {
+            format!(
+                r"failed to read the words from `{source}`: {e}
+
+Check the path, or leave `--file` out to type the words instead."
+            )
+        })?,
+        (None, None) => read_stdin()?,
+    };
+
+    let words = words.trim();
+    if words.is_empty() {
+        return Err(
+            r"the words are empty, so the item would have nothing in it. Say what the
+person said: with `--message`, with `--file`, or on standard input."
+                .to_owned(),
+        );
+    }
+    Ok(words.to_owned())
+}
+
+/// Reads the words from standard input, saying so first when it is a terminal.
+///
+/// At a terminal the read looks like a hang, and one line on standard error is
+/// what takes the silence away. A pipe is somebody already sending, so nothing
+/// is written for it -- a line there would land in the output of whatever is
+/// being piped.
+fn read_stdin() -> Result<String, String> {
+    use std::io::{IsTerminal, Read};
+
+    let stdin = std::io::stdin();
+    if stdin.is_terminal() {
+        eprintln!("Reading the words from standard input. End them with Ctrl-D.");
+    }
+    let mut words = String::new();
+    stdin
+        .lock()
+        .read_to_string(&mut words)
+        .map_err(|e| format!("failed to read the words from standard input: {e}"))?;
+    Ok(words)
+}
+
+/// Writes `backlog/open/YYYYMMDD-feedback-<HHMMSS>.md` under `root`, and
+/// returns the path.
+///
+/// The name is the day and the second, with no slug: a slug is a summary, and
+/// this run has not read the words yet. The title line comes out of the file
+/// for the same reason, since its content would be the first line of the
+/// section a little higher up.
+fn write_feedback(root: &std::path::Path, words: &str) -> Result<std::path::PathBuf, String> {
+    let Some((_, template)) = KINDS.iter().find(|(k, _)| *k == FEEDBACK_KIND) else {
+        return Err(format!(
+            r"this build has no `{FEEDBACK_KIND}` template to write from, which is a bug
+in nokori rather than something to fix here."
+        ));
+    };
+
+    check_backlog_at(root)?;
+
+    let clock = now()?;
+    let name = format!("{}-{FEEDBACK_KIND}-{}.md", clock.date, clock.time);
+    let path = root.join(OPEN_DIR).join(name);
+    if path.exists() {
+        return Err(format!(
+            r"`{}` already exists, so an item was written in this second already.
+Wait a second and run the command again; if it was this run, nothing was lost.",
+            path.display()
+        ));
+    }
+
+    let content = feedback_content(template, words)?;
+    std::fs::write(&path, content)
+        .map_err(|e| format!("failed to write `{}`: {e}", path.display()))?;
+    Ok(path)
+}
+
+/// Says which way `root` is not a repository with a backlog, with a next step
+/// for each.
+///
+/// The path is the one thing the command cannot help with -- where another
+/// repository is, only somebody who knows does -- so every way of getting it
+/// wrong says which way it was.
+fn check_backlog_at(root: &std::path::Path) -> Result<(), String> {
+    if !root.is_dir() {
+        return Err(format!(
+            r"`{}` is not a directory, so there is no repository to write the item in.
+Give the path of the directory that holds that repository's `{BACKLOG_DIR}/`, as
+this command read it -- a relative path is read from where you ran `nokori`.",
+            root.display()
+        ));
+    }
+
+    if !root.join(BACKLOG_DIR).join("README.md").is_file() {
+        return Err(format!(
+            r"`{}` has no `{BACKLOG_DIR}/README.md`, so its backlog is not set up.
+
+Run `nokori init` in that directory, or give the path of a repository that has
+one. Whether to make a backlog there is that repository's decision, so this
+command does not make it.",
+            root.display()
+        ));
+    }
+
+    if !root.join(OPEN_DIR).is_dir() {
+        return Err(format!(
+            r"`{}` has a `{BACKLOG_DIR}/README.md` but no `{OPEN_DIR}/`, so its layout is
+not the one this version of nokori writes.
+
+`{OPEN_DIR}/` is where an open item goes. If `{BACKLOG_DIR}/` was made by an older
+nokori, `nokori --version` here will say which one this run is.",
+            root.display()
+        ));
+    }
+
+    Ok(())
+}
+
+/// The item as it is written: the template without its title line, with the
+/// words in place of the comment in `## Feedback`.
+///
+/// Both edits are made here rather than in the template because `create`
+/// writes the same template with its title line kept.
+fn feedback_content(template: &str, words: &str) -> Result<String, String> {
+    let mut out = String::new();
+    let mut dropped_title = false;
+    let mut body = template;
+    if let Some(rest) = body.strip_prefix(FEEDBACK_TITLE_PREFIX) {
+        let end = rest.find('\n').map_or(rest.len(), |i| i + 1);
+        body = &rest[end.min(rest.len())..];
+        dropped_title = true;
+    }
+    if !dropped_title {
+        return Err(format!(
+            r"the `{FEEDBACK_KIND}` template does not start with `{FEEDBACK_TITLE_PREFIX}`,
+so the title line could not be dropped. This is a bug in nokori."
+        ));
+    }
+
+    let heading = format!("{FEEDBACK_SECTION}\n");
+    let Some(at) = body.find(&heading) else {
+        return Err(format!(
+            r"the `{FEEDBACK_KIND}` template has no `{FEEDBACK_SECTION}` section, so the words
+have nowhere to go. This is a bug in nokori."
+        ));
+    };
+    let (before, after_heading) = body.split_at(at + heading.len());
+    out.push_str(&before_without_leading_blank(before));
+    out.push_str(words);
+    out.push('\n');
+
+    // What follows the words is the rest of the template with the comment in
+    // this section taken out. The comment is the answer the words just gave.
+    let rest = drop_section_comment(after_heading);
+    out.push_str(&rest);
+    Ok(out)
+}
+
+/// Removes the blank line the title line's removal left above the first
+/// heading.
+fn before_without_leading_blank(before: &str) -> String {
+    let trimmed = before.trim_start_matches('\n');
+    if trimmed.is_empty() {
+        String::new()
+    } else {
+        let mut out = trimmed.to_owned();
+        out.push('\n');
+        out
+    }
+}
+
+/// Removes the leading `<!-- NOKORI_TODO: ... -->` comment, which is the one
+/// asking for the section the words now fill.
+fn drop_section_comment(rest: &str) -> String {
+    let trimmed = rest.trim_start_matches('\n');
+    let Some(body) = trimmed.strip_prefix("<!--") else {
+        return trimmed.to_owned();
+    };
+    if !body.contains(TODO_MARKER) {
+        return trimmed.to_owned();
+    }
+    let Some(close) = body.find("-->") else {
+        return trimmed.to_owned();
+    };
+    let after = &body[close + 3..];
+    let after = after.trim_start_matches('\n');
+    let mut out = String::from("\n");
+    out.push_str(after);
+    out
 }
 
 fn try_run_check(args: &mut noargs::RawArgs) -> noargs::Result<bool> {
@@ -1133,17 +1392,39 @@ fn target_path(from: &std::path::Path, target: &str) -> std::path::PathBuf {
 }
 
 fn today() -> Result<String, String> {
+    Ok(now()?.date)
+}
+
+/// The day and the time, read from `date` in one run so that a name made of
+/// both is of one moment.
+///
+/// `date` is called rather than a crate being added for it: the tool already
+/// leans on the machine for its clock, and a dependency for two format strings
+/// is more to keep up to date than it is to save.
+struct Clock {
+    date: String,
+    time: String,
+}
+
+fn now() -> Result<Clock, String> {
     let output = std::process::Command::new("date")
-        .arg("+%Y%m%d")
+        .arg("+%Y%m%d %H%M%S")
         .output()
         .map_err(|e| format!("failed to run `date`: {e}"))?;
     if !output.status.success() {
-        let message = "`date +%Y%m%d` failed, so today's date could not be read";
+        let message = "`date` failed, so the date and the time could not be read";
         return Err(message.to_owned());
     }
-    let date = String::from_utf8(output.stdout)
-        .map_err(|e| format!("`date +%Y%m%d` printed non-UTF-8 text: {e}"))?;
-    Ok(date.trim().to_owned())
+    let text = String::from_utf8(output.stdout)
+        .map_err(|e| format!("`date` printed non-UTF-8 text: {e}"))?;
+    let text = text.trim();
+    let (date, time) = text
+        .split_once(' ')
+        .ok_or_else(|| format!("`date` printed `{text}`, which is not a date and a time"))?;
+    Ok(Clock {
+        date: date.to_owned(),
+        time: time.to_owned(),
+    })
 }
 
 fn is_valid_slug(slug: &str) -> bool {

@@ -64,6 +64,13 @@ program does, or to decline and say why.
 
 Sections: Feedback.
 
+A `feedback` is usually written with `nokori feedback`, which takes the words
+from the person who said them and writes the item into the repository they
+belong to. `nokori create feedback` is the other way in, and it keeps the
+title line the template has: it is run by somebody who already knows what the
+item is about, while `nokori feedback` has only the words and starts the file
+with them.
+
 
 Choosing between the kinds
 ==========================

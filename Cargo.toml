@@ -19,3 +19,10 @@ include = [
 
 [dependencies]
 noargs = "0.4.3"
+
+[lib]
+name = "nokori"
+
+[[bin]]
+name = "nokori"
+path = "src/main.rs"

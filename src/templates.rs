@@ -19,13 +19,13 @@ pub const OPEN_DIR: &str = "backlog/open";
 pub const CLOSED_DIR: &str = "backlog/closed";
 
 /// The README `init` writes into `backlog/`.
-pub const BACKLOG_README_TEMPLATE: &str = include_str!("../templates/backlog/README.md");
+pub const BACKLOG_README_TEMPLATE: &str = include_str!("../templates/backlog.md");
 
 /// The README `init` writes into `backlog/open/`.
-pub const OPEN_README_TEMPLATE: &str = include_str!("../templates/backlog/open/README.md");
+pub const OPEN_README_TEMPLATE: &str = include_str!("../templates/backlog_open.md");
 
 /// The README `init` writes into `backlog/closed/`.
-pub const CLOSED_README_TEMPLATE: &str = include_str!("../templates/backlog/closed/README.md");
+pub const CLOSED_README_TEMPLATE: &str = include_str!("../templates/backlog_closed.md");
 
 /// What `init` writes, each with the template for its content.
 pub const README_FILES: &[(&str, &str)] = &[
@@ -45,10 +45,10 @@ pub const TODO_MARKER: &str = "NOKORI_TODO:";
 
 /// The kinds `create` accepts, each with the template written into the file.
 pub const KINDS: &[(&str, &str)] = &[
-    ("rfc", include_str!("../templates/backlog/rfc.md")),
-    ("bug", include_str!("../templates/backlog/bug.md")),
-    ("plan", include_str!("../templates/backlog/plan.md")),
-    ("feedback", include_str!("../templates/backlog/feedback.md")),
+    ("rfc", include_str!("../templates/item_rfc.md")),
+    ("bug", include_str!("../templates/item_bug.md")),
+    ("plan", include_str!("../templates/item_plan.md")),
+    ("feedback", include_str!("../templates/item_feedback.md")),
 ];
 
 /// The kind `feedback` writes.
@@ -69,12 +69,12 @@ pub const FEEDBACK_SECTION: &str = "## Feedback";
 /// because it is the one to read first: the other three state rules that only
 /// make sense once the reader knows nothing here is enforced.
 pub const TOPICS: &[(&str, &str)] = &[
-    ("overview", include_str!("../templates/explain/overview.md")),
-    ("kinds", include_str!("../templates/explain/kinds.md")),
-    ("flow", include_str!("../templates/explain/flow.md")),
+    ("overview", include_str!("../templates/explain_overview.md")),
+    ("kinds", include_str!("../templates/explain_kinds.md")),
+    ("flow", include_str!("../templates/explain_flow.md")),
     (
         "references",
-        include_str!("../templates/explain/references.md"),
+        include_str!("../templates/explain_references.md"),
     ),
 ];
 

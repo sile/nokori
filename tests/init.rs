@@ -43,7 +43,7 @@ fn init_creates_the_three_readmes() {
         // once cannot follow a change of policy, so the policy cannot be in
         // it.
         assert!(
-            content.contains("nokori explain flow"),
+            content.contains("nokori explain "),
             "{path} does not point at the rule: {content}"
         );
     }

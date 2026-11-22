@@ -1,16 +1,8 @@
 # open
 
-This directory holds the items of this repository that are still open:
-proposals, bug reports, and other pieces of work.
+The items of this repository that are still open.
 
-An item that is not settled stays here, with the reason it is waiting written
-in its body. There is no separate directory for work that has been started or
-for work that is waiting on something.
+An item that is not settled stays here. When it is settled, `nokori close`
+moves it to `../closed/`.
 
-When an item is settled, it is closed by moving it to `../closed/`.
-
-## Read more
-
-    nokori explain flow
-
-says how an item is opened and closed, and what the states mean.
+Run `nokori explain flow` to read how an item is opened and closed.

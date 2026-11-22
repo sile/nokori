@@ -7,7 +7,7 @@
 
 use std::path::{Path, PathBuf};
 
-use crate::check::check_marker;
+use crate::command_check::check_marker;
 use crate::item::link_name;
 use crate::links::{Link, is_external, links, normalize, target_path};
 use crate::marker::{close_hint, marker_message};

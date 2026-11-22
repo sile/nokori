@@ -5,14 +5,17 @@ nokori
 [![Actions Status](https://github.com/sile/nokori/workflows/CI/badge.svg)](https://github.com/sile/nokori/actions)
 ![License](https://img.shields.io/crates/l/nokori)
 
-A backlog management CLI tool, with the backlog kept as markdown files.
-
-A backlog of items, kept as ordinary text files. Nothing extra is added to
-the filesystem, so searching the backlog is `grep`, reading it is your
-editor. The `nokori` commands tell you how to use them as you go, so you can
-start without reading anything first -- `nokori init` is the first one.
-
 nokori is Japanese for "what is left" (残り).
+
+It is a backlog management CLI tool, with the backlog kept as markdown
+files.
+
+A backlog of items, each a file under `backlog/open/` or `backlog/closed/`.
+The usual tools work on them -- `grep` to search, your editor to read and
+write.
+
+There is nothing to learn before you start: each command tells you what to
+run next, and `nokori init` is the first.
 
 
 What it manages

@@ -1,15 +1,35 @@
 nokori
-===
+======
 
 [![Crates.io](https://img.shields.io/crates/v/nokori.svg)](https://crates.io/crates/nokori)
 [![Actions Status](https://github.com/sile/nokori/workflows/CI/badge.svg)](https://github.com/sile/nokori/actions)
 ![License](https://img.shields.io/crates/l/nokori)
 
-**WIP**
-
 A backlog management CLI tool, with the backlog kept as markdown files.
 
+A backlog of items, kept as ordinary text files. Nothing extra is added to
+the filesystem, so searching the backlog is `grep`, reading it is your
+editor. The `nokori` commands tell you how to use them as you go, so you can
+start without reading anything first -- `nokori init` is the first one.
+
 nokori is Japanese for "what is left" (残り).
+
+
+What it manages
+---------------
+
+An item is one file, and its kind is part of its name.
+
+- `rfc` -- a proposal, and the decision on it.
+- `bug` -- a problem, and what was done about it.
+- `plan` -- a piece of work, and its progress.
+- `feedback` -- words from somebody else, kept as they arrived. The run
+  records what was said, not a summary of it.
+
+An item is *open* while it is in `backlog/open/`, and *closed* once it has
+been moved to `backlog/closed/`. Those are the only two states, and the
+directory a file is in is the state; the file itself has no status field.
+
 
 Installation
 ------------
@@ -20,488 +40,50 @@ $ cargo install nokori
 $ nokori --help
 ```
 
-What this tool is
------------------
 
-`nokori` cannot enforce much of what it recommends. It keeps no hidden files
-and no index: the backlog is ordinary directories and ordinary markdown files,
-which anyone can edit, move, or delete by hand, and there is hardly any check
-that could fail.
+Overview
+--------
 
-What it offers is one good way to keep a backlog, written down as a flow of
-commands. The rules are recommendations and following them is the user's own
-responsibility -- the same deal as git-flow, where the flow is a convention
-and the tool only makes it convenient.
+`nokori init` creates this, and nothing else:
 
-The tool exists at all, rather than as a page of documentation, so that the
-flow can be walked without knowing it in advance. Every command reports what
-to do next, so `nokori --help`, then `nokori init`, then `nokori create` each
-lead on to the following step, and the whole shape is learned by running them
-in order. `nokori check` is named by `create` for the same reason: the command
-that wrote the file says how to find out whether it is written yet.
+```
+backlog/
+  README.md
+  open/
+    README.md
+  closed/
+    README.md
+```
 
-
-Decided
--------
-
-- The three READMEs `nokori init` writes stay minimal, so that keeping them
-  current as `nokori` changes costs little.
-- The templates are self-descriptive instead. `nokori create <kind>` writes an
-  item whose sections each carry a `<!-- NOKORI_TODO: ... -->` saying what
-  belongs there and what to keep in mind; the author deletes the comment once
-  the section says what it should. That instruction is itself a
-  `<!-- NOKORI_TODO: -->` in the template.
-- The marker is the word `NOKORI_TODO:` rather than a plain `TODO:`, so that
-  `close` can find the comments a template left without matching a `TODO` the
-  author wrote about the code. What `close` checks is not "the word TODO is
-  gone" but "every comment written by `create` is gone", and only a marker
-  the templates own can tell the two apart.
-- An item stands on its own. Its sections carry whatever a reader needs to
-  judge it, and the sections that are always there are the ones every kind
-  must answer: for a `bug`, the reproduction, the observed behavior, and the
-  expected behavior. The rule that an item may cite the code but the code
-  never cites an item is written into the template, because a reader of an
-  item may never open `backlog/README.md`, and because that file stays fixed
-  after `init` and is kept minimal. Advice that does not fit an item goes in
-  `nokori explain <topic>`, not in the README. The advice no template can
-  carry -- what the states mean, and what an item is for -- is a topic of its
-  own for the same reason.
-- A `bug` item keeps an `## Outcome` section from the start, empty until
-  `nokori close` writes it. A file that is complete on its own is worth more
-  than one that matches the closed files in a reference repository, so the
-  section is in the template rather than appended at the end.
-- An `rfc` has the sections a proposal is argued with: `Summary`,
-  `Motivation`, `Design`, `Alternatives`, and `Open questions`, then
-  `Outcome`. The first two are the same split a `bug` makes -- what is
-  proposed, and why today is not good enough -- and `Alternatives` is the
-  section that makes the reader trust the design was chosen rather than
-  settled on. `Open questions` says "None" rather than being deleted when
-  there is nothing left to decide, because a missing section reads as one
-  nobody finished.
-- `## Outcome` is the only section that stays empty while the item is open.
-  Until `close` the item is a report of a problem; after it, the sections
-  above `## Outcome` still say what was thought while the item was open,
-  including what it got wrong. A fix that differs from what they predicted is
-  described in `## Outcome`, not by rewriting them.
-- There is no section for a later addition. A template offering one would read
-  as advice to amend a closed item, and `nokori` recommends no such flow: the
-  later finding is its own item, citing the closed one, and the closed file is
-  left as it was written.
-- An item's state is expressed by the directory it is in, never by a `Status`
-  field inside the file. There are two: `backlog/open/`, and `backlog/closed/`.
-- v1 has three item kinds: `rfc`, `bug`, and `plan`. There is no `memo`
-  kind.
-- A `plan` is a plan, not a report: it is written when the question of whether
-to do the work is already settled, and what it adds is the order and the
-progress. Its sections are `Goal`, `Steps`, `Notes`, and `Outcome`.
-  - `Goal` says what is true when the plan is finished, in a form that can be
-    checked. Implementation details too small for an RFC go here, so that an
-    RFC can stay a proposal about shape. A relation that holds for the whole
-    plan is written here too.
-  - `Steps` is the plan itself: checkboxes in order, each saying what is done
-    and what is true when it is. Ticking a box as the step finishes is the
-    whole of resuming from here, so there is no separate section for where
-    the work stopped. A relation that belongs to one step is written in that
-    step, so the order and the reason for it are said once, in the same
-    place.
-  - `Notes` is optional, for what the steps assume, where they may get stuck,
-    and which step to cut if the plan turns out to be too big.
-  - There is no section listing the items the plan touches. A list of names
-    reads as structure and says nothing about how they relate, and the order
-    the relations are made of is already the subject of `Steps`.
-- An item refers to another item with a markdown link: the text is the kind
-  and slug, the target is the path to the file as seen from the file holding
-  the link. The link is what makes the reference checkable, which a name in
-  backticks is not. The writer spells it for where the file is now, and
-  `close` respells the ones the move would change, so no target is ever
-  written for a directory the file is not in yet.
-- `close` reads every link in the file it moves, and nothing else. It refuses
-  the move when a link would not resolve once the file is in `backlog/closed/`,
-  when it would name an item still in `backlog/open/`, and when it names one
-  file from the open directory and another from the closed one. A link that is
-  not a path is skipped: one with a scheme, and one that names only an anchor.
-  The scope is the whole file because a narrower one is a rule the writer has
-  to remember; there is nothing to gain from telling an item from any other
-  path now that `close` no longer rewrites targets.
-- `close` changes nothing in the file it moves. It used to rewrite the targets
-  the move would have broken, and that rewrite was dropped with this change:
-  moving a file is a change a reader can see in the diff, while a rewrite is a
-  second change hiding in the same commit. A link that was already broken when
-  the file landed stays as it is, and a later finding goes in a new item. The
-  same rule covers everything written down: the record says what was
-  concluded and is not corrected to say what is known now.
-- A target is a path from the file holding the link, and never from the root.
-  The rule that a target beginning with `backlog/` or `closed/` was read from
-  the root existed to make the rewrite predictable, and went with it.
-- `nokori tree <item>` is how the relations are read back. It prints the item
-  and everything reachable from it, one per line, with a mark saying whether
-  the link that reached it is in the line above or in the line itself, since
-  which file to edit is what a reader of a relation acts on. It reads the same
-  links as `close` and writes nothing: an index in a file would be a second
-  copy of what the files already say, and a copy is what goes out of step.
-- `init` writes `backlog/README.md`, `backlog/open/README.md`, and
-  `backlog/closed/README.md`, each short: what the directory holds, and which
-  `explain` topic says the rest. Nothing about how nokori works beyond that
-  goes in them, because a file `init` writes once cannot follow a change of
-  policy. The advice that used to sit in `backlog/README.md` -- an item is a
-  record rather than a specification, and the source never points back at the
-  backlog -- is in `nokori explain flow` instead, which ships inside the
-  binary and is therefore always current.
-- A closed item never cites an open one, in any section. A closed file is not
-  edited again, so a link it holds is permanent and has to point at something
-  permanent: an open item can still be renamed, and its outcome is not known.
-  The check is in `close` rather than in a later `check`, because a closed
-  item is the one file a report of a broken link could not help.
-- `close` does not refuse a `plan` with unchecked steps. A box left unchecked
-  in a closed plan means the step was decided against, not forgotten, and the
-  decision is recorded in `## Outcome`. A plan that is to be picked up later
-  is not closed at all: it stays in `backlog/open/`, where the unchecked boxes are
-  the record of where it stopped.
-- Every file carries a kind in its filename (`YYYYMMDD-<kind>-<slug>.md`). The
-  kind is part of the name rather than a state, so it stays put while the item
-  is open; changing it means deleting the file and creating it again with the
-  new kind. History is git's problem, so `nokori` offers no rename.
-- Both states are under `backlog/`: `backlog/open/` holds every item that is
-  not closed yet, and `backlog/closed/` the rest. The backlog is then one
-  directory to move, and neither state sits beside the source tree. The two are
-  also at the same depth, which is what lets a relative link keep its meaning
-  when an item moves between them.
-- `backlog/open/` holds every item that is not closed yet, whether it is being
-  worked on right now or not. There is no directory for "started" and none for
-  "not ready to start": an item that is waiting on something says so in its
-  body, where a reader looks for the reason anyway.
-- `backlog/closed/` does not fork by outcome: it holds every closed item, and no kind
-  writes its outcome into the filename. A file keeps the name it was created
-  with, so the outcome is read from the body, never from the path. An `rfc`
-  that was accepted can be overturned by a later one, and the earlier file is
-  not renamed to follow.
-- An item is closed by moving it to `backlog/closed/`, never by deleting it, so that
-  closing it leaves a record. Deleting a file by hand is the user's own
-  business, the same as any operation outside the flow.
-- Nothing written is rewritten to follow a later state. A closed item is not
-  edited, a name once given is not renamed, and the directories that hold items
-  do not move. What changes is stated by a new item that cites the old one, and
-  the old file keeps saying what it said. The one exception is a threat to
-  security or privacy, where the cost of leaving the text alone is paid by
-  somebody other than the reader.
-- Moving an item into `backlog/closed/` is local only: the tool moves the file and
-  touches nothing else. It does not commit, push, or otherwise change anything
-  through git. It does not read git either, so the edit that writes `##
-  Outcome` and the move that follows it are one commit, decided by the user.
-- `close` refuses an item that still has a `TODO` comment, or whose `##
-  Outcome` is missing or empty, and the error names the section that is not
-  written yet. The templates already say what each section needs, so the check
-  only adds the one thing the file cannot say about itself: that a comment
-  left behind would be read in `backlog/closed/` as part of the record.
-- A refusal names the file, the link, and the line it is on. A writer with
-  several links needs to know which of them broke, and the line is the one
-  thing the error can give that a search of the file would not.
-- `check <file>` says whether the work on an item is written down: a `TODO`
-  comment left outside `## Outcome`, or a link that does not resolve. It
-  reports what `close` would say about the same file, minus the parts that
-  only apply at the close: `## Outcome` is expected to be empty, and a link
-  into `backlog/open/` is allowed. It leaves out the sections only the close
-  writes, because their comments sit in the file for the whole of the working
-  time: an item is open precisely while `## Outcome` has nothing in it, so
-  reporting that comment would report every item anybody is working on.
-  When nothing is reported, the output says the item can be closed once the
-  outcome is written, which is the next thing to do rather than a refusal to
-  repeat.
-  The two commands answer different questions at different times, so `check`
-  is not a flag on `close`: `close --check` on a file still being written
-  would say it is not ready, which is true and not what the writer asked.
-  `create` names the command in its output, so it is found from the run that
-  made the file rather than from `--help`.
-- `check` reads the links where the file is now, and `close` where it is
-  going. Where it is going depends on how the file is spelled, and a file
-  being written is allowed to be unfinished in ways the move would settle, so
-  `check` reports what is wrong now rather than what the move would make
-  wrong. The two messages differ for the same reason the commands do: the same
-  file is being read at two different moments of its life.
-- `check` names the file in its success line as well as in a refusal, so that
-  a transcript of several runs has the same shape wherever the answer changed,
-  and so that "it is written" cannot be read as being about some other file.
-- `check` does not report an `## Outcome` written while the item is still
-  open, either. An accepted `rfc` stays open until its change lands, but a
-  command about being written is not the place to refuse a mistake about
-  closing.
-- `init` creates both `backlog/open/` and `backlog/closed/`, even though the
-  second stays empty until the first item closes. A directory that appears on
-  its first use would leave `init` producing two of the three places an item
-  can be, and a first-time reader unable to tell which one is missing. `create`
-  treats a missing `backlog/README.md` as "run `init` first".
-- A `bug` that cannot be fixed for now stays in `backlog/open/`, with the reason it
-  is stuck written in its body. One that is decided never to be fixed is not a
-  bug but a documented behavior: the behavior is written into the public docs
-  and the item goes to `backlog/closed/`, the same way a report that turns out not to
-  be a bug does. A `plan` that stops partway is treated the same way: the
-  unchecked steps say where it stopped, so `close` needs no rule of its own.
-- The commands are one per destination directory:
-
-  | command | state after | directory | from |
-  | ------- | ----------- | --------- | ---- |
-  | `create <kind> <slug>` | open | `backlog/open/` | -- |
-  | `feedback <path>` | open | `<path>/backlog/open/` | -- |
-  | `close <file>` | closed | `backlog/closed/` | `backlog/open/` |
-
-  `feedback` is the one row whose directory is not this repository's, and it
-  is the reason it is a command and not an option on `create`: an option left
-  out is silent, so the item would land in the wrong repository without a
-  word. Everything else about the item is `create`'s -- the same template, the
-  same `check`, the same `close` in the repository it landed in -- so the only
-  thing that needed a command is where it goes.
-
-  `check` is not in the table: it reads a file and leaves it where it is, so
-  it moves an item into no state at all. Two states leave little room for the
-  table to grow, and that is the point:
-  every state costs the reader a word to learn, and gives two files in
-  different states a way to say the same thing.
-- No command reads or changes git state: no commit, no push, no network, no
-  `git status`. What an item is, is in its file, and the commit that moves it
-  records the `## Outcome` and the move together. `nokori` does not need to run
-  inside a git repository.
-- A command reports what to do next when it finishes. `init` prints how to
-  create the first item and does not go on to explain the kinds: the generated
-  file already shows what each kind's sections expect.
-- Reference material that does not follow from a command lives under
-  `explain <topic>`. The topics are `overview` (what the backlog and the tool
-  are, and that nothing here is enforced), `kinds` (the kinds, plus how to
-  choose between them), `flow` (how an item is opened, checked while it is
-  written, and closed), and `references` (how one item cites another, and what
-  `close` checks).
-  `overview` comes first in the list because the other three state rules that
-  only make sense once the reader knows the rules are recommendations. The text
-  is embedded from `templates/explain/<topic>.md`, so it is written as prose
-  in a file rather than as `println!` calls in the command. The same include
-  also puts it in the published crate, which is what lets `explain` work with
-  no backlog and no network: the text is not a file read at runtime.
-- `explain` also covers the cases a reader arrives with, and the commonest of
-  those is a file in a state the command does not take. Running `close` on a
-  file already in `backlog/closed/` is an ordinary mistake, and the message a command
-  prints for it says only that the move is not allowed; the explanation of
-  what the states mean, and what to do with the file instead, belongs in a
-  topic of its own. That is `flow`, which ends with the two mistakes a `close`
-  error only names: a file already in `backlog/closed/`, and a bare file name where a
-  path was meant.
-- An unknown topic lists the topics and then says what a topic is not: the
-  reader who typed one has probably mistaken `explain` for usage help, so the
-  error points at `nokori --help` and `nokori <command> --help` instead.
-- `explain` with no topic lists the topics rather than refusing for a missing
-  argument. The reader who knows no topic name is the one who most needs the
-  list, and it is short enough to print whole.
+An item lives in `backlog/open/` as `YYYYMMDD-<kind>-<slug>.md`, and `nokori
+close` moves it to `backlog/closed/`. Everything under `backlog/` can be read
+by any editor, and edited by hand.
 
 
-Rationale
----------
+Getting started
+---------------
 
-### Decisions versus pieces of work
+```console
+$ nokori init
 
-The reference repositories (kk, termnix, tuinix) use only `rfc` and `bug`.
-`tuinix/backlog/README.md` states the criterion for adding a kind:
+$ nokori create bug panic-on-empty-input
 
-> When such items start to accumulate -- and the tell is having to write an
-> RFC whose Summary already says what will be done -- add a third kind then.
-> It would carry a two-value state (`open` / `done`) instead of the
-> `accepted`/`rejected` and `fixed`/`not-a-bug` vocabularies, because it
-> records work rather than a decision.
+$ $EDITOR backlog/open/20250101-bug-panic-on-empty-input.md
 
-That criterion separates kinds into (a) a decision and (b) a piece of work.
-`rfc` and `bug` are decisions, and `plan` is the piece of work. Every kind
-walks the same directories (`backlog/open/` -> `backlog/closed/`); only what
-`backlog/closed/` records differs. That record is in the body for every kind: a
-filename has to stay stable, while the outcome it would carry can change
-under it.
+$ nokori check backlog/open/20250101-bug-panic-on-empty-input.md
 
-### Why there is no `spike` kind
+$ nokori close backlog/open/20250101-bug-panic-on-empty-input.md
+```
 
-A `spike` is a question asked by trying something: is this possible, and what
-happens if we do. Separating it from `plan` needs a rule that says which of
-the two an item is, because both are pieces of work sharing one state machine,
-and the rule has to be applied afresh every time.
+The file `create` writes has a `<!-- NOKORI_TODO: ... -->` in every section,
+saying what belongs there; you write the section and delete the comment.
+`create` also shows how to run `check`, which tells you which comments are
+left. `close` refuses to move the file while any remain, or while
+`## Outcome` is still empty; once both are written, it moves the file to
+`backlog/closed/` without changing a byte of it.
 
-The rule that was tried -- is doing nothing an acceptable answer? -- is not
-reliable enough to lean on. A `plan` whose first phase is an experiment can
-legitimately end in "do not build it", and a `spike` that finds a path forward
-simply becomes the start of one. The author has to guess which kind the work
-will turn out to be before doing the work that would tell them.
+When somebody outside the repository sends a report, `nokori feedback <path>`
+writes it down as it was said.
 
-So there is one kind for work, and the shape of the work is a matter for its
-body: a plan whose first phase is an investigation says so, and the `##
-Outcome` records what was learned whether the phases ran or the answer was no.
-Kinds should be few enough that choosing one is not itself a judgement call;
-the criterion quoted above says as much, since it adds a kind only when items
-of that kind accumulate on their own.
-
-### Why there is no `memo` kind
-
-A `memo` would have been a kind that is never closed. That is the only
-property it needs, and it is not a property of a kind: an item written down
-before it is worth doing is an ordinary item that happens to be idle. Keeping
-`memo` would have made it the one kind with its own rules, and every reader of
-`nokori` would have had to learn why. One rule is worth more: an item is
-something with a kind, and everything is closed the same way.
-
-### Why the state is the directory, not a `Status` field
-
-A field inside the file can disagree with where the file is. A file in
-`backlog/closed/` with `Status: open` leaves the reader to decide which one is true,
-and it takes a rule to say the directory wins -- a rule that has to be
-remembered whenever a file is edited by hand.
-
-Keeping the state in one place removes the question. `ls backlog/` and `ls
-closed/` tell the whole story. The cost is that a state change is a move, and
-that `backlog/closed/` has to record the outcome in the body rather than in the path.
-
-### Why there are only two states
-
-The obvious additions are a place for work that has been started and one for
-work that is waiting. Both name something real, and both lose more than they
-give.
-
-A "started" directory cannot keep anybody from starting the same item twice:
-`nokori` has no index and no lock, so the move is a claim, not a guarantee.
-What it does do is give an item a third place to sit, and every extra place is
-another way for two files to say the same thing.
-
-A "waiting" directory is worse, because it is where items go to be forgotten.
-An item that is stuck is precisely the one that has to stay in view, and the
-place to say why it is stuck is its own body. With the directory in place, an
-item nobody intends to do any more collects there instead of ending in
-`backlog/closed/`, and the record of deciding not to do it never appears.
-
-So an item is open or closed, and `backlog/open/` means what it says: everything
-not closed, whether or not anybody is working on it. If a state later turns
-out to earn its place, adding one is easy; removing one costs the user a
-rename of every file in it, which is why the smaller set goes first.
-
-### Why the past is not rewritten
-
-A backlog is not a document that is kept current. It is a series of items, each
-written at a time and each stating what was true then, and its state is what
-the directories say now. The two are allowed to disagree, and the disagreement
-is the information: a closed item that a later one overturns is how the change
-of mind is recorded, and it is worth more than a single item saying what is
-believed today.
-
-So a later state is written as a new item that cites the old one, never back
-into the old file. An `rfc` is superseded by a new `rfc`; a `bug` whose cause
-turned out elsewhere is closed as it is and followed by a new one; a name that
-turns out to be wrong is kept, and the item that renames it says so. Whatever
-was written stays legible, and git dates the revision rather than the text
-doing it.
-
-What this buys is that nothing has to be kept in step. A file whose target is
-fixed changes meaning when the file moves, and repairing every such link means
-reading every closed item each time anything moves; a name that follows the
-item it names does the same to every reference. The cost grows with the size
-of the record, which is the one thing a backlog only ever increases. Leaving
-the past alone costs nothing as the record grows, because nothing new looks at
-it.
-
-The exception is a threat to security or privacy: a secret in a closed item, or
-a name that endangers somebody. There the cost of leaving the text alone is
-paid by a reader who did not write it, and no rule about bookkeeping outweighs
-that. It is the only reason to rewrite what was written, and it is worth
-saying out loud so that a reader can tell the exception from the rule.
-
-### Why `close` and not `finish`
-
-`finish` says the work is over. For a `bug` that turns out not to be a bug, and
-for an `rfc` that is turned down, no work was finished -- the item merely
-stopped being open, which is what `close` says and all it says. It also names
-the state the item is left in, so the command and the directory cannot drift
-apart.
-
-### Why `create` and not `open` or `new`
-
-`open` would have paired with `close`, but it already means "show this file"
-in most editors and browsers, and `nokori open <kind> <slug>` would read as an
-attempt to open something that is not there yet. `new` is unambiguous but pairs
-with nothing; `create` is what `gh issue create` and `gh pr create` call the
-same step, so a reader who has used `gh` already knows the word.
-
-The pair `create`/`close` is not symmetric, and that is accepted: only the
-closing command has to agree with a state the item ends up in, because that is
-the state the directory names. Nothing about creating an item is a state.
-
-### Why a `feedback` written by the command has no slug
-
-Every other item is named by a slug, and a slug is a summary. The summary of a
-`feedback` is what the person said, and the run that writes the file has not
-read it -- it is copying words down as they arrive. A slug the writer invents
-is a reading made before the reading; a slug cut from the words is the same
-badly, since the rule can only keep what it can spell, and the first sentence
-of a report decides what the file is called for good.
-
-The name is the day and the second instead, and the file says nothing above
-the words. What a name is for -- being found in a list -- is served by the
-moment the run happened, which is what a reader of a pile of reports is
-looking for. A name for what it is about is made when somebody reads it and
-writes the `rfc`, `bug`, or `plan` it turns into.
-
-The title line comes out of the file for the same reason. A title made of the
-first line is that line repeated just above itself, shorter and without the
-rest. `create feedback` keeps the line, because a writer there knows the
-phrase before the words.
-
-### Why a move checks that the file is clean
-
-A move and a content change in one commit make the history unreadable: the
-commit that says "close this item" also rewrites what the item said, and the
-rewrite is what a later reader wants to see on its own. `cargo publish`
-refuses a dirty tree for the same reason, and the check here is narrower only
-because an item is not the whole crate -- what matters is the file being
-moved, not the working tree around it.
-
-The check reads `git status --porcelain -- <file>` for that one path, and an
-untracked file counts as dirty: `create` followed by `close` before the first
-commit is refused, which is the flow described above working as intended. What
-the check needs is not "the file is clean" but "there is a commit holding what
-this file says", and an untracked file has none.
-
-### Why `explain` and not `doc`
-
-A command that moves files is a verb, and `doc` is not one: in `cargo doc` it
-means "build the documentation". A reader who saw `nokori doc kinds` would
-expect documentation to be written or opened, not printed. `explain` says what
-happens, and it has the same sense as `cargo --explain`.
-
-`help` was the other candidate, following `git help <concept>`, but it would
-sit next to `--help` and leave the reader to work out which one to use.
-
-### Why a disallowed move is explained in `explain`, not in the error
-
-A command that refuses a file can only say what it will not do: the file is
-not in a state this move takes. What the reader needs next is a rule about the
-states themselves -- which command takes this file, and why the state it is in
-does not accept this one -- and that answer is the same paragraph whatever the
-command that refused it. Printing it from each command would write the same
-text several times and make the refusal long; leaving it in the error alone
-would send the reader to `--help` for a fact that is not about usage.
-
-Putting it in `explain` keeps the error to one sentence and gives the longer
-answer a home. It is also where the reader already goes for material that does
-not follow from a command, so nothing new has to be learned to find it.
-
-### Why `init` does not explain the kinds
-
-`init` runs once per repository, and most of what it could say is needed later
-and elsewhere: which kind to use, what `backlog/open/` holds, what `close` does to
-a file. Printing all of that would make the one output nobody
-re-reads long. So `init` stops at the next step, and the reference material is
-reached through `explain` from wherever it is needed.
-
-### Why the outcome stays out of the filename
-
-An outcome is not final just because an item reached `backlog/closed/`. An `rfc` that
-was
-accepted can be overturned by a later one, and a `bug` closed as `not-a-bug`
-can turn out to be the user's own mistake. A filename that carried the outcome
-would have to be renamed each time, and a rename breaks every reference to it
-at once; an `rfc` accepted early and implemented later would also have to spend
-time under a name that guesses its own future.
-
-So the outcome is written once, in the body, and left as it was: the later item
-says that it supersedes the earlier one. This is the same rule that keeps the
-kind in the filename but out of the body -- a name is for finding a file, and
-what a file means is for reading it.
+Reference material that does not follow from a command lives under `nokori
+explain <topic>`: `overview`, `kinds`, `flow`, `feedback`, and `references`.

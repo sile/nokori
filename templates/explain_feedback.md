@@ -8,7 +8,9 @@ sends it.
 Sending a report
 ================
 
-    nokori feedback <path>
+```shell
+nokori feedback <path>
+```
 
 `<path>` is the directory holding the backlog the report belongs to: `.`
 when you stand in the repository that owns it, the root of another one when

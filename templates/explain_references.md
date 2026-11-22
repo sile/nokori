@@ -127,7 +127,7 @@ there every time: two items that answer each other are written while both are
 open, and the one closed first has a link to a file that is still open. What
 it writes instead is the target's link text, as a name in a code span:
 
-    the decision was made in `rfc-cache-the-parse`
+> the decision was made in `rfc-cache-the-parse`
 
 Link text is the kind and slug, so the name reads the same as the link did.
 The code span is what tells a reader it is a name and not a bare word. A
@@ -147,16 +147,20 @@ reach for when the link cannot stay, not a rule.
 Reading the relations back
 ==========================
 
-    nokori tree backlog/open/<item>.md
+```shell
+nokori tree backlog/open/<item>.md
+```
 
 Prints the item and the items reachable from it, one per line, nested two
 spaces per hop. The mark before a line says which file holds the link that
 reached it:
 
-    rfc-show-the-relations-between-items
-      - plan-the-reading-commands
-        <- rfc-show-the-relations-between-items
-      <- feedback-slugs-are-hard-to-type
+```
+rfc-show-the-relations-between-items
+  - plan-the-reading-commands
+    <- rfc-show-the-relations-between-items
+  <- feedback-slugs-are-hard-to-type
+```
 
 `-` is a link in the line above, `<-` is a link in the line itself. A
 relation written at both ends is reached twice, once per link, since two

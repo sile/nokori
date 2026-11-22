@@ -7,7 +7,9 @@ and neither sits next to the source tree.
 Opening
 =======
 
-    nokori create <kind> <slug>
+```shell
+nokori create <kind> <slug>
+```
 
 Writes `backlog/open/YYYYMMDD-<kind>-<slug>.md` from the template for that
 kind. Every section starts with a `<!-- NOKORI_TODO: ... -->` comment saying
@@ -22,7 +24,9 @@ it right now.
 Writing down what somebody said
 ===============================
 
-    nokori feedback <path>
+```shell
+nokori feedback <path>
+```
 
 A person outside this repository sends a report with this command, and
 `nokori explain feedback` has their side of the flow.
@@ -78,7 +82,9 @@ something, at the moment they hit it, and a duplicate is not damage there.
 Checking what is written
 ========================
 
-    nokori check backlog/open/<file>
+```shell
+nokori check backlog/open/<file>
+```
 
 Says whether the work is written down: a `NOKORI_TODO:` comment left in the
 file stops it, and so does a link that does not resolve. Nothing else does.
@@ -107,7 +113,9 @@ run before that.
 Closing
 =======
 
-    nokori close backlog/open/<file>
+```shell
+nokori close backlog/open/<file>
+```
 
 Moves the item to `backlog/closed/`. `close` refuses the move in three cases,
 and each one is something to fix rather than to work around -- the first is

@@ -18,75 +18,57 @@ There is nothing to learn before you start: each command tells you what to
 run next, and `nokori init` is the first.
 
 
-What it manages
----------------
+Installation
+------------
 
-An item is one file, and its kind is part of its name.
+```shell
+cargo install nokori
+nokori --help
+```
+
+
+Basic usage
+-----------
+
+```shell
+# Set up backlog/ directory.
+nokori init
+
+# Create an item file from the template for its kind.
+nokori create <kind> <slug>
+
+# Write the sections, then fill in the outcome once the work is done.
+$EDITOR <item_file>
+
+# Close the item.
+nokori close <item_file>
+```
+
+
+Backlog items
+-------------
+
+An item is one file, and its kind is part of its name:
+`backlog/open/YYYYMMDD-<kind>-<slug>.md` while it is open, and the same
+name in `backlog/closed/` once it is closed.
 
 - `rfc` -- a proposal, and the decision on it.
 - `bug` -- a problem, and what was done about it.
 - `plan` -- a piece of work, and its progress.
-- `feedback` -- words from somebody else, kept as they arrived. The run
-  records what was said, not a summary of it.
+- `feedback` -- words from somebody else, kept as they arrived.
 
-An item is *open* while it is in `backlog/open/`, and *closed* once it has
-been moved to `backlog/closed/`. Those are the only two states, and the
-directory a file is in is the state; the file itself has no status field.
-
-
-Installation
-------------
-
-```console
-$ cargo install nokori
-
-$ nokori --help
-```
+An item is either *open* or *closed*, and the directory it is in says which.
+There is no other state and no status field in the file; `nokori close` is
+what moves one from the first to the second.
 
 
-Overview
---------
+Reference
+---------
 
-`nokori init` creates this, and nothing else:
+More about each part is under `nokori explain <topic>`:
 
-```
-backlog/
-  README.md
-  open/
-    README.md
-  closed/
-    README.md
-```
-
-An item lives in `backlog/open/` as `YYYYMMDD-<kind>-<slug>.md`, and `nokori
-close` moves it to `backlog/closed/`. Everything under `backlog/` can be read
-by any editor, and edited by hand.
-
-
-Getting started
----------------
-
-```console
-$ nokori init
-
-$ nokori create bug panic-on-empty-input
-
-$ $EDITOR backlog/open/20250101-bug-panic-on-empty-input.md
-
-$ nokori check backlog/open/20250101-bug-panic-on-empty-input.md
-
-$ nokori close backlog/open/20250101-bug-panic-on-empty-input.md
-```
-
-The file `create` writes has a `<!-- NOKORI_TODO: ... -->` in every section,
-saying what belongs there; you write the section and delete the comment.
-`create` also shows how to run `check`, which tells you which comments are
-left. `close` refuses to move the file while any remain, or while
-`## Outcome` is still empty; once both are written, it moves the file to
-`backlog/closed/` without changing a byte of it.
-
-When somebody outside the repository sends a report, `nokori feedback <path>`
-writes it down as it was said.
-
-Reference material that does not follow from a command lives under `nokori
-explain <topic>`: `overview`, `kinds`, `flow`, `feedback`, and `references`.
+- `overview` -- what a backlog is, and what the tool does not do.
+- `kinds` -- the kinds, and how to choose between them.
+- `flow` -- how an item is opened, checked while it is written, and closed.
+- `references` -- how one item cites another.
+- `feedback` -- how a `feedback` is written down.

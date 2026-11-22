@@ -25,8 +25,8 @@ pub struct ItemSource<'a> {
     pub content: &'a str,
 
     /// Says whether a resolved path exists. Every path the core resolves is
-    /// passed here rather than checked itself, so a test can place a file
-    /// without one, and the edge is the only reader.
+    /// passed here rather than checked itself, so the edge stays the only
+    /// reader.
     pub exists: &'a dyn Fn(&Path) -> bool,
 }
 

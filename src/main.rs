@@ -26,49 +26,61 @@ fn main() -> noargs::Result<()> {
     // handler, after its `take`s and before any of its work. That is what
     // keeps a stray argument from being reported once the work is done.
     if noargs::cmd("init")
-        .doc("Set up a backlog in this repository")
+        .doc(
+            "Set up a backlog in this repository\n\nFind out what a backlog is here with `nokori explain overview`.",
+        )
         .take(&mut args)
         .is_present()
     {
         return run_init(args);
     }
     if noargs::cmd("create")
-        .doc("Create a new item")
+        .doc(
+            "Create a new item\n\nChoose the kind with `nokori explain kinds`; `explain flow` says the rest.",
+        )
         .take(&mut args)
         .is_present()
     {
         return run_create(args);
     }
     if noargs::cmd("feedback")
-        .doc("Write down what somebody said, as a feedback item")
+        .doc(
+            "Write down what somebody said, as a feedback item\n\nSee how it differs from the other kinds with `nokori explain feedback`.",
+        )
         .take(&mut args)
         .is_present()
     {
         return run_feedback(args);
     }
     if noargs::cmd("check")
-        .doc("Say whether an open item is written yet")
+        .doc(
+            "Say whether an open item is written yet\n\nSee where a check fits with `nokori explain flow`.",
+        )
         .take(&mut args)
         .is_present()
     {
         return run_check(args);
     }
     if noargs::cmd("close")
-        .doc("Close an item")
+        .doc("Close an item\n\nSee what closing means for the file with `nokori explain flow`.")
         .take(&mut args)
         .is_present()
     {
         return run_close(args);
     }
     if noargs::cmd("tree")
-        .doc("Print the items reachable from one item")
+        .doc(
+            "Print the items reachable from one item\n\nSee how items refer to each other with `nokori explain references`.",
+        )
         .take(&mut args)
         .is_present()
     {
         return run_tree(args);
     }
     if noargs::cmd("explain")
-        .doc("Print the rules behind the commands (see `<TOPIC>`)")
+        .doc(
+            "Print the rules behind the commands\n\n`overview`, `kinds`, `flow`, `references`, and `feedback` are the topics.",
+        )
         .take(&mut args)
         .is_present()
     {

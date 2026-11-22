@@ -27,7 +27,7 @@ mod templates;
 mod tree;
 
 pub use check::{ItemSource, check_item};
-pub use close::{CloseDecision, CloseSource, check_filled_in, close_item};
+pub use close::{CloseDecision, CloseSource, check_filled_in, close_item, open_items_linking};
 pub use item::{is_item_path, item_label, link_name};
 pub use links::{Link, is_external, links, normalize, target_path};
 pub use marker::find_marker;

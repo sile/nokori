@@ -364,9 +364,13 @@ fn run_close(mut args: noargs::RawArgs) -> noargs::Result<()> {
         return Ok(());
     }
 
-    let closed = close_item(&file)?;
+    let (closed, broken) = close_item(&file)?;
 
+    println!("Links checked; the move will not break one in the file.");
     println!("Closed {}", closed.display());
+    if !broken.is_empty() {
+        print_linking_open_items(&broken);
+    }
     println!();
     println!("Commit the move, and leave the file as it is from then on:");
     println!(
@@ -377,9 +381,29 @@ fn run_close(mut args: noargs::RawArgs) -> noargs::Result<()> {
     Ok(())
 }
 
+/// Says which open items link the one that just moved, so their links can be
+/// repaired. The list is gathered before the move, while the links still
+/// resolve; after it they would read as broken files rather than as links that
+/// were right until now.
+fn print_linking_open_items(broken: &[PathBuf]) {
+    println!();
+    if broken.len() == 1 {
+        println!("An open item links it and would break. Update it:");
+    } else {
+        println!(
+            "{} open items link it and would break. Update them:",
+            broken.len()
+        );
+    }
+    for path in broken {
+        println!("  {}", path.display());
+    }
+}
+
 /// Reads `file`, hands the decision to the core, and performs the move it
-/// asks for. Returns where the item is now.
-fn close_item(file: &str) -> Result<PathBuf, String> {
+/// asks for. Returns where the item is now, and the open items whose links to
+/// it the move broke.
+fn close_item(file: &str) -> Result<(PathBuf, Vec<PathBuf>), String> {
     let path = Path::new(file);
     let content = match path.is_file() {
         true => Some(
@@ -399,6 +423,10 @@ fn close_item(file: &str) -> Result<PathBuf, String> {
 
     let source = decision.source();
     let destination = decision.destination();
+    // Read before the move, since the links being gathered are the ones the
+    // move is about to break.
+    let items = read_items()?;
+    let broken = nokori::open_items_linking(source, &items);
     std::fs::create_dir_all(nokori::CLOSED_DIR)
         .map_err(|e| format!("failed to create `{}`: {e}", nokori::CLOSED_DIR))?;
     std::fs::rename(source, destination).map_err(|e| {
@@ -409,7 +437,7 @@ fn close_item(file: &str) -> Result<PathBuf, String> {
         )
     })?;
 
-    Ok(destination.to_path_buf())
+    Ok((destination.to_path_buf(), broken))
 }
 
 fn run_tree(mut args: noargs::RawArgs) -> noargs::Result<()> {

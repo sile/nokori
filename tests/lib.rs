@@ -146,6 +146,48 @@ fn the_same_comment_stops_the_close() {
     assert!(error.contains("NOKORI_TODO:"), "{error}");
 }
 
+#[test]
+fn the_open_items_that_link_a_closing_one_are_named() {
+    let items = vec![
+        item("backlog/open/20250101-bug-x.md", &[]),
+        item(
+            "backlog/open/20250102-rfc-y.md",
+            &["backlog/open/20250101-bug-x.md"],
+        ),
+        item(
+            "backlog/open/20250103-plan-z.md",
+            &["backlog/open/20250101-bug-x.md"],
+        ),
+        item(
+            "backlog/closed/20241231-bug-w.md",
+            &["backlog/open/20250101-bug-x.md"],
+        ),
+    ];
+    let found = nokori::open_items_linking(Path::new("backlog/open/20250101-bug-x.md"), &items);
+
+    // The closed item is not this item's problem, and neither is the item
+    // being closed itself.
+    assert_eq!(
+        found,
+        vec![
+            PathBuf::from("backlog/open/20250102-rfc-y.md"),
+            PathBuf::from("backlog/open/20250103-plan-z.md"),
+        ]
+    );
+}
+
+#[test]
+fn nothing_is_named_when_no_open_item_links_the_closing_one() {
+    let items = vec![
+        item("backlog/open/20250101-bug-x.md", &[]),
+        item("backlog/open/20250102-rfc-y.md", &[]),
+    ];
+
+    assert!(
+        nokori::open_items_linking(Path::new("backlog/open/20250101-bug-x.md"), &items).is_empty()
+    );
+}
+
 fn item(path: &str, links: &[&str]) -> nokori::Item {
     nokori::Item {
         path: PathBuf::from(path),

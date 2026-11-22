@@ -134,8 +134,27 @@ would come from.
   form in a code span? That is not a link, so it is not in the graph and not
   in the list; the item holds no link to break. Leaning to no.
 - Does the walk pay off when the backlog is large? `tree` already walks every
-  item on every run, so the cost is the one the tool already accepts; the
-  question is whether `close` should share the walk's function or keep its
-  own. Settled while writing.
+  item on every run, so the cost is the one the tool already accepts.
+  Answered while implementing: `close` reads the same items `tree` reads, with
+  the same `read_items` in the edge, and asks a small pure function
+  (`open_items_linking`) which of them cite the file being closed. The list is
+  gathered before the move, while the links still resolve, and the move itself
+  is unchanged.
 
 ## Outcome
+
+Accepted and implemented in the same sitting. `close` now prints
+`Links checked; the move will not break one in the file.` before the
+`Closed <path>` line, and, after it, names the open items whose links name the
+file that moved, one path per line. Neither changes the move: the first is a
+report of the check already made, the second a report of links that are the
+other items' to repair.
+
+The list comes from `nokori::open_items_linking`, a pure function over the
+items the edge reads with the same `read_items` that `tree` uses; the edge
+gathers it before the move, while the links still resolve. The blank list is
+silent, so a close with nothing citing it reads as it did before.
+
+Two decisions the open questions named are settled: a name in a code span is
+not a link and is not listed, and the walk is shared with `tree` rather than
+duplicated.

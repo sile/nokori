@@ -9,8 +9,9 @@ use std::path::{Path, PathBuf};
 
 use crate::check::check_marker;
 use crate::item::link_name;
-use crate::links::{Link, is_external, links, target_path};
+use crate::links::{Link, is_external, links, normalize, target_path};
 use crate::marker::{close_hint, marker_message};
+use crate::model::Item;
 use crate::templates::{BACKLOG_DIR, CLOSED_DIR, OPEN_DIR, OUTCOME_SECTION};
 
 /// An item as the edge found it, for the questions a close asks about the
@@ -95,6 +96,33 @@ again.",
         source: src.to_path_buf(),
         destination: dst,
     })
+}
+
+/// The items in `backlog/open/` whose links name `target`, sorted by path.
+///
+/// The move breaks these even though nothing in the file being closed is
+/// wrong: an open item at a neighbour's path names the file as
+/// `20250101-bug-x.md`, which reaches nothing once the target is in
+/// `backlog/closed/`. The list is a report, not a refusal -- an open item may
+/// cite an open one, and repairing it is the other item's business -- so it is
+/// gathered after the decision, from the items the edge already read for
+/// `tree`.
+///
+/// `items` is every item the edge read, keyed by [`Item::path`], and each
+/// item's `links` are already resolved and normalized. An item counts when it
+/// is itself in `backlog/open/` and one of its links equals `target`; a link
+/// that already points at `target`'s closed path is not this item's problem
+/// and is not returned.
+pub fn open_items_linking(target: &Path, items: &[Item]) -> Vec<PathBuf> {
+    let target = normalize(target);
+    let mut found: Vec<PathBuf> = items
+        .iter()
+        .filter(|item| item.path.starts_with(OPEN_DIR) && item.path != target)
+        .filter(|item| item.links.contains(&target))
+        .map(|item| item.path.clone())
+        .collect();
+    found.sort();
+    found
 }
 
 /// The message for a `FILE` that is not there. What to say depends on whether

@@ -523,7 +523,7 @@ fn item_from(path: &Path, name: &str, content: &str) -> nokori::Item {
 
 fn run_explain(mut args: noargs::RawArgs) -> noargs::Result<()> {
     let topic = noargs::arg("[<TOPIC>]")
-        .doc("Topic to explain (`overview`, `kinds`, `flow`, or `references`)")
+        .doc("Topic to explain (`overview`, `kinds`, `flow`, `references`, or `feedback`)")
         .example("kinds")
         .take(&mut args)
         .present();

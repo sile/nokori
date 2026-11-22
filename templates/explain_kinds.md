@@ -69,7 +69,8 @@ from the person who said them and writes the item into the repository they
 belong to. `nokori create feedback` is the other way in, and it keeps the
 title line the template has: it is run by somebody who already knows what the
 item is about, while `nokori feedback` has only the words and starts the file
-with them.
+with them. The reporter's side of that command -- where the words come from,
+what the run writes -- is `nokori explain feedback`.
 
 
 Choosing between the kinds

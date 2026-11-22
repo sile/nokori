@@ -24,6 +24,9 @@ Writing down what somebody said
 
     nokori feedback <path>
 
+A person outside this repository sends a report with this command, and
+`nokori explain feedback` has their side of the flow.
+
 The words come the way `git commit` takes a message: `-m` for text on the
 command line, `-f` for a file, and standard input when neither is given.
 

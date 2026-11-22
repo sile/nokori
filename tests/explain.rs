@@ -127,7 +127,7 @@ fn explain_refuses_an_unknown_topic() {
     // read first. Anchoring on the list rather than on a name keeps a topic
     // added to `TOPICS` from passing this test without appearing here.
     assert!(
-        stderr.contains("The topics are: overview, kinds, flow, references."),
+        stderr.contains("The topics are: overview, kinds, flow, references, feedback."),
         "{stderr}"
     );
 
@@ -144,7 +144,7 @@ fn explain_with_no_topic_lists_them() {
     assert!(output.status.success(), "{output:?}");
 
     let stdout = String::from_utf8_lossy(&output.stdout);
-    for name in ["overview", "kinds", "flow", "references"] {
+    for name in ["overview", "kinds", "flow", "references", "feedback"] {
         assert!(stdout.contains(name), "{name} in {stdout}");
     }
     // `overview` is the one to read first, so it is the one printed first.
@@ -153,6 +153,47 @@ fn explain_with_no_topic_lists_them() {
         .find(|line| line.starts_with("- "))
         .expect("no topic listed");
     assert_eq!(first, "- overview", "{stdout}");
+
+    std::fs::remove_dir_all(&dir).expect("failed to clean up");
+}
+
+#[test]
+fn explain_prints_the_feedback_flow() {
+    let dir = temp_dir("feedback");
+
+    let output = nokori(&dir, &["explain", "feedback"]);
+    assert!(output.status.success(), "{output:?}");
+
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    // The reporter's side: the command, where the words come from, the file it
+    // writes, and that nothing is committed. It is not the `feedback` kind,
+    // which `kinds` explains, and the page says so.
+    for term in [
+        "nokori feedback",
+        "standard input",
+        "YYYYMMDD-feedback",
+        "Nothing is committed",
+        "not the `feedback` kind",
+    ] {
+        assert!(stdout.contains(term), "{term} in {stdout}");
+    }
+
+    std::fs::remove_dir_all(&dir).expect("failed to clean up");
+}
+
+#[test]
+fn flow_still_mentions_feedback() {
+    // The reporter's page is an entry, not a move: a developer reading the
+    // flow still finds the command where it always was, with a pointer to the
+    // other page.
+    let dir = temp_dir("flow-feedback");
+
+    let output = nokori(&dir, &["explain", "flow"]);
+    assert!(output.status.success(), "{output:?}");
+
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    assert!(stdout.contains("nokori feedback"), "{stdout}");
+    assert!(stdout.contains("nokori explain feedback"), "{stdout}");
 
     std::fs::remove_dir_all(&dir).expect("failed to clean up");
 }

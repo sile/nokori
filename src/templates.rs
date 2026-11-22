@@ -66,8 +66,11 @@ pub const FEEDBACK_SECTION: &str = "## Feedback";
 /// The topics `explain` prints, each with the text. They carry the material a
 /// command cannot: the rules about the states and the kinds, which read the
 /// same whatever command the reader arrived from. `overview` comes first
-/// because it is the one to read first: the other three state rules that only
-/// make sense once the reader knows nothing here is enforced.
+/// because it is the one to read first: the other four state rules that only
+/// make sense once the reader knows nothing here is enforced. `feedback` is
+/// the one entry named for a command rather than a rule: it is the reporter's
+/// side of `nokori feedback`, for somebody outside the repository, and it
+/// sits after the rules the reader arrived from rather than among them.
 pub const TOPICS: &[(&str, &str)] = &[
     ("overview", include_str!("../templates/explain_overview.md")),
     ("kinds", include_str!("../templates/explain_kinds.md")),
@@ -76,6 +79,7 @@ pub const TOPICS: &[(&str, &str)] = &[
         "references",
         include_str!("../templates/explain_references.md"),
     ),
+    ("feedback", include_str!("../templates/explain_feedback.md")),
 ];
 
 /// The template for `kind`, or `None` when this build has no such kind.

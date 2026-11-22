@@ -21,14 +21,61 @@ fn main() -> noargs::Result<()> {
     }
     noargs::HELP_FLAG.take_help(&mut args);
 
-    let _ = try_run_init(&mut args)?
-        || try_run_create(&mut args)?
-        || try_run_feedback(&mut args)?
-        || try_run_check(&mut args)?
-        || try_run_close(&mut args)?
-        || try_run_tree(&mut args)?
-        || try_run_explain(&mut args)?;
+    // Each handler takes `RawArgs` by value, so that it can call `finish`
+    // itself: the help text and the argument checks both happen inside the
+    // handler, after its `take`s and before any of its work. That is what
+    // keeps a stray argument from being reported once the work is done.
+    if noargs::cmd("init")
+        .doc("Set up a backlog in this repository")
+        .take(&mut args)
+        .is_present()
+    {
+        return run_init(args);
+    }
+    if noargs::cmd("create")
+        .doc("Create a new item")
+        .take(&mut args)
+        .is_present()
+    {
+        return run_create(args);
+    }
+    if noargs::cmd("feedback")
+        .doc("Write down what somebody said, as a feedback item")
+        .take(&mut args)
+        .is_present()
+    {
+        return run_feedback(args);
+    }
+    if noargs::cmd("check")
+        .doc("Say whether an open item is written yet")
+        .take(&mut args)
+        .is_present()
+    {
+        return run_check(args);
+    }
+    if noargs::cmd("close")
+        .doc("Close an item")
+        .take(&mut args)
+        .is_present()
+    {
+        return run_close(args);
+    }
+    if noargs::cmd("tree")
+        .doc("Print the items reachable from one item")
+        .take(&mut args)
+        .is_present()
+    {
+        return run_tree(args);
+    }
+    if noargs::cmd("explain")
+        .doc("Print the rules behind the commands (see `<TOPIC>`)")
+        .take(&mut args)
+        .is_present()
+    {
+        return run_explain(args);
+    }
 
+    // No subcommand: top-level help, and the top-level argument checks.
     if let Some(help) = args.finish()? {
         print!("{help}");
     }
@@ -36,17 +83,10 @@ fn main() -> noargs::Result<()> {
     Ok(())
 }
 
-fn try_run_init(args: &mut noargs::RawArgs) -> noargs::Result<bool> {
-    if !noargs::cmd("init")
-        .doc("Set up a backlog in this repository")
-        .take(args)
-        .is_present()
-    {
-        return Ok(false);
-    }
-
-    if args.metadata().help_mode {
-        return Ok(true);
+fn run_init(args: noargs::RawArgs) -> noargs::Result<()> {
+    if let Some(help) = args.finish()? {
+        print!("{help}");
+        return Ok(());
     }
 
     init_backlog()?;
@@ -63,31 +103,24 @@ fn try_run_init(args: &mut noargs::RawArgs) -> noargs::Result<bool> {
     println!("`nokori explain kinds`");
     println!("to choose a kind.");
 
-    Ok(true)
+    Ok(())
 }
 
-fn try_run_create(args: &mut noargs::RawArgs) -> noargs::Result<bool> {
-    if !noargs::cmd("create")
-        .doc("Create a new item")
-        .take(args)
-        .is_present()
-    {
-        return Ok(false);
-    }
-
+fn run_create(mut args: noargs::RawArgs) -> noargs::Result<()> {
     let kind: String = noargs::arg("<KIND>")
         .doc("Kind of item to create (`nokori explain kinds` lists them)")
         .example("bug")
-        .take(args)
+        .take(&mut args)
         .then(|a| a.value().parse())?;
     let slug: String = noargs::arg("<SLUG>")
         .doc("Short name for the item, used in its filename")
         .example("panic-on-empty-input")
-        .take(args)
+        .take(&mut args)
         .then(|a| a.value().parse())?;
 
-    if args.metadata().help_mode {
-        return Ok(true);
+    if let Some(help) = args.finish()? {
+        print!("{help}");
+        return Ok(());
     }
 
     let path = create_item(&kind, &slug)?;
@@ -109,36 +142,29 @@ fn try_run_create(args: &mut noargs::RawArgs) -> noargs::Result<bool> {
     );
     println!("the item with `nokori close {file}`.");
 
-    Ok(true)
+    Ok(())
 }
 
-fn try_run_feedback(args: &mut noargs::RawArgs) -> noargs::Result<bool> {
-    if !noargs::cmd("feedback")
-        .doc("Write down what somebody said, as a feedback item")
-        .take(args)
-        .is_present()
-    {
-        return Ok(false);
-    }
-
+fn run_feedback(mut args: noargs::RawArgs) -> noargs::Result<()> {
     let path: String = noargs::arg("<PATH>")
         .doc("Repository to write the item in, given as the directory holding `backlog/`")
         .example("../other")
-        .take(args)
+        .take(&mut args)
         .then(|a| a.value().parse())?;
     let message: Option<String> = noargs::opt("message")
         .short('m')
         .doc("Take the words from this argument, or give `--file` or standard input")
-        .take(args)
+        .take(&mut args)
         .present_and_then(|a| a.value().parse())?;
     let source: Option<String> = noargs::opt("file")
         .short('f')
         .doc("Take the words from this file")
-        .take(args)
+        .take(&mut args)
         .present_and_then(|a| a.value().parse())?;
 
-    if args.metadata().help_mode {
-        return Ok(true);
+    if let Some(help) = args.finish()? {
+        print!("{help}");
+        return Ok(());
     }
 
     let words = feedback_words(message, source)?;
@@ -150,7 +176,7 @@ fn try_run_feedback(args: &mut noargs::RawArgs) -> noargs::Result<bool> {
     println!("The item belongs to the repository it was written into, so it is read");
     println!("and closed there. Nothing is committed and the file was not opened.");
 
-    Ok(true)
+    Ok(())
 }
 
 /// Reads the words from the one place they were given, and refuses the run
@@ -285,23 +311,16 @@ nokori, `nokori --version` here will say which one this run is.",
     Ok(())
 }
 
-fn try_run_check(args: &mut noargs::RawArgs) -> noargs::Result<bool> {
-    if !noargs::cmd("check")
-        .doc("Say whether an open item is written yet")
-        .take(args)
-        .is_present()
-    {
-        return Ok(false);
-    }
-
+fn run_check(mut args: noargs::RawArgs) -> noargs::Result<()> {
     let file: String = noargs::arg("<FILE>")
         .doc("Item to check, given as its path")
         .example("backlog/open/20250101-bug-panic-on-empty-input.md")
-        .take(args)
+        .take(&mut args)
         .then(|a| a.value().parse())?;
 
-    if args.metadata().help_mode {
-        return Ok(true);
+    if let Some(help) = args.finish()? {
+        print!("{help}");
+        return Ok(());
     }
 
     let path = Path::new(&file);
@@ -330,26 +349,19 @@ fn try_run_check(args: &mut noargs::RawArgs) -> noargs::Result<bool> {
     println!();
     println!("  nokori close {file}");
 
-    Ok(true)
+    Ok(())
 }
 
-fn try_run_close(args: &mut noargs::RawArgs) -> noargs::Result<bool> {
-    if !noargs::cmd("close")
-        .doc("Close an item")
-        .take(args)
-        .is_present()
-    {
-        return Ok(false);
-    }
-
+fn run_close(mut args: noargs::RawArgs) -> noargs::Result<()> {
     let file: String = noargs::arg("<FILE>")
         .doc("Item to close, given as its path")
         .example("backlog/open/20250101-bug-panic-on-empty-input.md")
-        .take(args)
+        .take(&mut args)
         .then(|a| a.value().parse())?;
 
-    if args.metadata().help_mode {
-        return Ok(true);
+    if let Some(help) = args.finish()? {
+        print!("{help}");
+        return Ok(());
     }
 
     let closed = close_item(&file)?;
@@ -362,7 +374,7 @@ fn try_run_close(args: &mut noargs::RawArgs) -> noargs::Result<bool> {
         nokori::CLOSED_DIR
     );
 
-    Ok(true)
+    Ok(())
 }
 
 /// Reads `file`, hands the decision to the core, and performs the move it
@@ -400,23 +412,16 @@ fn close_item(file: &str) -> Result<PathBuf, String> {
     Ok(destination.to_path_buf())
 }
 
-fn try_run_tree(args: &mut noargs::RawArgs) -> noargs::Result<bool> {
-    if !noargs::cmd("tree")
-        .doc("Print the items reachable from one item")
-        .take(args)
-        .is_present()
-    {
-        return Ok(false);
-    }
-
+fn run_tree(mut args: noargs::RawArgs) -> noargs::Result<()> {
     let file: String = noargs::arg("<ITEM>")
         .doc("Item to start from, given as its path")
         .example("backlog/open/20250101-rfc-panic-on-empty-input.md")
-        .take(args)
+        .take(&mut args)
         .then(|a| a.value().parse())?;
 
-    if args.metadata().help_mode {
-        return Ok(true);
+    if let Some(help) = args.finish()? {
+        print!("{help}");
+        return Ok(());
     }
 
     if !Path::new(&file).is_file() {
@@ -432,7 +437,7 @@ path, such as `nokori tree {}/20250101-bug-panic-on-empty-input.md`.",
     let tree = nokori::Tree::new(&file, &items)?;
     print!("{tree}");
 
-    Ok(true)
+    Ok(())
 }
 
 /// Reads every item under `backlog/open/` and `backlog/closed/`, with the links
@@ -488,24 +493,17 @@ fn item_from(path: &Path, name: &str, content: &str) -> nokori::Item {
     }
 }
 
-fn try_run_explain(args: &mut noargs::RawArgs) -> noargs::Result<bool> {
-    if !noargs::cmd("explain")
-        .doc("Print the rules behind the commands (see `<TOPIC>`)")
-        .take(args)
-        .is_present()
-    {
-        return Ok(false);
-    }
-
+fn run_explain(mut args: noargs::RawArgs) -> noargs::Result<()> {
     let topic = noargs::arg("[<TOPIC>]")
         .doc("Topic to explain (`overview`, `kinds`, `flow`, or `references`)")
         .example("kinds")
-        .take(args)
+        .take(&mut args)
         .present();
     let topic: Option<String> = topic.map(|a| a.value().parse()).transpose()?;
 
-    if args.metadata().help_mode {
-        return Ok(true);
+    if let Some(help) = args.finish()? {
+        print!("{help}");
+        return Ok(());
     }
 
     // With no topic, the list itself is the answer: it is short enough to print
@@ -519,7 +517,7 @@ fn try_run_explain(args: &mut noargs::RawArgs) -> noargs::Result<bool> {
         }
         println!();
         println!("Run `nokori explain <topic>` for one of them.");
-        return Ok(true);
+        return Ok(());
     };
 
     let Some(text) = nokori::topic(&topic) else {
@@ -537,7 +535,7 @@ them.",
 
     print!("{text}");
 
-    Ok(true)
+    Ok(())
 }
 
 fn create_item(kind: &str, slug: &str) -> Result<PathBuf, String> {

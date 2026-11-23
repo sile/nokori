@@ -170,34 +170,56 @@ level per hop. By default the walk follows the links the item holds -- what
 it needs, which is the half an open item asks about:
 
 ```
-20261114-rfc-show-the-relations-between-items
-├── 20261114-plan-the-reading-commands
-│   └── 20261114-bug-empty-input
-└── 20261114-rfc-say-when-a-link-is-written
+open/20261114-rfc-show-the-relations-between-items
+├── open/20261114-plan-the-reading-commands
+│   └── closed/20261114-bug-empty-input
+└── closed/20261114-rfc-say-when-a-link-is-written
 ```
 
 With `--invert` (or `-i`) it follows the links that point at the item -- what
 came from it, which is the half a settled one asks about:
 
 ```
-20261114-rfc-show-the-relations-between-items
-├── 20261114-rfc-tree-shows-one-direction
-└── 20261113-feedback-235217
+closed/20261114-rfc-show-the-relations-between-items
+├── closed/20261114-rfc-tree-shows-one-direction
+└── closed/20261113-feedback-235217
 ```
 
 The two are the same walk with one step different: only the set of
 neighbours changes, and the cycle rule and the order are the same in both.
+
+Every line starts with `open/` or `closed/`: the directory the item is in,
+which is the item's state. That is what the tree is read for -- an open item
+can be started when what it links is closed -- so the root says its state too,
+and a reader looking for what still blocks an item does not have to open each
+one to find out.
 
 No line says which file holds the link that reached it, because the run said
 the direction once and every line under the root has it. Each line names its
 item by the text a link to it carries, so the line and the link in a file are
 read as the same string.
 
-An item reached by two paths is printed under each, the way `cargo tree`
-prints a shared dependency. There is no repeat mark and no `--depth`: both are
-ways of cutting a tree that has grown too long, and the cut is a change to
-make when one does. A cycle -- possible between two closed items -- stops the
-walk where it meets it and says so.
+An item reached twice below one line is printed once: two links to one item
+are one relation. An item the run has already printed is printed where a later
+path reaches it with `(*)` and not walked again, the way `cargo tree` marks a
+shared dependency whose subtree is under the first printing. There is no
+`--depth`: a bound is a change to make when a tree has grown too long. A cycle
+-- possible between two closed items -- stops the walk where it meets it and
+says so.
+
+Given more than one item, each is a root and its tree follows, with a blank
+line between:
+
+```shell
+nokori tree backlog/open/a.md backlog/open/b.md
+```
+
+Given none, every item in `backlog/open/` is walked, in path order, and the
+run says so on its first line before the trees:
+
+```shell
+nokori tree
+```
 
 A link to anything that is not an item is skipped: a path into the source
 tree, a URL, a heading. What the command reads is what `close` reads, so the

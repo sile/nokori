@@ -38,8 +38,8 @@ pub use command_check::{ItemSource, check_item};
 pub use command_close::{
     CloseDecision, CloseSource, check_filled_in, close_item, open_items_linking,
 };
-pub use command_tree::{Direction, Tree};
-pub use item::{is_item_path, item_label, link_name};
+pub use command_tree::{Direction, Tree, tree_of};
+pub use item::{is_item_path, item_label, link_name, state_label};
 pub use links::{Link, is_external, links, normalize, target_path};
 pub use marker::find_marker;
 pub use model::{Clock, Item, feedback_content, feedback_name, is_valid_slug, item_name};

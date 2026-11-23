@@ -27,6 +27,26 @@ pub fn item_label(name: &str) -> String {
     link_name(name)
 }
 
+/// What a line of `tree` starts with: the directory the item is in, as `open/`
+/// or `closed/`, then the label.
+///
+/// The directory is the state, and the state is what a reader looks for -- an
+/// item can be started when what it links is closed -- so every line says it,
+/// including the root's. `backlog/` is dropped: it is the same on every line of
+/// every run, and the two words that differ are the whole point of the prefix.
+pub fn state_label(path: &Path) -> String {
+    let name = path
+        .file_name()
+        .and_then(|name| name.to_str())
+        .unwrap_or("");
+    let state = if path.parent() == Some(Path::new(CLOSED_DIR)) {
+        "closed"
+    } else {
+        "open"
+    };
+    format!("{state}/{}", item_label(name))
+}
+
 /// The name a link's target is written as when the link has to go: its text
 /// without the path. The text of a link is the item's file name without
 /// `.md` (see `nokori explain references`), so the name reads the same as the

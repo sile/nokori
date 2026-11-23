@@ -219,6 +219,16 @@ fn a_link_is_named_by_the_file_it_points_at() {
         nokori::item_label("backlog/open/20250101-bug-x-y.md"),
         "20250101-bug-x-y"
     );
+
+    // What a `tree` line starts with: the state, then the same label.
+    assert_eq!(
+        nokori::state_label(Path::new("backlog/open/20250101-bug-x-y.md")),
+        "open/20250101-bug-x-y"
+    );
+    assert_eq!(
+        nokori::state_label(Path::new("backlog/closed/20250101-bug-x-y.md")),
+        "closed/20250101-bug-x-y"
+    );
 }
 
 #[test]
@@ -238,7 +248,7 @@ fn the_walk_follows_the_direction_it_is_given() {
     .expect("the item is in the set");
     assert_eq!(
         holds.as_str(),
-        "20250102-bug-later\n└── 20250101-bug-earlier\n"
+        "open/20250102-bug-later\n└── closed/20250101-bug-earlier\n"
     );
 
     // The same relation read the other way: the closed item is pointed at by
@@ -251,7 +261,7 @@ fn the_walk_follows_the_direction_it_is_given() {
     .expect("the item is in the set");
     assert_eq!(
         points.as_str(),
-        "20250101-bug-earlier\n└── 20250102-bug-later\n"
+        "closed/20250101-bug-earlier\n└── open/20250102-bug-later\n"
     );
 }
 

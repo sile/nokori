@@ -8,6 +8,7 @@
 
 #![forbid(unsafe_code)]
 
+use std::io::Write;
 use std::path::{Path, PathBuf};
 
 fn main() -> noargs::Result<()> {
@@ -460,24 +461,36 @@ fn run_tree(mut args: noargs::RawArgs) -> noargs::Result<()> {
         )
         .take(&mut args)
         .is_present();
-    let file: String = noargs::arg("<ITEM>")
-        .doc("Item to start from, given as its path")
-        .example("backlog/open/20250101-rfc-panic-on-empty-input.md")
+    // Any number of items, in the order given. The name says `[<ITEM>]...` for
+    // the help text; a missing first one is not an error, since the run without
+    // one is the run that walks every open item.
+    let item_arg = noargs::arg("[<ITEM>]...")
+        .doc(
+            "Items to start from, given as their paths. With none, every item in `backlog/open/` is walked.",
+        )
+        .example("backlog/open/20250101-rfc-panic-on-empty-input.md");
+    let mut files = Vec::<String>::new();
+    while let Some(file) = item_arg
         .take(&mut args)
-        .then(|a| a.value().parse())?;
+        .present_and_then(|a| a.value().parse())?
+    {
+        files.push(file);
+    }
 
     if let Some(help) = args.finish()? {
         print!("{help}");
         return Ok(());
     }
 
-    if !Path::new(&file).is_file() {
-        return Err(format!(
-            r"`{file}` is not a file, so there is no item to walk from. Pass the item as a
+    for file in &files {
+        if !Path::new(file).is_file() {
+            return Err(format!(
+                r"`{file}` is not a file, so there is no item to walk from. Pass the item as a
 path, such as `nokori tree {}/20250101-bug-panic-on-empty-input.md`.",
-            nokori::OPEN_DIR
-        )
-        .into());
+                nokori::OPEN_DIR
+            )
+            .into());
+        }
     }
 
     let items = read_items()?;
@@ -486,10 +499,65 @@ path, such as `nokori tree {}/20250101-bug-panic-on-empty-input.md`.",
     } else {
         nokori::Direction::Holds
     };
-    let tree = nokori::Tree::new(&file, &items, direction)?;
-    print!("{tree}");
+
+    // No argument is the question about every open item, and the run says which
+    // items it answered for, since those were not the ones it was handed.
+    let defaulted = files.is_empty();
+    if defaulted {
+        println!("No item was given, so every open item is walked.");
+        files = open_item_files()?;
+        if files.is_empty() {
+            eprintln!(
+                "No item is open: `{}/` has nothing in it but its README.",
+                nokori::OPEN_DIR
+            );
+            return Ok(());
+        }
+        // The line above is the run speaking, so the tree follows it directly;
+        // the blank line keeps the two apart.
+        println!();
+    }
+
+    let refs: Vec<&str> = files.iter().map(String::as_str).collect();
+    let tree = nokori::Tree::of(&refs, &items, direction)?;
+
+    // Written in one go through a locked handle. A run with no argument walks
+    // every open item, and its text can be long enough that one `write_all` is
+    // both cheaper and kinder than a line-by-line print.
+    let mut stdout = std::io::stdout().lock();
+    stdout
+        .write_all(tree.as_str().as_bytes())
+        .map_err(|e| format!("failed to write the tree: {e}"))?;
 
     Ok(())
+}
+
+/// The files in `backlog/open/`, sorted by path: the items walked when `tree`
+/// is given none.
+///
+/// Only the open half is read: the closed items are what an open one needs, and
+/// a run that walked them as roots too would print the whole backlog every time.
+/// A directory that is not there is a backlog with nothing open, not a reason
+/// to refuse the walk.
+fn open_item_files() -> Result<Vec<String>, String> {
+    let dir = nokori::OPEN_DIR;
+    let entries = match std::fs::read_dir(dir) {
+        Ok(entries) => entries,
+        Err(e) if e.kind() == std::io::ErrorKind::NotFound => return Ok(Vec::new()),
+        Err(e) => return Err(format!("failed to read `{dir}`: {e}")),
+    };
+
+    let mut files = Vec::new();
+    for entry in entries {
+        let entry = entry.map_err(|e| format!("failed to read `{dir}`: {e}"))?;
+        let name = entry.file_name().to_string_lossy().into_owned();
+        let path = Path::new(dir).join(&name);
+        if nokori::is_item_path(&nokori::normalize(&path)) {
+            files.push(path.to_string_lossy().into_owned());
+        }
+    }
+    files.sort();
+    Ok(files)
 }
 
 /// Reads every item under `backlog/open/` and `backlog/closed/`, with the links

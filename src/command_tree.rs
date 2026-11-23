@@ -132,7 +132,6 @@ pub fn tree_of(roots: &[&Item], items: &[Item], direction: Direction) -> Tree {
 /// to `item`, which is what tells a cycle from an item shared by two paths.
 /// `printed` is every item the walk has shown, which is what tells a line to
 /// mark rather than walk.
-#[allow(clippy::too_many_arguments)]
 fn walk_children(
     item: &Item,
     items: &[Item],

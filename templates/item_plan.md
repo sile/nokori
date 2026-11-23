@@ -44,7 +44,7 @@ itself: link the item where the relation matters, in as many words as it
 takes.
 
     - [ ] Wait for
-          [rfc-cache-the-parse](20261114-rfc-cache-the-parse.md) to be
+          [20261114-rfc-cache-the-parse](20261114-rfc-cache-the-parse.md) to be
           accepted, then apply the rule it decides.
 
 Run `nokori explain references` for how the link is written and where its
@@ -87,7 +87,7 @@ out. Name the change that carried the plan out, or the item that did, when
 the work happened somewhere else.
 
 To refer to another item, link it:
-[bug-empty-input](../closed/20261114-bug-empty-input.md). Link only an item
+[20261114-bug-empty-input](../closed/20261114-bug-empty-input.md). Link only an item
 that is already closed: never link one that is still open, not even as
 background. The rule is about this section and not the file: a closed item
 may not cite an open one, while an open item may cite either, so a section

@@ -140,7 +140,7 @@ pub struct Item {
     /// The path of the file, normalized.
     pub path: PathBuf,
 
-    /// The label a line prints: the kind and slug.
+    /// The label a line prints: the file name without `.md`.
     pub name: String,
 
     /// The items this one links, as normalized paths.

@@ -48,7 +48,7 @@ fn tree_prints_an_item_with_nothing_around_it_alone() {
     let dir = repo("alone", &[("open/20250101-bug-alone.md", "nothing")]);
 
     let printed = tree(&dir, "backlog/open/20250101-bug-alone.md");
-    assert_eq!(printed, "bug-alone\n");
+    assert_eq!(printed, "20250101-bug-alone\n");
 
     std::fs::remove_dir_all(&dir).expect("failed to clean up");
 }
@@ -72,8 +72,8 @@ fn tree_marks_which_file_holds_the_link() {
     let printed = tree(&dir, "backlog/open/20250102-bug-later.md");
     assert_eq!(
         printed,
-        "bug-later\n  - bug-earlier\n    <- bug-later\n      (already on the path: \
-         the links run in a circle, so the walk stops here)\n"
+        "20250102-bug-later\n  - 20250101-bug-earlier\n    <- 20250102-bug-later\n      \
+         (already on the path: the links run in a circle, so the walk stops here)\n"
     );
 
     std::fs::remove_dir_all(&dir).expect("failed to clean up");
@@ -105,11 +105,11 @@ fn tree_prints_an_item_under_each_path_that_reaches_it() {
     // printed under both rather than once. The first hop under the start is
     // each of the two, and each of those reaches `bug-shared` in turn.
     assert!(
-        printed.starts_with("bug-start\n  - bug-a\n    - bug-shared\n"),
+        printed.starts_with("20250101-bug-start\n  - 20250102-bug-a\n    - 20250104-bug-shared\n"),
         "{printed}"
     );
     assert!(
-        printed.contains("\n  - bug-b\n    - bug-shared\n"),
+        printed.contains("\n  - 20250103-bug-b\n    - 20250104-bug-shared\n"),
         "{printed}"
     );
 
@@ -137,7 +137,7 @@ fn tree_stops_at_a_cycle_and_says_so() {
     let printed = tree(&dir, "backlog/closed/20250101-bug-one.md");
     assert!(printed.contains("already on the path"), "{printed}");
     // The walk ends, which is the thing being tested: a hang would not return.
-    assert!(printed.starts_with("bug-one\n"), "{printed}");
+    assert!(printed.starts_with("20250101-bug-one\n"), "{printed}");
 
     std::fs::remove_dir_all(&dir).expect("failed to clean up");
 }
@@ -153,7 +153,7 @@ fn tree_skips_a_link_that_is_not_an_item() {
     );
 
     let printed = tree(&dir, "backlog/open/20250101-bug-links.md");
-    assert_eq!(printed, "bug-links\n");
+    assert_eq!(printed, "20250101-bug-links\n");
 
     std::fs::remove_dir_all(&dir).expect("failed to clean up");
 }

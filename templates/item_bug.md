@@ -93,7 +93,7 @@ Say what actually happened, and name the change that fixed it; link the
 commit or pull request when there is one.
 
 To refer to another item, link it:
-[bug-empty-input](../closed/20261114-bug-empty-input.md). Link only an item
+[20261114-bug-empty-input](../closed/20261114-bug-empty-input.md). Link only an item
 that is already closed: never link one that is still open, not even as
 background. The rule is about this section and not the file: a closed item
 may not cite an open one, while an open item may cite either, so a section

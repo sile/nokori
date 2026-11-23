@@ -197,6 +197,31 @@ fn item(path: &str, links: &[&str]) -> nokori::Item {
 }
 
 #[test]
+fn a_link_is_named_by_the_file_it_points_at() {
+    // The text of a link is the file's name without `.md`, so that the text,
+    // the target, and the name `close` writes are one string with and without
+    // the path. `feedback` is the kind with no slug, and it is the one that
+    // shows why the date stays.
+    let items = [
+        ("backlog/open/20250101-bug-x-y.md", "20250101-bug-x-y"),
+        ("../closed/20250102-rfc-z.md", "20250102-rfc-z"),
+        (
+            "backlog/open/20250103-feedback-120000.md",
+            "20250103-feedback-120000",
+        ),
+        // A path that is not a name is passed through rather than cut.
+        ("20250101-not-an-item.md", "20250101-not-an-item"),
+    ];
+    for (target, text) in items {
+        assert_eq!(nokori::link_name(target), text, "{target}");
+    }
+    assert_eq!(
+        nokori::item_label("backlog/open/20250101-bug-x-y.md"),
+        "20250101-bug-x-y"
+    );
+}
+
+#[test]
 fn the_walk_marks_which_file_holds_the_link() {
     let items = vec![
         item(
@@ -210,8 +235,8 @@ fn the_walk_marks_which_file_holds_the_link() {
 
     assert_eq!(
         tree.as_str(),
-        "bug-later\n  - bug-earlier\n    <- bug-later\n      (already on the path: \
-         the links run in a circle, so the walk stops here)\n"
+        "20250102-bug-later\n  - 20250101-bug-earlier\n    <- 20250102-bug-later\n      \
+         (already on the path: the links run in a circle, so the walk stops here)\n"
     );
 }
 

@@ -4,7 +4,7 @@
 
 A link to an item is written with the item's whole file name as its text,
 date included: `[20261122-bug-empty-input](20261122-bug-empty-input.md)`
-rather than `[bug-empty-input](20261122-bug-empty-input.md)`. The same text
+rather than `[20261122-bug-empty-input](20261122-bug-empty-input.md)`. The same text
 is what `close` writes where a link has to become a name, so the name in a
 closed file and the link in an open one read alike.
 

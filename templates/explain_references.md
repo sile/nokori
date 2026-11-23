@@ -1,9 +1,9 @@
 An item refers to another item with a markdown link: the text is the other
-item's kind and slug, and the target is the path to its file from the
-file holding the link.
+item's file name without `.md`, and the target is the path to its file from
+the file holding the link.
 
 ```markdown
-[rfc-cache-the-parse](20261114-rfc-cache-the-parse.md)
+[20261114-rfc-cache-the-parse](20261114-rfc-cache-the-parse.md)
 ```
 
 
@@ -47,13 +47,26 @@ when it landed is read as the record of what that `close` produced.
 What the text says
 ==================
 
-The text is the kind and the slug, without the date: `rfc-cache-the-parse`,
-not `20261114-rfc-cache-the-parse.md` and not `cache-the-parse`.
+The text is the file name without `.md`:
+`20261114-rfc-cache-the-parse`, not `rfc-cache-the-parse` and not
+`20261114-rfc-cache-the-parse.md`.
 
-The kind is kept because it is most of what the sentence around the link is
-saying -- whether the thing cited is a proposal, a report, or a piece of
-work. The date is left out because it carries nothing a reader needs to know
-why the item is being cited, and both `ls` and the target give it.
+The kind and the slug are kept because they are most of what the sentence
+around the link is saying -- whether the thing cited is a proposal, a report,
+or a piece of work, and what it is about. The date is kept because it is part
+of the name, and a text that is the name is the one form a reader has to
+remember: it is the same string as the file, so copying one into the other is
+never wrong, and no rule about which parts of a name belong in a label has to
+be learned.
+
+The same text is what `close` writes where a link has to become a name, so
+the name in a closed file and the link in an open one are the same characters
+with and without the target.
+
+The one kind without a slug is `feedback`, and it is why the date stays: its
+file is named by the second it arrived, so a text that dropped the date would
+read `feedback-235217`, which is a time and not a subject. Two feedbacks from
+the same minute are told apart by the date alone.
 
 The text is only a label: the target is the reference. Two items may share a
 kind and slug on different days, and nothing is lost, because the link still
@@ -127,9 +140,10 @@ there every time: two items that answer each other are written while both are
 open, and the one closed first has a link to a file that is still open. What
 it writes instead is the target's link text, as a name in a code span:
 
-> the decision was made in `rfc-cache-the-parse`
+> the decision was made in `20261114-rfc-cache-the-parse`
 
-Link text is the kind and slug, so the name reads the same as the link did.
+Link text is the file name without `.md`, so the name reads the same as the
+link did.
 The code span is what tells a reader it is a name and not a bare word. A
 reader who wants the file finds it from the directory the two share.
 
@@ -156,15 +170,16 @@ spaces per hop. The mark before a line says which file holds the link that
 reached it:
 
 ```
-rfc-show-the-relations-between-items
-  - plan-the-reading-commands
-    <- rfc-show-the-relations-between-items
-  <- feedback-slugs-are-hard-to-type
+20261114-rfc-show-the-relations-between-items
+  - 20261114-plan-the-reading-commands
+    <- 20261114-rfc-show-the-relations-between-items
+  <- 20261113-feedback-235217
 ```
 
-`-` is a link in the line above, `<-` is a link in the line itself. A
-relation written at both ends is reached twice, once per link, since two
-links is what is in the files.
+`-` is a link in the line above, `<-` is a link in the line itself. Each line
+names its item by the text a link to it carries, so the line and the link in
+a file are read as the same string. A relation written at both ends is
+reached twice, once per link, since two links is what is in the files.
 
 An item reached by two paths is printed under each, the way `cargo tree`
 prints a shared dependency. There is no repeat mark and no `--depth`: both are

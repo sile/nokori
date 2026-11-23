@@ -227,8 +227,9 @@ fn close_says_to_write_a_name_when_the_other_file_links_back() {
     assert!(!output.status.success(), "close should have failed");
     let stderr = String::from_utf8_lossy(&output.stderr);
     assert!(stderr.contains("Write the target as a name"), "{stderr}");
-    // The name is the link text without the date, in a code span.
-    assert!(stderr.contains("`bug-done-thing`"), "{stderr}");
+    // The name is the link text, which is the file name without `.md`, in a
+    // code span.
+    assert!(stderr.contains("`20250101-bug-done-thing`"), "{stderr}");
     assert!(stderr.contains("links back"), "{stderr}");
     assert!(!stderr.contains("does not link back"), "{stderr}");
 
@@ -252,7 +253,7 @@ fn close_asks_for_the_link_back_when_the_other_file_has_none() {
         stderr.contains("backlog/open/20250101-bug-done-thing.md"),
         "{stderr}"
     );
-    assert!(stderr.contains("`bug-done-thing`"), "{stderr}");
+    assert!(stderr.contains("`20250101-bug-done-thing`"), "{stderr}");
 
     std::fs::remove_dir_all(&dir).expect("failed to clean up");
 }

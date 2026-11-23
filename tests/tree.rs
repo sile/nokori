@@ -43,6 +43,12 @@ fn tree(dir: &Path, start: &str) -> String {
     String::from_utf8_lossy(&output.stdout).into_owned()
 }
 
+fn inverted(dir: &Path, start: &str) -> String {
+    let output = nokori(dir, &["tree", "--invert", start]);
+    assert!(output.status.success(), "{output:?}");
+    String::from_utf8_lossy(&output.stdout).into_owned()
+}
+
 #[test]
 fn tree_prints_an_item_with_nothing_around_it_alone() {
     let dir = repo("alone", &[("open/20250101-bug-alone.md", "nothing")]);
@@ -54,12 +60,12 @@ fn tree_prints_an_item_with_nothing_around_it_alone() {
 }
 
 #[test]
-fn tree_marks_which_file_holds_the_link() {
-    // The open item links the closed one, so the closed item is reached from a
-    // link in the line above (`-`) and the open one from a link in itself
-    // (`<-`). The two are one relation, and the marks say who wrote it.
+fn tree_follows_the_links_the_item_holds_by_default() {
+    // The open item links the closed one. By default the walk leaves from the
+    // end that holds the link, so the closed item is reached and its own links
+    // are followed after it -- and it links nothing.
     let dir = repo(
-        "marks",
+        "holds",
         &[
             (
                 "open/20250102-bug-later.md",
@@ -70,11 +76,61 @@ fn tree_marks_which_file_holds_the_link() {
     );
 
     let printed = tree(&dir, "backlog/open/20250102-bug-later.md");
+    assert_eq!(printed, "20250102-bug-later\n└── 20250101-bug-earlier\n");
+
+    // The other direction is the other half of the same relation: the closed
+    // item is pointed at by the open one, and holds no link itself.
+    let printed = inverted(&dir, "backlog/closed/20250101-bug-earlier.md");
+    assert_eq!(printed, "20250101-bug-earlier\n└── 20250102-bug-later\n");
+
+    std::fs::remove_dir_all(&dir).expect("failed to clean up");
+}
+
+#[test]
+fn tree_branches_a_line_that_has_more_below_it() {
+    // `cargo tree`'s drawing: `├── ` while a sibling follows, `└── ` for the
+    // last one, and `│   ` carrying the depth above where a line below is
+    // still there.
+    let dir = repo(
+        "branches",
+        &[
+            (
+                "open/20250101-bug-start.md",
+                "[bug-a](20250102-bug-a.md) and [bug-b](20250103-bug-b.md)",
+            ),
+            (
+                "open/20250102-bug-a.md",
+                "[bug-shared](20250104-bug-shared.md)",
+            ),
+            ("open/20250103-bug-b.md", "nothing"),
+            ("open/20250104-bug-shared.md", "shared"),
+        ],
+    );
+
+    let printed = tree(&dir, "backlog/open/20250101-bug-start.md");
     assert_eq!(
         printed,
-        "20250102-bug-later\n  - 20250101-bug-earlier\n    <- 20250102-bug-later\n      \
-         (already on the path: the links run in a circle, so the walk stops here)\n"
+        "20250101-bug-start\n├── 20250102-bug-a\n│   └── 20250104-bug-shared\n└── 20250103-bug-b\n"
     );
+
+    std::fs::remove_dir_all(&dir).expect("failed to clean up");
+}
+
+#[test]
+fn tree_does_not_mark_the_direction_per_line() {
+    // The run said the direction once, so no line says which file holds the
+    // link that reached it. The mark was the thing this replaced.
+    let dir = repo(
+        "no-marks",
+        &[
+            ("open/20250101-bug-start.md", "[bug-a](20250102-bug-a.md)"),
+            ("open/20250102-bug-a.md", "nothing"),
+        ],
+    );
+
+    let printed = tree(&dir, "backlog/open/20250101-bug-start.md");
+    assert!(!printed.contains("<- "), "{printed}");
+    assert!(!printed.contains(" - "), "{printed}");
 
     std::fs::remove_dir_all(&dir).expect("failed to clean up");
 }
@@ -105,11 +161,12 @@ fn tree_prints_an_item_under_each_path_that_reaches_it() {
     // printed under both rather than once. The first hop under the start is
     // each of the two, and each of those reaches `bug-shared` in turn.
     assert!(
-        printed.starts_with("20250101-bug-start\n  - 20250102-bug-a\n    - 20250104-bug-shared\n"),
+        printed
+            .starts_with("20250101-bug-start\n├── 20250102-bug-a\n│   └── 20250104-bug-shared\n"),
         "{printed}"
     );
     assert!(
-        printed.contains("\n  - 20250103-bug-b\n    - 20250104-bug-shared\n"),
+        printed.contains("\n└── 20250103-bug-b\n    └── 20250104-bug-shared\n"),
         "{printed}"
     );
 

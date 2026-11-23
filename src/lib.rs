@@ -38,7 +38,7 @@ pub use command_check::{ItemSource, check_item};
 pub use command_close::{
     CloseDecision, CloseSource, check_filled_in, close_item, open_items_linking,
 };
-pub use command_tree::Tree;
+pub use command_tree::{Direction, Tree};
 pub use item::{is_item_path, item_label, link_name};
 pub use links::{Link, is_external, links, normalize, target_path};
 pub use marker::find_marker;

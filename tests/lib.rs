@@ -222,7 +222,7 @@ fn a_link_is_named_by_the_file_it_points_at() {
 }
 
 #[test]
-fn the_walk_marks_which_file_holds_the_link() {
+fn the_walk_follows_the_direction_it_is_given() {
     let items = vec![
         item(
             "backlog/open/20250102-bug-later.md",
@@ -230,20 +230,39 @@ fn the_walk_marks_which_file_holds_the_link() {
         ),
         item("backlog/closed/20250101-bug-earlier.md", &[]),
     ];
-    let tree = nokori::Tree::new("backlog/open/20250102-bug-later.md", &items)
-        .expect("the item is in the set");
-
+    let holds = nokori::Tree::new(
+        "backlog/open/20250102-bug-later.md",
+        &items,
+        nokori::Direction::Holds,
+    )
+    .expect("the item is in the set");
     assert_eq!(
-        tree.as_str(),
-        "20250102-bug-later\n  - 20250101-bug-earlier\n    <- 20250102-bug-later\n      \
-         (already on the path: the links run in a circle, so the walk stops here)\n"
+        holds.as_str(),
+        "20250102-bug-later\n└── 20250101-bug-earlier\n"
+    );
+
+    // The same relation read the other way: the closed item is pointed at by
+    // the open one, and what the closed one holds is nothing.
+    let points = nokori::Tree::new(
+        "backlog/closed/20250101-bug-earlier.md",
+        &items,
+        nokori::Direction::PointsAt,
+    )
+    .expect("the item is in the set");
+    assert_eq!(
+        points.as_str(),
+        "20250101-bug-earlier\n└── 20250102-bug-later\n"
     );
 }
 
 #[test]
 fn the_walk_refuses_an_item_that_is_not_in_the_set() {
-    let error = nokori::Tree::new("backlog/open/20250101-bug-x.md", &[])
-        .expect_err("nothing was read, so there is nothing to walk");
+    let error = nokori::Tree::new(
+        "backlog/open/20250101-bug-x.md",
+        &[],
+        nokori::Direction::Holds,
+    )
+    .expect_err("nothing was read, so there is nothing to walk");
 
     assert!(error.contains("is not an item"), "{error}");
 }

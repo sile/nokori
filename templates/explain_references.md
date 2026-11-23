@@ -165,21 +165,33 @@ Reading the relations back
 nokori tree backlog/open/<item>.md
 ```
 
-Prints the item and the items reachable from it, one per line, nested two
-spaces per hop. The mark before a line says which file holds the link that
-reached it:
+Prints the item and the items reachable from it, one per line, nested one
+level per hop. By default the walk follows the links the item holds -- what
+it needs, which is the half an open item asks about:
 
 ```
 20261114-rfc-show-the-relations-between-items
-  - 20261114-plan-the-reading-commands
-    <- 20261114-rfc-show-the-relations-between-items
-  <- 20261113-feedback-235217
+├── 20261114-plan-the-reading-commands
+│   └── 20261114-bug-empty-input
+└── 20261114-rfc-say-when-a-link-is-written
 ```
 
-`-` is a link in the line above, `<-` is a link in the line itself. Each line
-names its item by the text a link to it carries, so the line and the link in
-a file are read as the same string. A relation written at both ends is
-reached twice, once per link, since two links is what is in the files.
+With `--invert` (or `-i`) it follows the links that point at the item -- what
+came from it, which is the half a settled one asks about:
+
+```
+20261114-rfc-show-the-relations-between-items
+├── 20261114-rfc-tree-shows-one-direction
+└── 20261113-feedback-235217
+```
+
+The two are the same walk with one step different: only the set of
+neighbours changes, and the cycle rule and the order are the same in both.
+
+No line says which file holds the link that reached it, because the run said
+the direction once and every line under the root has it. Each line names its
+item by the text a link to it carries, so the line and the link in a file are
+read as the same string.
 
 An item reached by two paths is printed under each, the way `cargo tree`
 prints a shared dependency. There is no repeat mark and no `--depth`: both are

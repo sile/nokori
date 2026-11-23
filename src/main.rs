@@ -453,6 +453,13 @@ fn close_item(file: &str) -> Result<(PathBuf, Vec<PathBuf>), String> {
 }
 
 fn run_tree(mut args: noargs::RawArgs) -> noargs::Result<()> {
+    let invert = noargs::flag("invert")
+        .short('i')
+        .doc(
+            "Follow the links that point at the item instead of the links it holds\n\nThe default follows what the item needs, which is the half an open item asks about. This follows what came from it, which is the half a settled one asks about.",
+        )
+        .take(&mut args)
+        .is_present();
     let file: String = noargs::arg("<ITEM>")
         .doc("Item to start from, given as its path")
         .example("backlog/open/20250101-rfc-panic-on-empty-input.md")
@@ -474,7 +481,12 @@ path, such as `nokori tree {}/20250101-bug-panic-on-empty-input.md`.",
     }
 
     let items = read_items()?;
-    let tree = nokori::Tree::new(&file, &items)?;
+    let direction = if invert {
+        nokori::Direction::PointsAt
+    } else {
+        nokori::Direction::Holds
+    };
+    let tree = nokori::Tree::new(&file, &items, direction)?;
     print!("{tree}");
 
     Ok(())

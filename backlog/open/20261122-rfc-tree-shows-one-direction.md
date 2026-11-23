@@ -98,8 +98,9 @@ on the current path to stop at one. Under `--invert` the cycle is the same
 cycle read backwards.
 
 Whether the label keeps the date. That question is
-[20261122-rfc-link-text-keeps-the-date](20261122-rfc-link-text-keeps-the-date.md)'s,
-and this RFC reads whatever text that one settles on.
+[20261122-rfc-link-text-keeps-the-date](../closed/20261122-rfc-link-text-keeps-the-date.md)'s,
+and it was settled there: the label is the file name, so a line holds the
+date as well. Nothing in this RFC changes.
 
 ## Outcome
 

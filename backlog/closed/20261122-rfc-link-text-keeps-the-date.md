@@ -4,7 +4,7 @@
 
 A link to an item is written with the item's whole file name as its text,
 date included: `[20261122-bug-empty-input](20261122-bug-empty-input.md)`
-rather than `[20261122-bug-empty-input](20261122-bug-empty-input.md)`. The same text
+rather than `[bug-empty-input](20261122-bug-empty-input.md)`. The same text
 is what `close` writes where a link has to become a name, so the name in a
 closed file and the link in an open one read alike.
 
@@ -91,4 +91,24 @@ Full: it is the name, and a name that is shortened is a name that has to be
 read as a rule rather than as a file.
 
 ## Outcome
+
+Accepted. The text of a link is the item's file name without `.md`, and the
+same string is the label `tree` prints and the name `close` writes, so the
+three forms are one string with and without the path.
+
+The change is in one place: `link_name` in `src/item.rs`, which `item_label`
+also returns, so the label and the name moved together with the text. The
+rule is written once in `nokori explain references`, and the tree example in
+it was rewritten to show the labels the command now prints.
+
+The alternative that adds a slug to `feedback` was declined for the reason
+the Motivation gives: a slug is a summary, and the run that writes a
+feedback has not read the words. The date it already knows is the part of
+the name that stays.
+
+One thing changed since the RFC was written and is not a decision of it: the
+closed items written before this one still carry links whose text is the
+kind and slug. A closed file is not edited, so they stay as the record of
+what `close` produced then, and only the items written from now on read in
+the new form.
 

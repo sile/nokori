@@ -104,3 +104,27 @@ date as well. Nothing in this RFC changes.
 
 ## Outcome
 
+Accepted and implemented in the same sitting. `nokori tree <item>` now follows
+the links the item holds, and `nokori tree --invert <item>` (or `-i`) follows
+the links that point at it. The per-line mark is gone: the run says the
+direction once, and every line under the root has it.
+
+The output uses `cargo tree`'s drawing. A line with more to follow at its
+depth is `├── `, the last one is `└── `, and `│   ` carries a depth above it
+where a line below is still there. The root is drawn without a branch.
+
+`src/command_tree.rs` was rewritten around this. `Tree::new` takes a
+`Direction` -- `Holds` or `PointsAt`, both public from `lib.rs` -- and builds
+one walk in that direction; `neighbours` is the one step the direction
+changes, and the indent, the cycle rule, the order and the repeat of an item
+reached by two paths are the same either way. `main.rs` adds `--invert` with
+`-i` as its short form. `explain references` shows both directions and drops
+the sentences the drawings now say.
+
+The decisions the open questions named are settled as the RFC expected:
+`--invert` is the name, since it is `cargo tree`'s and the operation is the
+same one; the cycle rule is unchanged and is the same cycle read backwards
+under `--invert`; and the label keeps the date, as
+[20261122-rfc-link-text-keeps-the-date](../closed/20261122-rfc-link-text-keeps-the-date.md)
+settled, with nothing here changing it.
+

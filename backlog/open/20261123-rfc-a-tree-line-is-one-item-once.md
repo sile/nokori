@@ -1,4 +1,4 @@
-# RFC: a tree line is one item, once
+# RFC: a tree line is one item, once, and says whether it is open
 
 ## Summary
 
@@ -8,12 +8,17 @@ is the usual shape -- prints that item on two lines. It also walks an item
 again every time a second path reaches it, where `cargo tree` stops a package
 it has already printed and says so with `(*)`.
 
+A line also says only the item's name, so a reader cannot see from the tree
+whether what an open item needs is open too, and a tree of closed items looks
+exactly like one of open items.
+
 The command also takes one item, where the question most often asked is about
 every open one.
 
-This RFC does three things: an item print once per place it is reached, an
-item already printed be said with `(*)` and walked no further, and `tree` take
-any number of items, with none meaning every item in `backlog/open/`.
+This RFC does four things: an item print once per place it is reached, an
+item already printed be said with `(*)` and walked no further, every line
+carry the item's `open/` or `closed/` directory, and `tree` take any number of
+items, with none meaning every item in `backlog/open/`.
 
 ## Motivation
 
@@ -26,6 +31,10 @@ nokori tree backlog/closed/20261122-rfc-tree-shows-one-direction.md
 ├── 20261122-rfc-link-text-keeps-the-date
 └── 20261122-rfc-link-text-keeps-the-date
 ```
+
+That is today's output, and the rest of this RFC is about what it should be:
+the two lines of one item, the name that does not say which directory it is
+in, and the walk that had to ask for one item at a time.
 
 Writing the RFC linked the same item twice on purpose -- once where the
 proposal reads its name rule from, once in the Outcome as the item it was
@@ -45,6 +54,12 @@ is not, because it is under the first entry and the reader can find it there.
 Today's walk prints the whole subtree again, and on a backlog where a few
 items are cited from many places that is most of the output a second time.
 
+The third thing a line does not say is where its item lives. The question
+the tree is read for is whether an open item can be started, and an item can
+be started when what it links is closed; a tree whose lines are all names is
+a walk whose reader has to open each one to find out. On a backlog where the
+closed items outnumber the open ones by a year's work, that is every line.
+
 The missing walk is the one used most: what are all the open items, and what
 does each need. Today that is a `for` loop over `backlog/open/*.md` calling
 `nokori tree`, which is the scanning work the tool already does once per item.
@@ -62,15 +77,36 @@ What counts as the same item is the path: `20250101-bug-x` and
 `../open/20250101-bug-x` are one edge, since that is the resolution the walk
 already does for every link.
 
+### A line says the directory the item is in
+
+Every line names its item as `open/<name>` or `closed/<name>`, including the
+root:
+
+```
+open/20261122-rfc-show-the-relations-between-items
+├── closed/20261122-rfc-tree-shows-one-direction
+└── closed/20261122-rfc-link-text-keeps-the-date
+```
+
+The prefix is the directory, not the whole path: `backlog/` is the same on
+every line of every run, and dropping it is what makes the prefix short
+enough to read at the start of a line. Two words that a reader can act on --
+this one is done, this one is not -- for seven characters.
+
+It also makes an unambiguous line. A tree with deduplication and the mark has
+lines that differ only in the item's name; a tree with a prefix has lines
+that differ in the name and in what state the name is in, so a reader
+scanning for the open items does not have to know which names are open.
+
 ### An item already printed is `(*)`, and is not walked again
 
 The walk keeps the items it has printed. A line whose item is one of them is
 printed with `(*)` after it, and nothing is printed under it:
 
 ```
-20261122-rfc-show-the-relations-between-items
-├── 20261122-rfc-tree-shows-one-direction
-└── 20261122-rfc-link-text-keeps-the-date (*)
+open/20261122-rfc-show-the-relations-between-items
+├── closed/20261122-rfc-tree-shows-one-direction
+└── closed/20261122-rfc-link-text-keeps-the-date (*)
 ```
 
 The mark says the run has shown this item already, and where. It is where
@@ -81,6 +117,9 @@ is the one to read.
 The root counts as printed, so a tree that comes back to it is `(*)` like any
 other. An item reached twice from the same line is still one line, from the
 rule above; the mark is for two different lines reaching it.
+
+A line that is both open and printed reads `open/<name> (*)`: the prefix says
+where the item is, the mark says where the run has shown it.
 
 ### A cycle is still a cycle
 
@@ -106,10 +145,10 @@ those items:
 
 ```
 No item was given, so every open item is walked.
-20261123-bug-panic-on-empty-input
+open/20261123-bug-panic-on-empty-input
 ...
 
-20261123-rfc-a-tree-line-is-one-item-once
+open/20261123-rfc-a-tree-line-is-one-item-once
 ...
 ```
 
@@ -154,6 +193,20 @@ built. It loses because the repeat is the walk's question and not the
 reading's: `close` asks which open items name the file it is moving, and that
 question has nothing to do with how many lines a tree prints.
 
+**Mark the closed items rather than prefix every line.** `closed/<name>` and
+`<name>` for open, or a `[closed]` column at the end. It is quieter, and on a
+tree that is mostly closed it is a lot quieter. It loses on the shape a reader
+learns: an unmarked line would mean open by the absence of a mark, and the one
+thing a reader does with this tree is look for which items are still open. A
+rule that says both states out loud is the one a reader can check every line
+against.
+
+**Keep the whole `backlog/open/<name>` path.** It is what the argument takes,
+so a line could be pasted into `nokori tree` as it is. It loses because the
+line is already indented and already has a branch, and `backlog/` is on every
+line of every run without ever telling a reader anything: the prefix is read
+to learn the state, and the state is one directory deep.
+
 **Walk every item, open and closed, when no item is given.** It is the whole
 graph at once, a truer `nokori tree`. It loses because the closed items would
 be walked as roots and then again under the open ones, which is the whole
@@ -175,5 +228,10 @@ Whether the blank line between roots is enough of a separator. A tree's last
 line and the next root are different shapes already -- one is indented, the
 other is not -- so the blank line is for the eye rather than the parser, and
 one line is cheap.
+
+Whether an item in a directory other than `open/` and `closed/` is possible.
+Today the tree reads `backlog/open/` and `backlog/closed/` and nothing else,
+so the prefix has two values. If a third directory ever exists the line needs
+a third word, and the name rule is the one to check then, not now.
 
 ## Outcome

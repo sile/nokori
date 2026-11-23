@@ -14,7 +14,11 @@ use std::path::{Path, PathBuf};
 fn main() -> noargs::Result<()> {
     let mut args = noargs::raw_args();
     args.metadata_mut().app_name = env!("CARGO_PKG_NAME");
-    args.metadata_mut().app_description = env!("CARGO_PKG_DESCRIPTION");
+    args.metadata_mut().app_description = concat!(
+        env!("CARGO_PKG_DESCRIPTION"),
+        "\n\n",
+        "If you are new to `nokori`, read `nokori explain overview`."
+    );
 
     if noargs::VERSION_FLAG.take(&mut args).is_present() {
         println!("{} {}", env!("CARGO_PKG_NAME"), env!("CARGO_PKG_VERSION"));

@@ -235,3 +235,31 @@ so the prefix has two values. If a third directory ever exists the line needs
 a third word, and the name rule is the one to check then, not now.
 
 ## Outcome
+
+Settled by commit `e2a50b0`, in `src/command_tree.rs`, `src/item.rs`,
+`src/lib.rs`, and `src/main.rs`.
+
+All four things are in. `neighbours` returns an item once however many links of
+the line above reach it, at the place of the first link. Every line, the root
+included, is `open/<name>` or `closed/<name>`. An item the walk has printed is
+printed with `(*)` and not walked again, and the set starts empty at every
+root. `tree` takes `[<ITEM>]...`; with none, every file in `backlog/open/` is a
+root, sorted by path, after the line saying so.
+
+The two things this RFC left open and the code settled:
+
+- A cycle is still a note after the line, not a `(*)`: the path is asked
+  before the printed set, so a circle among closed items reads as a circle.
+- Inverting the walk with no argument is one question still -- every open item,
+  and what points at it -- and the roots reset the printed set between them.
+
+What was not done, and is not part of this RFC: the version stays `0.0.2`.
+The output of `tree` changed shape, so a `0.1.0` is a bump worth making on its
+own line rather than in the commit that taught the tree a new one.
+
+The example that opened the Motivation now prints one line:
+
+```
+closed/20261122-rfc-tree-shows-one-direction
+└── closed/20261122-rfc-link-text-keeps-the-date
+```

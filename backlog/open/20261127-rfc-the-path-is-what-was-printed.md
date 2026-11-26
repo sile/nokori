@@ -100,6 +100,12 @@ item was printed before, and being on the path is only one of the ways that
 happens. A rule that costs a set and a branch to say something the other rule
 already says has to say something the other rule does not, and it does not.
 
+That RFC weighed two sets against one set with a note, and the note is what it
+chose. It did not weigh one set against one set with a note, which is what is
+asked here, and the paragraph above is about the sentence rather than the set,
+so it does not settle this either. What it fixes is what a cycle read like
+while the second set was there, and that reading is what this RFC changes.
+
 ## Open questions
 
 Whether the output says anywhere that the item marked was reached by going

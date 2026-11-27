@@ -11,8 +11,9 @@ It is a backlog management CLI tool, with the backlog kept as markdown
 files.
 
 A backlog of items, each a file under `backlog/open/` or `backlog/closed/`.
-The usual tools work on them -- `grep` to search, your editor to read and
-write.
+Ordinary markdown files, so the tools you already have keep working: `grep`
+to search, your editor to read and write, `git` to keep the history. Use the
+ones you want, and none of them if you do not.
 
 There is nothing to learn before you start: each command tells you what to
 run next, and `nokori init` is the first.

@@ -44,9 +44,9 @@ pub enum Direction {
 /// An item is printed once below a given line however many links reach it, and
 /// an item the run has already printed is printed with `(*)` and not walked
 /// again. That is `cargo tree`'s rule, for `cargo tree`'s reason: the subtree
-/// is under the first printing, and the mark says where to read it. What keeps
-/// the walk finite is the set of items on the current path: a repeat there is a
-/// cycle, and the walk stops and says so rather than hanging.
+/// is under the first printing, and the mark says where to read it. The set of
+/// items printed is what keeps the walk finite: a cycle is an item the walk has
+/// just printed, so it is marked like any other and the walk ends there.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Tree {
     text: String,
@@ -110,14 +110,12 @@ pub fn tree_of(roots: &[&Item], items: &[Item], direction: Direction) -> Tree {
         }
         text.push_str(&state_label(&root.path));
         text.push('\n');
-        let mut path = vec![root.path.clone()];
         let mut printed = HashSet::from([root.path.clone()]);
         walk_children(
             root,
             items,
             direction,
             &mut String::new(),
-            &mut path,
             &mut printed,
             &mut text,
         );
@@ -128,16 +126,13 @@ pub fn tree_of(roots: &[&Item], items: &[Item], direction: Direction) -> Tree {
 /// Prints the items one hop from `item`, and then theirs.
 ///
 /// `prefix` is the branch drawing owed to the ancestors of `item`: `│   ` for
-/// each level whose siblings still follow. `path` is the items on the way down
-/// to `item`, which is what tells a cycle from an item shared by two paths.
-/// `printed` is every item the walk has shown, which is what tells a line to
-/// mark rather than walk.
+/// each level whose siblings still follow. `printed` is every item the walk has
+/// shown, which is what tells a line to mark rather than walk.
 fn walk_children(
     item: &Item,
     items: &[Item],
     direction: Direction,
     prefix: &mut String,
-    path: &mut Vec<PathBuf>,
     printed: &mut HashSet<PathBuf>,
     out: &mut String,
 ) {
@@ -148,24 +143,12 @@ fn walk_children(
         let branch = if last { "└── " } else { "├── " };
         let below = if last { "    " } else { "│   " };
 
-        if path.contains(&next.path) {
-            // A cycle: the item is already on this path, so following it again
-            // would print it forever. This is said before the printed set is
-            // asked, since a circle is a thing to say and not a repeat of a
-            // name. This is the only way the walk could not end, and it is said
-            // here rather than refused before printing.
-            out.push_str(&format!("{prefix}{branch}{}\n", state_label(&next.path)));
-            out.push_str(&format!(
-                "{prefix}{below}(already on the path: the links run in a circle, so the walk stops \
-                 here)\n"
-            ));
-            continue;
-        }
-
         if !printed.insert(next.path.clone()) {
             // Shown already, under an earlier line. The entry is printed so
             // that the reader following this path finds where it goes, and its
-            // subtree is not, since it is under the first printing.
+            // subtree is not, since it is under the first printing. A cycle is
+            // this same case -- the item is on the path because the walk has
+            // just printed it -- so there is no second rule to ask.
             out.push_str(&format!(
                 "{prefix}{branch}{} (*)\n",
                 state_label(&next.path)
@@ -174,12 +157,10 @@ fn walk_children(
         }
 
         out.push_str(&format!("{prefix}{branch}{}\n", state_label(&next.path)));
-        path.push(next.path.clone());
         let depth = prefix.len();
         prefix.push_str(below);
-        walk_children(next, items, direction, prefix, path, printed, out);
+        walk_children(next, items, direction, prefix, printed, out);
         prefix.truncate(depth);
-        path.pop();
     }
 }
 
@@ -196,7 +177,7 @@ fn walk_children(
 ///
 /// A link is followed only where it reaches an item the edge read: a link to a
 /// source file, a URL, or a heading is prose around the walk rather than part
-/// of it. A self-link reaches the item itself, which is on the path already, so
+/// of it. A self-link reaches the item itself, which the walk has printed, so
 /// it is printed and stopped at like any other cycle.
 fn neighbours<'a>(item: &'a Item, items: &'a [Item], direction: Direction) -> Vec<&'a Item> {
     let mut found: Vec<&Item> = Vec::new();

@@ -245,7 +245,7 @@ fn tree_marks_an_item_it_has_shown_and_walks_no_further() {
 }
 
 #[test]
-fn tree_stops_at_a_cycle_and_says_so() {
+fn tree_marks_a_cycle_like_a_repeat() {
     // Two closed items citing each other pass `close`'s checks when they are
     // committed in the same run, so the walk has to survive one.
     let dir = repo(
@@ -263,15 +263,13 @@ fn tree_stops_at_a_cycle_and_says_so() {
     );
 
     let printed = tree(&dir, "backlog/closed/20250101-bug-one.md");
-    assert!(printed.contains("already on the path"), "{printed}");
     // The walk ends, which is the thing being tested: a hang would not return.
-    assert!(
-        printed.starts_with("closed/20250101-bug-one\n"),
-        "{printed}"
+    assert_eq!(
+        printed,
+        "closed/20250101-bug-one\n\
+         └── closed/20250102-bug-two\n\
+         \x20   └── closed/20250101-bug-one (*)\n"
     );
-    // A cycle is said rather than marked: the item is on the path, not printed
-    // under an earlier line, and the two are different causes.
-    assert!(!printed.contains("(*)"), "{printed}");
 
     std::fs::remove_dir_all(&dir).expect("failed to clean up");
 }

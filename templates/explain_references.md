@@ -186,7 +186,7 @@ closed/20261114-rfc-show-the-relations-between-items
 ```
 
 The two are the same walk with one step different: only the set of
-neighbours changes, and the cycle rule and the order are the same in both.
+neighbours changes, and the order and the mark are the same in both.
 
 Every line starts with `open/` or `closed/`: the directory the item is in,
 which is the item's state. That is what the tree is read for -- an open item
@@ -204,8 +204,9 @@ are one relation. An item the run has already printed is printed where a later
 path reaches it with `(*)` and not walked again, the way `cargo tree` marks a
 shared dependency whose subtree is under the first printing. There is no
 `--depth`: a bound is a change to make when a tree has grown too long. A cycle
--- possible between two closed items -- stops the walk where it meets it and
-says so.
+-- possible between two closed items -- is that same mark: the item is one the
+walk has just printed, so it is shown and not walked again, and the walk ends
+there.
 
 Given more than one item, each is a root and its tree follows, with a blank
 line between:

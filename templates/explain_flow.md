@@ -161,6 +161,26 @@ proposal, and a closed file is never edited. So the RFC closes when the
 implementation lands, and its `## Outcome` names the change that implemented
 it.
 
+An item and the work are two things, and they are committed apart. The item
+is what the work came from, which the person doing the work needs and the
+reviewer does not, and the two are read differently and at different times.
+Put in the same diff, the item is noise in the review and the code is noise
+in the record. So an RFC is not carried in the pull request that brings in
+its change: the RFC is in `backlog/open/` while the work is done, and in the
+branch the work is on, but not in the diff the request brings in.
+
+Committing the two together is a concession to the arrangement, not the rule.
+A project that works on the default branch alone, without branches or pull
+requests, has nowhere else for an item to go, and there the two share a
+commit. Even then the line is worth keeping in mind: what a reviewer is
+reading is the change, and the item is there because the two cannot be
+separated, not because it belongs in the change.
+
+Closing after the merge is the same idea from the other side. An accepted
+RFC is closed once the request carrying its change has merged, so that the
+`## Outcome` names a commit that exists to be named. Which branch the item is
+kept on is the project's own choice, here as everywhere else.
+
 Nothing here is a rule `close` enforces. It reads the file, not whether the
 change it names has landed, so an accepted RFC closed ahead of its
 implementation is refused only if the file itself is unfinished -- an empty

@@ -42,11 +42,18 @@ authoritative specification is the code and `README.md` of the crate; those
 must make sense without the backlog. The rule is one-way: an item may cite
 `src/` and `README.md`, but neither of them may point back at an item.
 
-Putting it there would tie the code to a file that is closed and never edited
-again, and it would make the code unreadable to somebody who does not have the
-backlog. So a `TODO` in the code that points at an item belongs in the code as
-a plain sentence, and the item is where the reasoning lives. The same holds
-for a commit message and a pull request.
+The reason is what a backlog is. It says what is being considered, what was
+turned down and why, and who said what -- the work's own record, written for
+the people doing the work and not for a reader outside it. A backlog that sits
+next to the code sits there because that is convenient while the work goes on,
+not because it belongs with the code: the two may be split later, and the code
+may be published while the backlog is not. Where the two are apart the reason
+is plain, and it is no weaker where they are together.
+
+So the code has to answer the questions about itself. A `TODO` that would have
+pointed at an item says the same thing as a sentence and leaves the reasoning
+in the item, and a commit message and a pull request do the same, since both
+are read by somebody who has the code and not the backlog.
 
 
 What that asks of the reader

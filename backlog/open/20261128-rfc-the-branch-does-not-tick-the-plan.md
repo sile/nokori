@@ -2,11 +2,11 @@
 
 ## Summary
 
-The checkboxes stay, and a step is ticked when it is done -- but not by the
-branch that does it. A working branch carries a step, or a few steps, and the
-branch is what the step is done on, not what decides it is done. So the tick
-goes somewhere other than the branch: on the main line, with the work already
-merged, or by whoever is reading the plan at the time.
+The checkboxes stay, and a step is still ticked when it is done -- but not by
+the branch that does it. A working branch carries a step, or a few steps, and
+the branch is what the step is done on, not what decides it is done. So the
+tick goes where the plan is, in a commit of its own, apart from the change
+that did the work; when it is written is left to whoever does it.
 
 `nokori` itself does not change, and no command reads a branch. What changes
 is what `explain flow` says about carrying a `plan`, which is now the same as
@@ -42,23 +42,29 @@ the change.
 
 ## Design
 
-**The template does not change.** A step is still `- [ ]`, still written so
-that the box carries a meaning, and still ticked when the step finishes. What
-is said around it is where the tick goes, and that is not the branch: the
-`## Steps` comment says the tick belongs to the plan, and the branch that
-carried the step does not decide it.
+**The steps keep their boxes.** A step is still `- [ ]`, still written so that
+the box carries a meaning, and still ticked when it is done. What changes is
+the sentence around it: where the tick goes, and what it is not.
+
+**The `## Steps` comment says only what the box belongs to.** That the box is
+the plan's, and that a branch does not decide it: a branch carries a step or a
+few, or part of one, and knows what it changed rather than whether the step is
+finished. The comment stops there.
+
+**The order of ticking is not said.** When the tick is written -- as the step
+is merged, when somebody next picks the plan up, on a branch of the plan's own
+-- is a matter of how the work is arranged, and a backlog that is kept apart
+from the code is exactly the arrangement that cannot know it. Naming one order
+would make a rule out of somebody's habit, and make the other shapes look
+wrong. What has to hold is only that the tick is not on the branch that did the
+work; everything else is left to the writer.
 
 **`explain flow` gains a `plan` of its own.** The `Closing` section already
 says the item and the change are committed apart. It gets a paragraph for
-`plan`: a plan is carried out over several branches, and none of them carries
-the plan; the file goes in on its own, and the boxes are ticked where the plan
-is, in a commit that is not the change.
-
-**The order of ticking is left open.** Ticking when the step is merged and
-ticking when somebody next reads the plan are both the same shape -- a tick
-that is not on the branch that did the work. Which one a project uses depends
-on how often somebody is looking at the plan, and saying so here would be a
-rule `nokori` cannot check and nobody needs.
+`plan`, saying the same thing in the plan's own terms: a plan is carried out
+over more branches than one, and none of them carries the plan, so the file
+goes in on its own and the boxes are ticked where the plan is. As with the
+comment, it says where and not when.
 
 **Nothing in the tool changes.** `close` still does not look at the boxes, and
 an unchecked box in a closed plan still means the step was decided against.
@@ -82,10 +88,18 @@ have landed, so a step could carry the commit that does it. It loses because
 about the code that the plan cannot check -- the step could be half done, or
 done differently, and the hash would be there anyway.
 
-**Tick after the merge, on the main line, as the rule for every kind.** The
-closest to the design, and it loses only on being too strong: the shape that
-matters is that the tick is not on the branch that did the work, and requiring
-one particular line makes a rule out of an arrangement.
+**Tick after the merge, on the main line, and say so.** The closest to the
+design, and it loses on the same point the design avoids: merging is one way
+to finish a step, not the only one, and naming it makes a rule out of a
+particular arrangement of branches. Where the tick goes is the thing worth
+saying; when it is written is the project's.
+
+**Leave the timing out and nothing else.** Say nothing at all, and let the
+writer work it out from the rest of the flow. It loses because the sentence
+that is there now says the opposite -- tick as the step finishes, before
+writing the next one -- and a writer who follows it ticks on the branch, which
+is the whole problem. Something has to be said to replace it, and what is said
+is where the tick goes.
 
 ## Open questions
 

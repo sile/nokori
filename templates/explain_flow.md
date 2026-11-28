@@ -176,6 +176,15 @@ commit. Even then the line is worth keeping in mind: what a reviewer is
 reading is the change, and the item is there because the two cannot be
 separated, not because it belongs in the change.
 
+A `plan` is the harder case, because it is carried out over more branches
+than one. A branch takes a step, or a few steps, or a part of one, and the
+plan is bigger than any branch that serves it: the branch knows what it
+changed, not whether the step is finished. So no branch carries the plan, and
+no branch ticks it. The file goes in on its own as any item does, and the box
+is ticked where the plan is, in a commit that is not the change. When that
+commit is made is the project's arrangement to make, not something this flow
+can know.
+
 Closing after the merge is the same idea from the other side. An accepted
 RFC is closed once the request carrying its change has merged, so that the
 `## Outcome` names a commit that exists to be named. Which branch the item is

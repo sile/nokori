@@ -13,10 +13,13 @@ By the time the Summary is written it has to say what will be done. If it
 still has to explain the problem, that is a bug with a note about the
 possible fix, not an RFC.
 
-The item may point at the source code, but the source code never points back:
-never mention `backlog/` in the source code, in a commit message, or in a pull
-request. A proposal is something you read and act on here, and it stops
-working as one if the code it describes has to be read for it to make sense.
+The item may point at the source code, but the source code never points back.
+A backlog is the work's own record and stays out of what is published, so
+neither the source code, a commit message, nor a pull request may mention
+`backlog/`. The item and the work are two things and are committed apart;
+`nokori explain overview` has the reason, and `nokori explain flow` has where
+the commit goes, the one case the two share it, and why an accepted RFC
+closes after the request carrying its change has merged.
 
 Say what this RFC answers, when it answers something, as a link to that item
 (`nokori explain references`). Write it in this item or in the other one -- one

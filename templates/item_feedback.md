@@ -25,6 +25,12 @@ what they needed. Nothing here is wrong, so nothing here is reproduced; the
 request may still be met, but by changing what the program does rather than by
 fixing it.
 
+The item may point at the source code, but the source code never points back.
+A backlog is the work's own record and stays out of what is published, so
+neither the source code, a commit message, nor a pull request may mention
+`backlog/`. `nokori explain overview` has the reason, and `nokori explain
+flow` has where the commit goes.
+
 Say what was expected only if it is short. Long stretches of design belong in
 an RFC, and when writing one is the response to this feedback, the RFC is where
 the design goes and this file records that it happened.

@@ -13,6 +13,12 @@ argument for the end.
 Write it so that "finished" is a fact rather than a feeling. "The parser no
 longer allocates per token" can be checked; "the parser is faster" cannot.
 
+The item may point at the source code, but the source code never points back.
+A backlog is the work's own record and stays out of what is published, so
+neither the source code, a commit message, nor a pull request may mention
+`backlog/`. `nokori explain overview` has the reason, and `nokori explain
+flow` has where the commit goes.
+
 An implementation detail that is too small for an RFC belongs here, in the
 plan, not in the RFC: a proposal is argued on its shape, and the steps that
 follow from it are what this file is for.
@@ -97,8 +103,8 @@ paths and the rule.
 An unchecked box in a closed plan means the step was decided against, not
 forgotten: `close` does not refuse a plan with steps left, so this section is
 where the decision is recorded. A plan that stops partway through and should
-be picked up again is not closed -- it stays in `backlog/` with the unchecked
-boxes showing where it stopped.
+be picked up again is not closed -- it stays in `backlog/open/` with the
+unchecked boxes showing where it stopped.
 
 Once this section is written, treat the file as closed: do not
 edit any part of it again, and append nothing later. If something turns up

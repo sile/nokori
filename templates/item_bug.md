@@ -8,10 +8,11 @@ input that shows it.
 A bug is a report that today's behavior breaks its own documented contract,
 not a proposal for a different one.
 
-The item may point at the source code, but the source code never points back:
-never mention `backlog/` in the source code, in a commit message, or in a pull
-request. A bug report is something you read and act on here, and it stops
-working as one if the code it describes has to be read for it to make sense.
+The item may point at the source code, but the source code never points back.
+A backlog is the work's own record and stays out of what is published, so
+neither the source code, a commit message, nor a pull request may mention
+`backlog/`. `nokori explain overview` has the reason, and `nokori explain
+flow` has where the commit goes.
 
 Say what this answers, when it answers something, as a link to that item
 (`nokori explain references`). Write it in this item or in the other one -- one

@@ -41,9 +41,15 @@ Write a step so that its checkbox carries a meaning: an unchecked box says
 the work is not done, not that nobody got to it today. A step that is too big
 to be one checkbox is two steps.
 
-Tick a box as the step finishes, before writing the next one. That is the
-whole of resume-from-here: there is no separate section saying where the work
-stopped, because the unchecked boxes say it.
+Tick a box when the step is done. The box belongs to the plan and not to the
+branch that did the step: a branch carries a step, or a few, or a part of one,
+and knows what it changed rather than whether the step is finished. So the
+tick goes with the plan, in a commit of its own, apart from the change -- as
+the file itself does. When it is written is yours to arrange.
+
+What the boxes are for is resuming from here: there is no separate section
+saying where the work stopped, because the unchecked boxes say it. Read them
+where they are, rather than in the branch the work is on.
 
 A step that waits on another item, or runs beside one, says so in the step
 itself: link the item where the relation matters, in as many words as it

@@ -55,6 +55,12 @@ pointed at an item says the same thing as a sentence and leaves the reasoning
 in the item, and a commit message and a pull request do the same, since both
 are read by somebody who has the code and not the backlog.
 
+Nothing here depends on the two sitting under one root. Where the backlog is a
+repository of its own, the code still may not point at it, and for the same
+reason: the person reading the code may not be able to open the file. A
+backlog kept next to the code is put there for the work's sake, not because
+the code may reach into it.
+
 
 What that asks of the reader
 ============================

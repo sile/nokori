@@ -10,21 +10,41 @@ merged. Nothing in the tool changes.
 The rule already exists, one directory away: the `Summary` comment in `rfc`
 says never to mention `backlog/` in a pull request. What is missing is the
 consequence -- the natural reading of "never mention it" is about the text of
-the request, and a file added by the same request is not text.
+the request, and a file added by the same request is not text. A backlog is
+the developer's record and stays out of the published part; a pull request is
+one of the places the published part is.
 
 ## Motivation
 
-Two branches in a row went wrong the same way. The RFC was written on a
-branch, the implementation followed on it, and the pull request that came out
-covered both: the proposal, two RFCs that were not being implemented, and the
-change itself. The request had to be rebuilt from one commit to keep the
-first and the last apart, and nothing said that anything was wrong.
+A backlog is the developer's own record. It says what is being considered,
+what was turned down and why, and who said what, and none of that is written
+for a reader outside the work. Keeping it out of the published part is the
+point.
 
-It is worth writing down because the flow points the other way. An accepted
-RFC stays open until its change lands, so an RFC and its implementation are
-worked on together, on one branch, one sitting after the other. What the
-flow does not say is where the line falls, and a writer who is doing both
-will put both in the same place unless told otherwise.
+The same directory is not an argument against that. `backlog/` often sits
+next to `src/` because it is convenient while the work is going on, not
+because it belongs with the code, and the two may be split later. So a
+directory that happens to be under the same root as the code is one place the
+record is kept, not a part of the code.
+
+Where the two are apart, the reason is plain: the backlog may be private
+while the code is not, so a mention of it in the code is a mention in public,
+and somebody reading the code may not be able to open what it points at.
+
+Where the two are together, the pull request makes the same case. A review
+reads the change and the change only. An item carries what the work came
+from, which the person doing the work needs and the reviewer does not, and
+the two are read differently and at different times. Put in the same diff,
+the item is noise in the review and the code is noise in the record.
+
+The flow points away from this, which is why it needs saying. An accepted RFC
+stays open until its change lands, so an RFC and its implementation are
+worked on together, on one branch, one sitting after the other. What the flow
+does not say is where the line falls, and a writer doing both will put both
+in the same place unless told otherwise. That is what happened here: two
+branches in a row carried the item and the change together, one pull request
+took in three RFCs of which one was implemented, and it had to be rebuilt
+from a single commit.
 
 ## Design
 
@@ -47,6 +67,13 @@ the paragraph before it is: `close` reads the file and cannot see a branch.
 Leave it out and say the flow says enough. It does not: the RFC staying open
 until its change lands is the reason the two end up together, and reading it
 as permission to put both on one branch is the mistake, not an unusual one.
+
+Ban it only where the backlog is a separate repository. There, the reason is
+least avoidable, so the rule looks like it belongs to that arrangement. But a
+backlog next to the code is one that is kept there for the work's sake, not
+one that the code may reach into, and the review argues against carrying it
+in either case. A rule that is the same wherever the directory sits is the one
+a writer can hold in mind.
 
 Add the sentence to the `Summary` comment of the `rfc` template only. That is
 where the rule against `backlog/` in a pull request already sits, so it looks
